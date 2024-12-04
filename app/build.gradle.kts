@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.apache.poi)
     // или
     // implementation(libs.itextpdf.core)
+    
+    implementation(libs.timber)
 
     // Testing
     testImplementation(libs.junit)
