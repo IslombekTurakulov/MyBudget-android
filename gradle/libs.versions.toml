@@ -24,6 +24,7 @@ opencsv = "5.5.2"
 apachePoi = "5.2.0"
 itextpdf = "7.1.13"
 timber = "5.0.1"
+securityCryptoKtx = "1.0.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -81,3 +82,4 @@ opencsv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv" }
 # PDF libraries
 apache-poi = { group = "org.apache.poi", name = "poi", version.ref = "apachePoi" }
 itextpdf-core = { group = "com.itextpdf", name = "itext7-core", version.ref = "itextpdf" }
+androidx-security-crypto-ktx = { group = "androidx.security", name = "security-crypto-ktx", version.ref = "securityCryptoKtx" }

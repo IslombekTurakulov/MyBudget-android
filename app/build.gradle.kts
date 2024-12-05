@@ -57,6 +57,7 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.hilt.android)
+    implementation(libs.androidx.security.crypto.ktx)
     ksp(libs.hilt.android.compiler)
 
     // Coroutines
