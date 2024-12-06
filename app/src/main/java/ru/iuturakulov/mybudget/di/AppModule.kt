@@ -1,33 +1,21 @@
 package ru.iuturakulov.mybudget.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
 import ru.iuturakulov.mybudget.data.local.AppDatabase
-import ru.iuturakulov.mybudget.data.remote.ApiClient
-import ru.iuturakulov.mybudget.data.remote.ProjectService
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    @Singleton
-    fun provideRetrofit(@ApplicationContext context: Context): Retrofit {
-        return ApiClient.getRetrofitInstance(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideProjectService(retrofit: Retrofit): ProjectService {
-        return retrofit.create(ProjectService::class.java)
-    }
 
     @Provides
     @Singleton
@@ -41,14 +29,20 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context) =
-        EncryptedSharedPreferences.create(
-            "secure_prefs",
-            MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC),
+    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        // Создаем EncryptedSharedPreferences
+        return EncryptedSharedPreferences.create(
             context,
+            "secure_prefs",
+            masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }
 
     @Provides
     fun provideProjectDao(database: AppDatabase) = database.projectDao()

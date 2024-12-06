@@ -3,8 +3,8 @@ package ru.iuturakulov.mybudget.domain.usecases
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.iuturakulov.mybudget.auth.TokenStorage
+import ru.iuturakulov.mybudget.core.NetworkErrorHandler
 import ru.iuturakulov.mybudget.data.remote.AuthService
-import ru.iuturakulov.mybudget.data.remote.LoginRequest
 import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(
@@ -22,7 +22,7 @@ class LoginUseCase @Inject constructor(
     suspend operator fun invoke(email: String, password: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val response = authService.login(LoginRequest(email, password))
+                val response = authService.login(AuthService.LoginRequest(email, password))
                 if (response.isSuccessful) {
                     val token = response.body()?.token ?: return@withContext false
                     tokenStorage.saveToken(token)
@@ -31,7 +31,8 @@ class LoginUseCase @Inject constructor(
                     false
                 }
             } catch (e: Exception) {
-                throw Exception("Ошибка подключения: ${e.message}")
+                val errorMessage = NetworkErrorHandler.getErrorMessage(e)
+                throw Exception(errorMessage)
             }
         }
     }

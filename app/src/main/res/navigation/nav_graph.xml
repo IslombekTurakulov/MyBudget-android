@@ -1,44 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:startDestination="@id/loginFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/splashFragment">
+
+    <!-- Splash Screen -->
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="ru.iuturakulov.mybudget.ui.splash.SplashFragment"
+        tools:layout="@layout/fragment_splash"
+        android:label="Splash">
+        <action
+            android:id="@+id/action_splash_to_login"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_splash_to_projects"
+            app:destination="@id/projectListFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <!-- Экран авторизации -->
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.mybudget.ui.login.LoginFragment"
+        tools:layout="@layout/fragment_login"
+        android:name="ru.iuturakulov.mybudget.ui.login.LoginFragment"
         android:label="Login">
         <action
             android:id="@+id/action_login_to_projects"
-            app:destination="@id/projectsFragment" />
+            app:destination="@id/projectListFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_login_to_register"
             app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_login_to_resetPassword"
+            app:destination="@id/resetPasswordFragment" />
     </fragment>
 
     <!-- Экран регистрации -->
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.example.mybudget.ui.register.RegisterFragment"
+        tools:layout="@layout/fragment_register"
+        android:name="ru.iuturakulov.mybudget.ui.register.RegisterFragment"
         android:label="Register">
         <action
             android:id="@+id/action_register_to_login"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_register_to_projects"
+            app:destination="@id/projectListFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Экран восстановления пароля -->
+    <fragment
+        android:id="@+id/resetPasswordFragment"
+        tools:layout="@layout/fragment_reset_password"
+        android:name="ru.iuturakulov.mybudget.ui.reset.ResetPasswordFragment"
+        android:label="Reset Password">
+        <action
+            android:id="@+id/action_resetPassword_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!-- Список проектов -->
     <fragment
-        android:id="@+id/projectsFragment"
-        android:name="com.example.mybudget.ui.projects.ProjectsFragment"
+        android:id="@+id/projectListFragment"
+        tools:layout="@layout/fragment_project_list"
+        android:name="ru.iuturakulov.mybudget.ui.projects.ProjectListFragment"
         android:label="Projects">
-        <action
-            android:id="@+id/action_projects_to_projectDetails"
-            app:destination="@id/projectDetailsFragment" />
+        <!--        <action-->
+        <!--            android:id="@+id/action_projects_to_details"-->
+        <!--            app:destination="@id/projectDetailsFragment" />-->
+        <!--        <action-->
+        <!--            android:id="@+id/action_projects_to_create"-->
+        <!--            app:destination="@id/createProjectFragment" />-->
+        <!--        <action-->
+        <!--            android:id="@+id/action_projects_to_profile"-->
+        <!--            app:destination="@id/profileFragment" />-->
     </fragment>
 
-    <!-- Детали проекта -->
-    <fragment
-        android:id="@+id/projectDetailsFragment"
-        android:name="com.example.mybudget.ui.projects.ProjectDetailsFragment"
-        android:label="Project Details" />
+    <!--    &lt;!&ndash; Создание проекта &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/createProjectFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.projects.CreateProjectFragment"-->
+    <!--        android:label="Create Project">-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_create_to_projects"-->
+    <!--            app:destination="@id/projectListFragment"-->
+    <!--            app:popUpToInclusive="true" />-->
+    <!--    </fragment>-->
+
+    <!--    &lt;!&ndash; Детали проекта &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/projectDetailsFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.projects.ProjectDetailsFragment"-->
+    <!--        android:label="Project Details">-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_details_to_transactions"-->
+    <!--            app:destination="@id/transactionListFragment" />-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_details_to_participants"-->
+    <!--            app:destination="@id/participantsFragment" />-->
+    <!--    </fragment>-->
+
+    <!--    &lt;!&ndash; Список транзакций &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/transactionListFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.transactions.TransactionListFragment"-->
+    <!--        android:label="Transactions">-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_transactions_to_add"-->
+    <!--            app:destination="@id/addTransactionFragment" />-->
+    <!--    </fragment>-->
+
+    <!--    &lt;!&ndash; Добавить транзакцию &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/addTransactionFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.transactions.AddTransactionFragment"-->
+    <!--        android:label="Add Transaction">-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_add_to_transactions"-->
+    <!--            app:destination="@id/transactionListFragment" />-->
+    <!--    </fragment>-->
+
+    <!--    &lt;!&ndash; Аналитика &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/analyticsFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.analytics.AnalyticsFragment"-->
+    <!--        android:label="Analytics" />-->
+
+    <!--    &lt;!&ndash; Настройки &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/settingsFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.settings.SettingsFragment"-->
+    <!--        android:label="Settings" />-->
+
+    <!--    &lt;!&ndash; Профиль &ndash;&gt;-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/profileFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.profile.ProfileFragment"-->
+    <!--        android:label="Profile">-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_profile_to_participants"-->
+    <!--            app:destination="@id/participantsFragment" />-->
+    <!--    </fragment>-->
+
+    <!-- Участники проекта -->
+    <!--    <fragment-->
+    <!--        android:id="@+id/participantsFragment"-->
+    <!--        android:name="ru.iuturakulov.mybudget.ui.participants.ParticipantsFragment"-->
+    <!--        android:label="Participants" />-->
 </navigation>

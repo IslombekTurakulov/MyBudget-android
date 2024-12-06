@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.dagger.hilt)
 }
 
 
@@ -15,7 +16,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -35,8 +35,8 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    buildFeatures {
-        viewBinding = true
+    viewBinding {
+        enable = true
     }
 }
 
@@ -49,7 +49,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-
     // Networking
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson.converter)
@@ -57,14 +56,20 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.hilt.android)
-    implementation(libs.androidx.security.crypto.ktx)
     ksp(libs.hilt.android.compiler)
+
+//    implementation(libs.hilt.lifecycle.viewmodel)
+//    ksp(libs.hilt.compiler)
+
+    // Encrypted Shared preferences
+    implementation(libs.androidx.security.crypto)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
     // Room (для локального кэша, опционально)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
     // WorkManager для уведомлений и фоновых задач
@@ -74,7 +79,7 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
 
     // MPAndroidChart для диаграмм
-    implementation(libs.mpandroidchart)
+    // implementation(libs.mpandroidchart)
 
     // OpenCSV для экспорта в CSV
     implementation(libs.opencsv)
@@ -83,7 +88,7 @@ dependencies {
     implementation(libs.apache.poi)
     // или
     // implementation(libs.itextpdf.core)
-    
+
     implementation(libs.timber)
 
     // Testing

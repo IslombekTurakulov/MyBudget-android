@@ -1,7 +1,5 @@
 package ru.iuturakulov.mybudget.data.remote
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -15,9 +13,10 @@ object ApiClient {
 
     private const val BASE_URL = "https://localhost:8080/"
 
-    private fun getAuthInterceptor(@ApplicationContext context: Context): Interceptor {
+    // Получение Interceptor для авторизации
+    private fun getAuthInterceptor(tokenStorage: TokenStorage): Interceptor {
         return Interceptor { chain ->
-            val token = TokenStorage.getToken(context)
+            val token = tokenStorage.getToken()
             val original: Request = chain.request()
             val requestBuilder = original.newBuilder()
             if (!token.isNullOrEmpty()) {
@@ -28,15 +27,17 @@ object ApiClient {
         }
     }
 
+    // Interceptor для логирования
     private fun getLoggingInterceptor(): HttpLoggingInterceptor {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
         return loggingInterceptor
     }
 
-    private fun getHttpClient(@ApplicationContext context: Context): OkHttpClient {
+    // Конфигурация OkHttpClient
+    private fun getHttpClient(tokenStorage: TokenStorage): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(getAuthInterceptor(context = context))
+            .addInterceptor(getAuthInterceptor(tokenStorage))
             .addInterceptor(getLoggingInterceptor())
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -44,10 +45,11 @@ object ApiClient {
             .build()
     }
 
-    fun getRetrofitInstance(@ApplicationContext context: Context): Retrofit {
+    // Создание Retrofit instance
+    fun getRetrofitInstance(tokenStorage: TokenStorage): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(getHttpClient(context = context))
+            .client(getHttpClient(tokenStorage))
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
