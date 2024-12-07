@@ -2,7 +2,6 @@ package ru.iuturakulov.mybudget.ui.login
 
 import android.util.Patterns
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -23,19 +22,27 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login
 
     override fun setupViews() {
         binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text?.toString()
-            val password = binding.etPassword.text?.toString()
+            val email = binding.etEmail.text?.toString().orEmpty().trim()
+            val password = binding.etPassword.text?.toString().orEmpty().trim()
             val emailPattern = Patterns.EMAIL_ADDRESS
-            if (email.isNullOrBlank() || !emailPattern.matcher(email).matches()) {
-                Toast.makeText(requireContext(), "Введите корректный email", Toast.LENGTH_SHORT)
-                    .show()
+            if (email.isBlank() || !emailPattern.matcher(email).matches()) {
+                binding.etEmailInputLayout.error =
+                    "Введите корректный email\nНапример: example@gmail.com"
                 return@setOnClickListener
+            } else {
+                binding.etEmailInputLayout.isErrorEnabled = false
             }
-            if (password.isNullOrBlank()) {
-                Toast.makeText(requireContext(), "Введите пароль", Toast.LENGTH_SHORT).show()
+            if (password.isBlank()) {
+                binding.etPasswordInputLayout.error = "Введите пароль"
                 return@setOnClickListener
+            } else {
+                binding.etPasswordInputLayout.isErrorEnabled = false
             }
             viewModel.login(email, password)
+        }
+
+        binding.tvForgotPassword.setOnClickListener {
+            findNavController().navigate(R.id.action_login_to_resetPassword)
         }
 
         binding.tvRegister.setOnClickListener {

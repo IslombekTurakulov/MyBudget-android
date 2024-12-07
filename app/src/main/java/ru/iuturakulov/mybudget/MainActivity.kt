@@ -30,7 +30,11 @@ class MainActivity : AppCompatActivity() {
         // Скрываем BottomNavigationView на SplashScreen и авторизации
         navController.addOnDestinationChangedListener { _, destination, _ ->
             bottomNavigationView.visibility = when (destination.id) {
-                R.id.splashFragment, R.id.loginFragment, R.id.registerFragment -> View.GONE
+                R.id.splashFragment,
+                R.id.loginFragment,
+                R.id.registerFragment,
+                R.id.resetPasswordFragment -> View.GONE
+
                 else -> View.VISIBLE
             }
         }

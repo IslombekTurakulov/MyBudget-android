@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import ru.iuturakulov.mybudget.core.NetworkErrorHandler
 import ru.iuturakulov.mybudget.data.remote.AuthService
 import javax.inject.Inject
 
@@ -29,7 +30,8 @@ class ResetPasswordViewModel @Inject constructor(
                         ResetPasswordState.Error("Ошибка восстановления пароля")
                 }
             } catch (e: Exception) {
-                _resetPasswordState.value = ResetPasswordState.Error("Ошибка: ${e.message}")
+                val errorMessage = NetworkErrorHandler.getErrorMessage(e)
+                _resetPasswordState.value = ResetPasswordState.Error("Ошибка: $errorMessage")
             }
         }
     }
