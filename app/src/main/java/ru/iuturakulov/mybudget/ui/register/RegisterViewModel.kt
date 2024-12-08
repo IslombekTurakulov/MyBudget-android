@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import ru.iuturakulov.mybudget.domain.usecases.RegisterUseCase
+import ru.iuturakulov.mybudget.domain.usecases.auth.RegisterUseCase
 import javax.inject.Inject
 
 @HiltViewModel

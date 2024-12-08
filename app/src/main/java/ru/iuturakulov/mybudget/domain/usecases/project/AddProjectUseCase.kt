@@ -1,4 +1,4 @@
-package ru.iuturakulov.mybudget.domain.usecases
+package ru.iuturakulov.mybudget.domain.usecases.project
 
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository

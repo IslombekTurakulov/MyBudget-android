@@ -9,8 +9,9 @@ import ru.iuturakulov.mybudget.data.remote.AuthService
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository
 import ru.iuturakulov.mybudget.domain.repositories.TransactionRepository
 import ru.iuturakulov.mybudget.domain.usecases.AddTransactionUseCase
-import ru.iuturakulov.mybudget.domain.usecases.FetchProjectsUseCase
-import ru.iuturakulov.mybudget.domain.usecases.LoginUseCase
+import ru.iuturakulov.mybudget.domain.usecases.project.FetchProjectsUseCase
+import ru.iuturakulov.mybudget.domain.usecases.auth.LoginUseCase
+import ru.iuturakulov.mybudget.domain.usecases.project.SyncProjectsUseCase
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -21,6 +22,13 @@ object UseCaseModule {
         projectRepository: ProjectRepository
     ): FetchProjectsUseCase {
         return FetchProjectsUseCase(projectRepository)
+    }
+
+    @Provides
+    fun provideSyncProjectsUseCase(
+        projectRepository: ProjectRepository
+    ): SyncProjectsUseCase {
+        return SyncProjectsUseCase(projectRepository)
     }
 
     @Provides

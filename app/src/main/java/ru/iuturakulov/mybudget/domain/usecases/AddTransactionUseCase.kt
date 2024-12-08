@@ -9,6 +9,6 @@ class AddTransactionUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(transaction: TransactionEntity) {
-        repository.addTransaction(transaction)
+        // repository.addTransaction(transaction)
     }
 }

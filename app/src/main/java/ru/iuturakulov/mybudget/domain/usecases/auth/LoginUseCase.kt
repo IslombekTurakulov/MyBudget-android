@@ -1,4 +1,4 @@
-package ru.iuturakulov.mybudget.domain.usecases
+package ru.iuturakulov.mybudget.domain.usecases.auth
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

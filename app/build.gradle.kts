@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.dagger.hilt)
+    id("kotlin-parcelize")
 }
 
 
@@ -56,6 +57,7 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.hilt.android)
+    implementation(libs.androidx.swiperefreshlayout)
     ksp(libs.hilt.android.compiler)
 
 //    implementation(libs.hilt.lifecycle.viewmodel)
@@ -95,4 +97,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Glide core library
+    implementation(libs.glide)
+
+    // Glide annotation processor for KSP
+    ksp(libs.glide.ksp)
 }

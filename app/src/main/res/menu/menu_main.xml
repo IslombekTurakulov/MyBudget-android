@@ -1,14 +1,20 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/projectListFragment"
-        android:icon="@drawable/common_google_signin_btn_icon_dark"
-        android:title="Проекты" />
-    <!--    <item-->
-    <!--        android:id="@+id/navigation_analytics"-->
-    <!--        android:icon="@drawable/common_google_signin_btn_icon_dark"-->
-    <!--        android:title="Аналитика" />-->
-    <!--    <item-->
-    <!--        android:id="@+id/navigation_settings"-->
-    <!--        android:icon="@drawable/common_google_signin_btn_icon_dark"-->
-    <!--        android:title="Настройки" />-->
+        android:icon="@drawable/outline_cases_24"
+        android:title="Проекты"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/navigation_analytics"
+        android:icon="@drawable/outline_analytics_24"
+        android:title="Аналитика"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/outline_settings_24"
+        android:title="Настройки"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -27,6 +27,7 @@ apachePoi = "5.2.0"
 itextpdf = "7.1.13"
 timber = "5.0.1"
 securityCryptoKtx = "1.1.0-alpha04"
+swiperefreshlayout = "1.1.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -39,6 +40,8 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 [libraries]
+glide = "com.github.bumptech.glide:glide:4.16.0"
+glide-ksp = "com.github.bumptech.glide:ksp:4.16.0"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -90,3 +93,4 @@ opencsv = { group = "com.opencsv", name = "opencsv", version.ref = "opencsv" }
 apache-poi = { group = "org.apache.poi", name = "poi", version.ref = "apachePoi" }
 itextpdf-core = { group = "com.itextpdf", name = "itext7-core", version.ref = "itextpdf" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCryptoKtx" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
