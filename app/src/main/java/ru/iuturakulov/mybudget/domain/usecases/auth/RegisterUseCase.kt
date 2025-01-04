@@ -20,12 +20,13 @@ class RegisterUseCase @Inject constructor(
                     authService.register(AuthService.RegisterRequest(name, email, password))
                 if (registerResponse.isSuccessful) {
                     // После успешной регистрации пытаемся авторизоваться
-                    val loginResponse = authService.login(AuthService.LoginRequest(email, password))
-                    if (loginResponse.isSuccessful) {
-                        val token = loginResponse.body()?.token ?: return@withContext false
-                        tokenStorage.saveToken(token)
-                        return@withContext true
-                    }
+                    authService.login(AuthService.LoginRequest(email, password))
+                    return@withContext true
+//                    if (loginResponse.isSuccessful) {
+//                        val token = loginResponse.body()?.token ?: return@withContext false
+//                        tokenStorage.saveToken(token)
+//                        return@withContext true
+//                    }
                 }
                 false
             } catch (e: Exception) {

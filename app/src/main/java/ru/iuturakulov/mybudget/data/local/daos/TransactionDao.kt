@@ -13,7 +13,7 @@ interface TransactionDao {
 
     // Получить транзакции для проекта
     @Query("SELECT * FROM transactions WHERE projectId = :projectId")
-    fun getTransactionsForProject(projectId: Int): Flow<List<TransactionEntity>>
+    fun getTransactionsForProject(projectId: String): Flow<List<TransactionEntity>>
 
     // Вставить одну транзакцию
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -29,9 +29,9 @@ interface TransactionDao {
 
     // Удалить одну транзакцию
     @Query("DELETE FROM transactions WHERE id = :transactionId")
-    suspend fun deleteTransaction(transactionId: Int)
+    suspend fun deleteTransaction(transactionId: String)
 
     // Очистить транзакции для проекта
     @Query("DELETE FROM transactions WHERE projectId = :projectId")
-    suspend fun clearTransactionsForProject(projectId: Int)
+    suspend fun clearTransactionsForProject(projectId: String)
 }

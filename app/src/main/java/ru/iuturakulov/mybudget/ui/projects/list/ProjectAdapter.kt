@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus.Companion.getStatusColor
 import ru.iuturakulov.mybudget.databinding.ItemProjectBinding
 
 class ProjectAdapter(
@@ -30,7 +30,8 @@ class ProjectAdapter(
             binding.tvProjectName.text = project.name
 
             // Описание проекта
-            binding.tvProjectDescription.text = project.description.ifBlank { "Описание отсутствует" }
+            binding.tvProjectDescription.text =
+                project.description.ifBlank { "Описание отсутствует" }
 
             // Финансовые данные
             binding.tvProjectBudget.text = "Бюджет: ${project.budgetLimit} ₽"
@@ -39,13 +40,9 @@ class ProjectAdapter(
                 "Осталось: ${(project.budgetLimit - project.amountSpent).coerceAtLeast(0.0)} ₽"
 
             // Статус проекта
-            binding.tvProjectStatus.text = project.status
+            binding.tvProjectStatus.text = project.status.type
             binding.tvProjectStatus.setTextColor(
-                when (project.status) {
-                    "active" -> binding.root.context.getColor(R.color.green)
-                    "completed" -> binding.root.context.getColor(R.color.red)
-                    else -> binding.root.context.getColor(R.color.gray)
-                }
+                project.status.getStatusColor(context = binding.root.context)
             )
 
             // Дата создания

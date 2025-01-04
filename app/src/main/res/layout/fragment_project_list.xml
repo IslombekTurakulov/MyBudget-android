@@ -14,6 +14,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_gravity="center_vertical"
+            app:menu="@menu/projects_list_menu"
             android:layout_height="?attr/actionBarSize">
 
             <!-- Поисковая строка -->
@@ -35,17 +36,46 @@
 
     <!-- Основной контент -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!-- Список проектов -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/btnRetry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Не удалось загрузить проекты"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Placeholder для пустого списка -->
+        <TextView
+            android:id="@+id/tvEmptyPlaceholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="У вас пока нет проектов"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Кнопка повтора попытки -->
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/fabAddProject">
+            app:layout_anchor="@+id/constraintLayout"
+            app:layout_anchorGravity="center"
+            app:layout_constraintBottom_toTopOf="@id/fabAddProject"
+            app:layout_constraintTop_toTopOf="parent">
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewProjects"
@@ -56,37 +86,14 @@
                 tools:listitem="@layout/item_project" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <!-- Placeholder для пустого списка -->
-        <TextView
-            android:id="@+id/tvEmptyPlaceholder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="У вас пока нет проектов"
-            android:textAppearance="?attr/textAppearanceBody1"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Кнопка повтора попытки -->
-        <Button
-            android:id="@+id/btnRetry"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Повторить"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
         <!-- Кнопка добавления проекта -->
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/fabAddProject"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="32dp"
             android:contentDescription="Добавить проект"
             android:text="Добавить проект"
             app:icon="@drawable/baseline_add_24"
@@ -98,12 +105,12 @@
             android:id="@+id/fabFilterProjects"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="92dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="Фильтрация"
             android:text="Фильтры"
             app:icon="@drawable/baseline_filter_list_24"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="80dp"
-            android:layout_marginEnd="16dp"
-            android:contentDescription="Фильтрация"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

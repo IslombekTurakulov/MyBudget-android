@@ -63,7 +63,7 @@
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
+            app:popExitAnim="@anim/fade_out" />
         <action
             android:id="@+id/action_register_to_projects"
             app:destination="@id/projectListFragment"
@@ -71,7 +71,7 @@
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
 
     <!-- Экран восстановления пароля -->
@@ -87,7 +87,7 @@
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
 
     <!-- Список проектов -->
@@ -105,7 +105,7 @@
             app:popExitAnim="@anim/fade_out">
             <argument
                 android:name="projectId"
-                app:argType="integer" />
+                app:argType="string" />
         </action>
         <action
             android:id="@+id/action_projects_to_create"
@@ -113,14 +113,23 @@
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
+            app:popExitAnim="@anim/fade_out" />
+
+        <action
+            android:id="@+id/action_project_to_accept_invite"
+            app:destination="@+id/projectInviteFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
 
     <!-- Создание проекта -->
     <fragment
         android:id="@+id/createProjectFragment"
         android:name="ru.iuturakulov.mybudget.ui.projects.create.CreateProjectFragment"
-        android:label="Create Project">
+        android:label="Create Project"
+        tools:layout="@layout/fragment_project_create">
         <action
             android:id="@+id/action_create_to_projects"
             app:destination="@id/projectListFragment"
@@ -128,23 +137,39 @@
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out"/>
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
 
     <!-- Детали проекта -->
     <fragment
         android:id="@+id/projectDetailsFragment"
         android:name="ru.iuturakulov.mybudget.ui.projects.details.ProjectDetailsFragment"
-        android:label="Детали проекта">
+        android:label="Детали проекта"
+        tools:layout="@layout/fragment_project_details">
         <action
-            android:id="@+id/action_projectDetails_to_addTransaction"
-            app:destination="@id/transactionListFragment" />
+            android:id="@+id/action_transactions_to_add"
+            app:destination="@id/addTransactionFragment" />
+
+        <action
+            android:id="@+id/action_project_to_invite"
+            app:destination="@id/projectAcceptInviteFragment" />
+
+        <action
+            android:id="@+id/action_transactions_to_details"
+            app:destination="@id/transactionDetailsFragment" />
+
+        <action
+            android:id="@+id/action_project_to_edit"
+            app:destination="@id/editProjectDialogFragment" />
+
         <action
             android:id="@+id/action_details_to_participants"
-            app:destination="@id/participantsFragment" />
+            app:destination="@id/projectParticipantsFragment" />
+
         <action
             android:id="@+id/action_details_to_analytics"
             app:destination="@id/analyticsFragment" />
+
         <argument
             android:name="projectId"
             app:argType="integer" />
@@ -154,30 +179,27 @@
         android:id="@+id/editProjectDialogFragment"
         android:name="ru.iuturakulov.mybudget.ui.projects.details.EditProjectDialogFragment"
         android:label="Редактировать проект"
-        tools:layout="@layout/dialog_edit_project"/>
-
-    <!-- Экран транзакции -->
-    <fragment
-        android:id="@+id/transactionListFragment"
-        android:name="ru.iuturakulov.mybudget.ui.transactions.TransactionFragment"
-        android:label="Transactions">
-        <action
-            android:id="@+id/action_transactions_to_add"
-            app:destination="@id/addTransactionFragment" />
-    </fragment>
+        tools:layout="@layout/dialog_edit_project" />
 
     <!-- Добавить транзакцию -->
-    <fragment
+    <dialog
         android:id="@+id/addTransactionFragment"
-        android:name="ru.iuturakulov.mybudget.ui.transactions.AddTransactionFragment"
-        android:label="Add Transaction">
-    </fragment>
+        android:name="ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment"
+        android:label="Add Transaction"
+        tools:layout="@layout/dialog_add_transaction"></dialog>
 
-        <!-- Аналитика -->
-        <fragment
-            android:id="@+id/analyticsFragment"
-            android:name="ru.iuturakulov.mybudget.ui.analytics.AnalyticsFragment"
-            android:label="Analytics" />
+    <dialog
+        android:id="@+id/transactionDetailsFragment"
+        android:name="ru.iuturakulov.mybudget.ui.transactions.TransactionDetailsDialogFragment"
+        android:label="Transaction Details"
+        tools:layout="@layout/dialog_transaction_details"></dialog>
+
+
+    <!-- Аналитика -->
+    <fragment
+        android:id="@+id/analyticsFragment"
+        android:name="ru.iuturakulov.mybudget.ui.analytics.AnalyticsFragment"
+        android:label="Analytics" />
 
     <!--    &lt;!&ndash; Настройки &ndash;&gt;-->
     <!--    <fragment-->
@@ -197,7 +219,22 @@
 
     <!-- Участники проекта -->
     <fragment
-        android:id="@+id/participantsFragment"
-        android:name="ru.iuturakulov.mybudget.ui.participants.ParticipantsFragment"
-        android:label="Participants" />
+        android:id="@+id/projectParticipantsFragment"
+        android:name="ru.iuturakulov.mybudget.ui.projects.participants.ProjectParticipantsFragment"
+        android:label="Project Participants" />
+
+    <!-- Добавить проект -->
+    <dialog
+        android:id="@+id/projectAcceptInviteFragment"
+        android:name="ru.iuturakulov.mybudget.ui.projects.join.ProjectAcceptInviteDialogFragment"
+        android:label="Project Accept Invite"
+        tools:layout="@layout/fragment_project_accept_invite" />
+
+    <!-- Пригласить в проект -->
+    <dialog
+        android:id="@+id/projectInviteFragment"
+        android:name="ru.iuturakulov.mybudget.ui.projects.join.ProjectInviteDialogFragment"
+        android:label="Project Invite"
+        tools:layout="@layout/fragment_project_invite" />
+
 </navigation>

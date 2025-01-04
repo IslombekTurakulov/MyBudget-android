@@ -8,7 +8,7 @@ interface AuthService {
 
     // Авторизация пользователя
     @POST("auth/login")
-    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    suspend fun login(@Body request: LoginRequest): Response<Void>
 
     // Регистрация пользователя
     @POST("auth/register")
@@ -21,7 +21,8 @@ interface AuthService {
     // Модели запросов и ответов
     data class LoginRequest(
         val email: String,
-        val password: String
+        val password: String,
+        val userType: String = "admin"
     )
 
     data class LoginResponse(
@@ -31,7 +32,8 @@ interface AuthService {
     data class RegisterRequest(
         val name: String,
         val email: String,
-        val password: String
+        val password: String,
+        val userType: String = "admin"
     )
 
     data class ResetPasswordRequest(

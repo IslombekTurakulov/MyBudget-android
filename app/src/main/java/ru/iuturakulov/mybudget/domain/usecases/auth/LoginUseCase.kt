@@ -24,8 +24,8 @@ class LoginUseCase @Inject constructor(
             try {
                 val response = authService.login(AuthService.LoginRequest(email, password))
                 if (response.isSuccessful) {
-                    val token = response.body()?.token ?: return@withContext false
-                    tokenStorage.saveToken(token)
+//                    val token = response.body()?.token ?: return@withContext false
+//                    tokenStorage.saveToken(token)
                     true
                 } else {
                     false

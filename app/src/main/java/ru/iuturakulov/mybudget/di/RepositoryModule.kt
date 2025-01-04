@@ -19,16 +19,18 @@ object RepositoryModule {
     @Singleton
     fun provideProjectRepository(
         projectDao: ProjectDao,
-        projectService: ProjectService
+        projectService: ProjectService,
+        transactionDao: TransactionDao,
     ): ProjectRepository {
-        return ProjectRepository(projectDao, projectService)
+        return ProjectRepository(projectDao, projectService, transactionDao)
     }
 
     @Provides
     @Singleton
     fun provideTransactionRepository(
+        projectService: ProjectService,
         transactionDao: TransactionDao
     ): TransactionRepository {
-        return TransactionRepository(transactionDao)
+        return TransactionRepository(transactionDao, projectService)
     }
 }

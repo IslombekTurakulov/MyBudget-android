@@ -1,17 +1,15 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emptyFlow
 import ru.iuturakulov.mybudget.data.local.daos.ProjectDao
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
-import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
-import ru.iuturakulov.mybudget.data.remote.ProjectDto
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import ru.iuturakulov.mybudget.domain.mappers.ProjectMapper
-import ru.iuturakulov.mybudget.domain.models.TransactionFilter
 import javax.inject.Inject
 
 class ProjectRepository @Inject constructor(
@@ -24,14 +22,16 @@ class ProjectRepository @Inject constructor(
     fun getProjectsFlow(): Flow<List<ProjectEntity>> = projectDao.getAllProjectsFlow()
 
     // Синхронизация данных с сервером
-    suspend fun syncProjects() {
+    suspend fun syncProjects(): Flow<List<ProjectEntity>> {
         try {
             val remoteProjects = projectService.fetchProjects()
             val entities = remoteProjects.map { ProjectMapper.dtoToEntity(it) }
             projectDao.insertProjects(entities) // Обновляем локальную базу
+            entities.asFlow()
         } catch (e: Exception) {
             throw Exception("Ошибка синхронизации данных: ${e.localizedMessage}")
         }
+        return emptyFlow()
     }
 
     // Добавление нового проекта
@@ -46,7 +46,7 @@ class ProjectRepository @Inject constructor(
     }
 
     // Удаление проекта
-    suspend fun deleteProject(projectId: Int) {
+    suspend fun deleteProject(projectId: String) {
         projectDao.deleteProject(projectId) // Локальное удаление
         try {
             projectService.deleteProject(projectId) // Удаление на сервере
@@ -58,7 +58,10 @@ class ProjectRepository @Inject constructor(
     // Обновление существующего проекта
     suspend fun updateProject(project: ProjectEntity) {
         try {
-            val updatedDto = projectService.updateProject(project.id, ProjectMapper.entityToDto(project)) // Обновление на сервере
+            val updatedDto = projectService.updateProject(
+                project.id,
+                ProjectMapper.entityToDto(project)
+            ) // Обновление на сервере
             val updatedEntity = ProjectMapper.dtoToEntity(updatedDto)
             projectDao.updateProject(updatedEntity) // Синхронизируем локально
         } catch (e: Exception) {
@@ -72,7 +75,7 @@ class ProjectRepository @Inject constructor(
     }
 
     // Загрузка проекта с транзакциями
-    suspend fun getProjectWithTransactions(projectId: Int): ProjectWithTransactions {
+    suspend fun getProjectWithTransactions(projectId: String): ProjectWithTransactions {
         val localProjectWithTransactions = projectDao.getProjectWithTransactions(projectId)
         if (localProjectWithTransactions != null) {
             return localProjectWithTransactions
@@ -103,4 +106,13 @@ class ProjectRepository @Inject constructor(
 //                    (filter.maxAmount == null || transaction.amount <= filter.maxAmount)
 //        }
 //    }
+
+    suspend fun getProjectByInviteCode(code: String): ProjectEntity {
+        val projectDto = projectService.getProjectByInviteCode(code)
+        return ProjectMapper.dtoToEntity(projectDto)
+    }
+
+    suspend fun addProjectLocally(project: ProjectEntity) {
+        projectDao.insertProject(project)
+    }
 }

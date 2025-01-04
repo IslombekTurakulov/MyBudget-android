@@ -7,7 +7,7 @@ class SyncProjectsUseCase @Inject constructor(
     private val repository: ProjectRepository
 ) {
 
-    suspend fun execute()  {
-        return repository.syncProjects()
+    suspend fun execute() {
+        // return repository.syncProjects()
     }
 }

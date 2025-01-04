@@ -26,7 +26,8 @@ class ProjectDetailsViewModel @Inject constructor(
     val uiState: StateFlow<UiState<ProjectWithTransactions>> = _uiState.asStateFlow()
 
     private val _filteredTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
-    val filteredTransactions: StateFlow<List<TransactionEntity>> = _filteredTransactions.asStateFlow()
+    val filteredTransactions: StateFlow<List<TransactionEntity>> =
+        _filteredTransactions.asStateFlow()
 
     private val _transactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val transactions: StateFlow<List<TransactionEntity>> = _transactions.asStateFlow()
@@ -40,7 +41,7 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Загрузка проекта с транзакциями.
      */
-    fun loadProjectDetails(projectId: Int) {
+    fun loadProjectDetails(projectId: String) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {
@@ -69,13 +70,14 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Добавление транзакции.
      */
-    fun addTransaction(projectId: Int, transaction: TransactionEntity) {
+    fun addTransaction(projectId: String, transaction: TransactionEntity) {
         viewModelScope.launch {
             try {
                 transactionRepository.addTransaction(projectId, transaction)
                 syncTransactions(projectId)
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Ошибка добавления транзакции: ${e.localizedMessage}")
+                _uiState.value =
+                    UiState.Error("Ошибка добавления транзакции: ${e.localizedMessage}")
             }
         }
     }
@@ -83,13 +85,14 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Обновление транзакции.
      */
-    fun updateTransaction(projectId: Int, transaction: TransactionEntity) {
+    fun updateTransaction(projectId: String, transaction: TransactionEntity) {
         viewModelScope.launch {
             try {
                 transactionRepository.updateTransaction(projectId, transaction)
                 syncTransactions(projectId)
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Ошибка добавления транзакции: ${e.localizedMessage}")
+                _uiState.value =
+                    UiState.Error("Ошибка добавления транзакции: ${e.localizedMessage}")
             }
         }
     }
@@ -97,7 +100,7 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Удаление транзакции.
      */
-    fun deleteTransaction(projectId: Int, transactionId: Int) {
+    fun deleteTransaction(projectId: String, transactionId: String) {
         viewModelScope.launch {
             try {
                 transactionRepository.deleteTransaction(projectId, transactionId)
@@ -111,7 +114,7 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Синхронизация транзакций с сервером.
      */
-    fun syncTransactions(projectId: Int) {
+    fun syncTransactions(projectId: String) {
         viewModelScope.launch {
             try {
                 transactionRepository.syncTransactions(projectId)
@@ -119,7 +122,8 @@ class ProjectDetailsViewModel @Inject constructor(
                 _uiState.value = UiState.Success(updatedProject)
                 _transactions.value = updatedProject.transactions
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Ошибка синхронизации транзакций: ${e.localizedMessage}")
+                _uiState.value =
+                    UiState.Error("Ошибка синхронизации транзакций: ${e.localizedMessage}")
             }
         }
     }
@@ -147,13 +151,14 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Синхронизация данных проекта.
      */
-    fun syncProjectDetails(projectId: Int) {
+    fun syncProjectDetails(projectId: String) {
         viewModelScope.launch {
             try {
                 projectRepository.syncProjects()
                 loadProjectDetails(projectId)
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Ошибка синхронизации проекта: ${e.localizedMessage}")
+                _uiState.value =
+                    UiState.Error("Ошибка синхронизации проекта: ${e.localizedMessage}")
             }
         }
     }
@@ -161,7 +166,7 @@ class ProjectDetailsViewModel @Inject constructor(
     /**
      * Удаление проекта.
      */
-    fun deleteProject(projectId: Int) {
+    fun deleteProject(projectId: String) {
         viewModelScope.launch {
             try {
                 projectRepository.deleteProject(projectId)

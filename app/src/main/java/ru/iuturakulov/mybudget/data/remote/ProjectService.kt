@@ -6,21 +6,22 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 
 data class ProjectDto(
-    val id: Int,
+    val id: String,
     val name: String,
     val description: String,
     val budgetLimit: Double,
     val amountSpent: Double,
-    val status: String,
+    val status: ProjectStatus,
     val createdDate: String,
     val lastModified: String
 )
 
 data class TransactionDto(
-    val id: Int,
-    val projectId: Int,
+    val id: String,
+    val projectId: String,
     val userId: String,
     val name: String,
     val category: String,
@@ -40,11 +41,11 @@ interface ProjectService {
 
     // Получение деталей проекта
     @GET("projects/{id}")
-    suspend fun fetchProjectDetails(@Path("id") projectId: Int): ProjectDto
+    suspend fun fetchProjectDetails(@Path("id") projectId: String): ProjectDto
 
     // Получение транзакций проекта
     @GET("projects/{id}/transactions")
-    suspend fun fetchTransactions(@Path("id") projectId: Int): List<TransactionDto>
+    suspend fun fetchTransactions(@Path("id") projectId: String): List<TransactionDto>
 
     // Добавление проекта
     @POST("projects")
@@ -52,30 +53,33 @@ interface ProjectService {
 
     // Обновление проекта
     @PUT("projects/{id}")
-    suspend fun updateProject(@Path("id") projectId: Int, @Body project: ProjectDto): ProjectDto
+    suspend fun updateProject(@Path("id") projectId: String, @Body project: ProjectDto): ProjectDto
+
+    @GET("projects/invite/{code}")
+    suspend fun getProjectByInviteCode(@Path("code") code: String): ProjectDto
 
     // Удаление проекта
     @DELETE("projects/{id}")
-    suspend fun deleteProject(@Path("id") projectId: Int)
+    suspend fun deleteProject(@Path("id") projectId: String)
 
     // Добавление транзакции в проект
     @POST("projects/{id}/transactions")
     suspend fun addTransaction(
-        @Path("id") projectId: Int,
+        @Path("id") projectId: String,
         @Body transaction: TransactionDto
     ): TransactionDto
 
     // Добавление транзакции в проект
     @POST("projects/{id}/transactions")
     suspend fun updateTransaction(
-        @Path("id") projectId: Int,
+        @Path("id") projectId: String,
         @Body transaction: TransactionDto
     ): TransactionDto
 
     // Удаление транзакции из проекта
     @DELETE("projects/{id}/transactions/{transactionId}")
     suspend fun deleteTransaction(
-        @Path("id") projectId: Int,
-        @Path("transactionId") transactionId: Int
+        @Path("id") projectId: String,
+        @Path("transactionId") transactionId: String
     )
 }

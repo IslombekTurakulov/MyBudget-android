@@ -32,10 +32,10 @@ interface ProjectDao {
     suspend fun updateProject(project: ProjectEntity)
 
     @Query("DELETE FROM projects WHERE id = :projectId")
-    suspend fun deleteProject(projectId: Int)
+    suspend fun deleteProject(projectId: String)
 
     // Новый метод для получения проекта с транзакциями
     @Transaction
     @Query("SELECT * FROM projects WHERE id = :projectId")
-    suspend fun getProjectWithTransactions(projectId: Int): ProjectWithTransactions?
+    suspend fun getProjectWithTransactions(projectId: String): ProjectWithTransactions?
 }

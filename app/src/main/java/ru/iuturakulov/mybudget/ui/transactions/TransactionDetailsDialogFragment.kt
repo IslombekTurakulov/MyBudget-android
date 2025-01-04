@@ -1,16 +1,13 @@
-package ru.iuturakulov.mybudget.ui.projects.details
+package ru.iuturakulov.mybudget.ui.transactions
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
@@ -18,6 +15,7 @@ import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction
 import ru.iuturakulov.mybudget.databinding.DialogIconPickerBinding
 import ru.iuturakulov.mybudget.databinding.DialogTransactionDetailsBinding
 import ru.iuturakulov.mybudget.domain.mappers.CategoryIconMapper
+import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
 
 @AndroidEntryPoint
 class TransactionDetailsDialogFragment : DialogFragment() {
@@ -61,7 +59,8 @@ class TransactionDetailsDialogFragment : DialogFragment() {
                 if (validateInput()) {
                     val updatedTransaction = trans.copy(
                         name = binding.etTransactionName.text.toString(),
-                        amount = binding.etTransactionAmount.text.toString().toDoubleOrNull() ?: trans.amount,
+                        amount = binding.etTransactionAmount.text.toString().toDoubleOrNull()
+                            ?: trans.amount,
                         category = binding.spinnerCategory.text.toString(),
                         categoryIcon = CategoryIconMapper.getIconForCategory(binding.spinnerCategory.text.toString()),
                         date = System.currentTimeMillis()
@@ -92,7 +91,8 @@ class TransactionDetailsDialogFragment : DialogFragment() {
 
     private fun setupCategorySpinner() {
         val categories = resources.getStringArray(R.array.transaction_categories)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
         binding.spinnerCategory.setAdapter(adapter)
 
         binding.spinnerCategory.setOnItemClickListener { _, _, position, _ ->

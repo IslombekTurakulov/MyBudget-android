@@ -21,10 +21,17 @@ import ru.iuturakulov.mybudget.databinding.DialogFilterTransactionsBinding
 import ru.iuturakulov.mybudget.databinding.FragmentProjectDetailsBinding
 import ru.iuturakulov.mybudget.domain.models.TransactionFilter
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment
+import ru.iuturakulov.mybudget.ui.transactions.TransactionAdapter
+import ru.iuturakulov.mybudget.ui.transactions.TransactionDetailsDialogFragment
 
 @AndroidEntryPoint
 class ProjectDetailsFragment :
     BaseFragment<FragmentProjectDetailsBinding>(R.layout.fragment_project_details) {
+
+    data class ProjectDetailsFragmentArgs(
+        val projectId: String
+    )
 
     private val viewModel: ProjectDetailsViewModel by viewModels()
     private val args: ProjectDetailsFragmentArgs by navArgs()
@@ -54,7 +61,9 @@ class ProjectDetailsFragment :
                     is UiState.Success -> state.data?.let { withTransactions ->
                         showProjectDetails(withTransactions)
                     }
+
                     is UiState.Error -> showError(state.message)
+                    is UiState.Idle -> {}
                 }
             }
         }
@@ -85,18 +94,22 @@ class ProjectDetailsFragment :
                         navigateToEditProject()
                         true
                     }
+
                     R.id.menuDelete -> {
                         confirmDeleteProject()
                         true
                     }
+
                     R.id.menuParticipants -> {
                         navigateToParticipants()
                         true
                     }
+
                     R.id.menuAnalytics -> {
                         navigateToAnalytics()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -138,13 +151,15 @@ class ProjectDetailsFragment :
     }
 
     private fun navigateToParticipants() {
-        val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(args.projectId)
-        findNavController().navigate(action)
+        // TODO: fix
+//        val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(args.projectId)
+//        findNavController().navigate(action)
     }
 
     private fun navigateToAnalytics() {
-        val action = ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
-        findNavController().navigate(action)
+        // TODO: fix
+//        val action = ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
+//        findNavController().navigate(action)
     }
 
     private fun showLoading() {
@@ -207,7 +222,7 @@ class ProjectDetailsFragment :
             .setTitle("Удалить транзакцию")
             .setMessage("Вы уверены, что хотите удалить эту транзакцию?")
             .setPositiveButton("Удалить") { _, _ ->
-                viewModel.deleteTransaction(args.projectId, transaction.id!!)
+                viewModel.deleteTransaction(args.projectId, transaction.id)
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -228,7 +243,8 @@ class ProjectDetailsFragment :
         dialogView.btnApplyFilters.setOnClickListener {
             val minAmount = dialogView.etMinAmount.text.toString().toDoubleOrNull()
             val maxAmount = dialogView.etMaxAmount.text.toString().toDoubleOrNull()
-            val selectedCategory = if (dialogView.spinnerCategory.selectedItem == "Все") null else dialogView.spinnerCategory.selectedItem.toString()
+            val selectedCategory =
+                if (dialogView.spinnerCategory.selectedItem == "Все") null else dialogView.spinnerCategory.selectedItem.toString()
 
             val filter = TransactionFilter(
                 category = selectedCategory,

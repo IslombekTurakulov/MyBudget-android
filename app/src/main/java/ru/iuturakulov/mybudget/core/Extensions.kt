@@ -1,5 +1,9 @@
 package ru.iuturakulov.mybudget.core
 
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 object Extensions {
 
     inline fun Boolean.ifTrue(action: () -> Unit): Boolean {
@@ -28,5 +32,11 @@ object Extensions {
     inline fun <T> T?.ifNotNull(action: (T) -> Unit): T? {
         this?.let(action)
         return this
+    }
+
+
+    fun Long.toIso8601Date(): String {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
+        return formatter.format(Instant.ofEpochMilli(this))
     }
 }

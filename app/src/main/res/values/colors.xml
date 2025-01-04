@@ -4,6 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bottom_nav_color">#9C27B0</color>
     <color name="green">#32CD32</color>
+    <color name="blue">#2196F3</color>
+    <color name="orange">#FF5722</color>
     <color name="red">#FF0000</color>
     <color name="gray">#808080</color>
 </resources>

@@ -47,6 +47,7 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
 
             when (state) {
                 is RegisterViewModel.RegisterState.Success -> {
+                    // TODO: показать экран кода подтверждения
                     Toast.makeText(
                         requireContext(),
                         "Регистрация успешна",

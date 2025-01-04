@@ -22,7 +22,6 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
     }
 
     override fun setupViews() {
-        // Имитируем загрузку и проверяем токен
         Handler(Looper.getMainLooper()).postDelayed({
             if (this::tokenStorage.isInitialized && tokenStorage.getToken() != null) {
                 findNavController().navigate(R.id.action_splash_to_projects)

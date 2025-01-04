@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    private const val BASE_URL = "https://localhost:8080/"
+    private const val BASE_URL = "http://localhost:8080/"
 
     // Получение Interceptor для авторизации
     private fun getAuthInterceptor(tokenStorage: TokenStorage): Interceptor {

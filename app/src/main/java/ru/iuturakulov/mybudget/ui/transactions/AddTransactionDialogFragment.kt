@@ -1,4 +1,4 @@
-package ru.iuturakulov.mybudget.ui.projects.details
+package ru.iuturakulov.mybudget.ui.transactions
 
 import android.R
 import android.os.Bundle
@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.parcel.Parcelize
 import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
-import ru.iuturakulov.mybudget.ui.projects.details.TransactionDetailsDialogFragment.Companion
+import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
+import java.util.UUID
 
 @AndroidEntryPoint
 class AddTransactionDialogFragment : DialogFragment() {
@@ -50,6 +50,9 @@ class AddTransactionDialogFragment : DialogFragment() {
             binding.btnSave.setOnClickListener {
                 if (validateInput()) {
                     val temporaryTransaction = TemporaryTransaction(
+                        // projectId-userId-timestamp.hashcode
+                        // TODO: подумать
+                        id = "${argument.projectId}-${argument.userId}-${UUID.randomUUID()}",
                         name = binding.etTransactionName.text.toString(),
                         amount = binding.etTransactionAmount.text.toString().toDouble(),
                         category = binding.spinnerCategory.text.toString(),
@@ -72,7 +75,8 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun setupCategorySpinner() {
         val categories = listOf("Еда", "Транспорт", "Развлечения", "Прочее")
-        val adapter = ArrayAdapter(requireContext(), R.layout.simple_dropdown_item_1line, categories)
+        val adapter =
+            ArrayAdapter(requireContext(), R.layout.simple_dropdown_item_1line, categories)
         binding.spinnerCategory.setAdapter(adapter)
 
         binding.spinnerCategory.setOnItemClickListener { _, _, position, _ ->
@@ -135,11 +139,11 @@ class AddTransactionDialogFragment : DialogFragment() {
 
         @kotlinx.parcelize.Parcelize
         data class AddTransactionArgs(
-            val projectId: Int,
+            val projectId: String,
             val userId: String,
-        ): Parcelable
+        ) : Parcelable
 
-        fun newInstance(projectId: Int, userId: String): AddTransactionDialogFragment {
+        fun newInstance(projectId: String, userId: String): AddTransactionDialogFragment {
             val fragment = AddTransactionDialogFragment()
             val args = Bundle()
             args.putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId, userId))

@@ -15,9 +15,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository
-import ru.iuturakulov.mybudget.domain.usecases.project.FetchProjectsUseCase
-import ru.iuturakulov.mybudget.domain.usecases.project.SyncProjectsUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,10 +28,12 @@ class ProjectListViewModel @Inject constructor(
     val uiState: StateFlow<UiState<List<ProjectEntity>>> = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
-    private val _filterStatus = MutableStateFlow("")
+    private val _filterStatus = MutableStateFlow(ProjectStatus.ALL)
     private val _projects = MutableStateFlow<List<ProjectEntity>>(emptyList())
     private val _syncEvent = MutableSharedFlow<Boolean>()
     val syncEvent: SharedFlow<Boolean> = _syncEvent
+    private val _inviteCodeEvent = MutableSharedFlow<UiState<String>>()
+    val inviteCodeEvent: SharedFlow<UiState<String>> = _inviteCodeEvent
 
     val filteredProjects: StateFlow<List<ProjectEntity>> = combine(
         _projects,
@@ -40,8 +41,11 @@ class ProjectListViewModel @Inject constructor(
         _filterStatus
     ) { projects, query, status ->
         projects.filter { project ->
-            (query.isEmpty() || project.name.contains(query, ignoreCase = true) || project.description.contains(query, ignoreCase = true)) &&
-                    (status.isEmpty() || project.status == status)
+            (query.isEmpty() || project.name.contains(
+                query,
+                ignoreCase = true
+            ) || project.description.contains(query, ignoreCase = true)) &&
+                    (status == ProjectStatus.ALL || status.canTransitionTo(project.status))
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -64,10 +68,14 @@ class ProjectListViewModel @Inject constructor(
 
     fun syncProjects() {
         viewModelScope.launch {
+            _uiState.value = UiState.Loading
             try {
-                projectRepository.syncProjects()
+                val projects = projectRepository.syncProjects().first()
+                _projects.value = projects
                 _syncEvent.emit(true)
+                _uiState.value = UiState.Success(projects)
             } catch (e: Exception) {
+                _uiState.value = UiState.Error(e.localizedMessage ?: "Ошибка загрузки")
                 _syncEvent.emit(false)
             }
         }
@@ -77,7 +85,19 @@ class ProjectListViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    fun setFilterStatus(status: String) {
+    fun setFilterStatus(status: ProjectStatus) {
         _filterStatus.value = status
+    }
+
+    fun joinProjectByCode(code: String) {
+        viewModelScope.launch {
+            try {
+                val project = projectRepository.getProjectByInviteCode(code)
+                projectRepository.addProjectLocally(project) // Сохраняем локально
+                _inviteCodeEvent.emit(UiState.Success("Вы успешно присоединились к проекту!"))
+            } catch (e: Exception) {
+                _inviteCodeEvent.emit(UiState.Error("Ошибка присоединения: ${e.localizedMessage}"))
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-package ru.iuturakulov.mybudget.ui.projects.details
+package ru.iuturakulov.mybudget.ui.transactions
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,8 +6,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.Extensions.toIso8601Date
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.databinding.ItemTransactionBinding
@@ -37,7 +35,8 @@ class TransactionAdapter(
             binding.apply {
                 tvTransactionName.text = transaction.name
                 tvTransactionCategory.text = transaction.category
-                tvTransactionUser.text = "От: ${transaction.projectId}" // Замените на имя пользователя
+                tvTransactionUser.text =
+                    "От: ${transaction.projectId}" // TODO: Заменить на имя пользователя
                 tvTransactionDate.text = transaction.date.toIso8601Date()
                 tvTransactionAmount.text = formatAmount(transaction.amount)
 
@@ -64,11 +63,17 @@ class TransactionAdapter(
     }
 
     class DiffCallback : DiffUtil.ItemCallback<TransactionEntity>() {
-        override fun areItemsTheSame(oldItem: TransactionEntity, newItem: TransactionEntity): Boolean {
+        override fun areItemsTheSame(
+            oldItem: TransactionEntity,
+            newItem: TransactionEntity
+        ): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: TransactionEntity, newItem: TransactionEntity): Boolean {
+        override fun areContentsTheSame(
+            oldItem: TransactionEntity,
+            newItem: TransactionEntity
+        ): Boolean {
             return oldItem == newItem
         }
     }

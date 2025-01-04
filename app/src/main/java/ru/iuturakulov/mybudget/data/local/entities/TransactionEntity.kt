@@ -20,8 +20,9 @@ import kotlinx.parcelize.Parcelize
     indices = [Index(value = ["projectId"])]
 )
 data class TransactionEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int?,
-    val projectId: Int,
+    // TODO: отказ от автогенерации String(projectId-userId-uuid)
+    @PrimaryKey(autoGenerate = false) val id: String,
+    val projectId: String,
     val name: String,
     val category: String,
     val categoryIcon: String, // URL или имя ресурса
@@ -48,8 +49,8 @@ data class TransactionEntity(
 
 @Parcelize
 data class TemporaryTransaction(
-    val id: Int? = null,
-    val projectId: Int,
+    val id: String,
+    val projectId: String,
     val name: String,
     val amount: Double,
     val category: String,
