@@ -37,4 +37,9 @@
         <item>✈️</item>
         <item>🏡</item>
     </string-array>
+
+    <string-array name="roles_list">
+        <item>Наблюдатель</item>
+        <item>Редактор</item>
+    </string-array>
 </resources>

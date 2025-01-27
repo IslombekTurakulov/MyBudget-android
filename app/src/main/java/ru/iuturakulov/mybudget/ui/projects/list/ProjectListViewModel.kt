@@ -93,7 +93,7 @@ class ProjectListViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val project = projectRepository.getProjectByInviteCode(code)
-                projectRepository.addProjectLocally(project) // Сохраняем локально
+                projectRepository.addProjectLocally(project)
                 _inviteCodeEvent.emit(UiState.Success("Вы успешно присоединились к проекту!"))
             } catch (e: Exception) {
                 _inviteCodeEvent.emit(UiState.Error("Ошибка присоединения: ${e.localizedMessage}"))

@@ -6,29 +6,8 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
-import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
-
-data class ProjectDto(
-    val id: String,
-    val name: String,
-    val description: String,
-    val budgetLimit: Double,
-    val amountSpent: Double,
-    val status: ProjectStatus,
-    val createdDate: String,
-    val lastModified: String
-)
-
-data class TransactionDto(
-    val id: String,
-    val projectId: String,
-    val userId: String,
-    val name: String,
-    val category: String,
-    val categoryIcon: String,
-    val amount: Double,
-    val date: Long
-)
+import ru.iuturakulov.mybudget.data.remote.dto.ProjectDto
+import ru.iuturakulov.mybudget.data.remote.dto.TransactionDto
 
 /**
  * Работа с сервером

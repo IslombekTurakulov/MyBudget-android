@@ -1,0 +1,44 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Поле для ввода Email -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email участника"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etParticipantEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Выбор роли участника -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Роль участника"
+        android:layout_marginTop="12dp"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/spinnerRole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Кнопка отправки приглашения -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSendInvite"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Отправить приглашение"
+        style="@style/Widget.Material3.Button.ElevatedButton" />
+</LinearLayout>

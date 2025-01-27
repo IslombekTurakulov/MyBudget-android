@@ -1,7 +1,7 @@
 package ru.iuturakulov.mybudget.data.mappers
 
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
-import ru.iuturakulov.mybudget.data.remote.TransactionDto
+import ru.iuturakulov.mybudget.data.remote.dto.TransactionDto
 
 object TransactionMapper {
 

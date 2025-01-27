@@ -18,22 +18,26 @@ interface AuthService {
     @POST("auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<Void>
 
-    // Модели запросов и ответов
+    // Смена пароля
+    @POST("auth/change-password")
+    suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Void>
+
     data class LoginRequest(
         val email: String,
         val password: String,
         val userType: String = "admin"
     )
 
-    data class LoginResponse(
-        val token: String
-    )
-
     data class RegisterRequest(
         val name: String,
         val email: String,
         val password: String,
-        val userType: String = "admin"
+    )
+
+    data class ChangePasswordRequest(
+        val email: String,
+        val oldPassword: String,
+        val newPassword: String,
     )
 
     data class ResetPasswordRequest(

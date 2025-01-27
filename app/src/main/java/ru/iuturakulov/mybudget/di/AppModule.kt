@@ -33,8 +33,6 @@ object AppModule {
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
-
-        // Создаем EncryptedSharedPreferences
         return EncryptedSharedPreferences.create(
             context,
             "secure_prefs",
@@ -49,4 +47,7 @@ object AppModule {
 
     @Provides
     fun provideTransactionDao(database: AppDatabase) = database.transactionDao()
+
+    @Provides
+    fun provideParticipantsDao(database: AppDatabase) = database.participantsDao()
 }

@@ -25,6 +25,6 @@ object CategoryIconMapper {
 //    </string-array>
 
     fun getIconForCategory(category: String): String {
-        return categoryToIconMap[category] ?: "ic_default"
+        return categoryToIconMap[category] ?: "\uD83D\uDE0A"
     }
 }

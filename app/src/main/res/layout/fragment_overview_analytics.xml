@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- AppBar для заголовка и действий -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Общая аналитика"
+            app:titleCentered="true"
+            app:menu="@menu/analytics_menu" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Основное содержимое с SwipeRefreshLayout -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Категории -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Распределение по категориям"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
+
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/categoryPieChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Периоды -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Распределение по периодам"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/periodBarChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Сравнение проектов -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Сравнение проектов"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/projectComparisonChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp" />
+            </LinearLayout>
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Прогресс-бар -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

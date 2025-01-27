@@ -77,7 +77,7 @@
     <!-- Экран восстановления пароля -->
     <fragment
         android:id="@+id/resetPasswordFragment"
-        android:name="ru.iuturakulov.mybudget.ui.reset.ResetPasswordFragment"
+        android:name="ru.iuturakulov.mybudget.ui.resetPassword.ResetPasswordFragment"
         android:label="Reset Password"
         tools:layout="@layout/fragment_reset_password">
         <action
@@ -151,10 +151,6 @@
             app:destination="@id/addTransactionFragment" />
 
         <action
-            android:id="@+id/action_project_to_invite"
-            app:destination="@id/projectAcceptInviteFragment" />
-
-        <action
             android:id="@+id/action_transactions_to_details"
             app:destination="@id/transactionDetailsFragment" />
 
@@ -168,11 +164,11 @@
 
         <action
             android:id="@+id/action_details_to_analytics"
-            app:destination="@id/analyticsFragment" />
+            app:destination="@id/projectAnalyticsFragment" />
 
         <argument
             android:name="projectId"
-            app:argType="integer" />
+            app:argType="string" />
     </fragment>
 
     <dialog
@@ -194,18 +190,32 @@
         android:label="Transaction Details"
         tools:layout="@layout/dialog_transaction_details"></dialog>
 
+    <fragment
+        android:id="@+id/projectAnalyticsFragment"
+        android:name="ru.iuturakulov.mybudget.ui.analytics.ProjectAnalyticsFragment"
+        android:label="Project Analytics">
+
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
 
     <!-- Аналитика -->
     <fragment
         android:id="@+id/analyticsFragment"
-        android:name="ru.iuturakulov.mybudget.ui.analytics.AnalyticsFragment"
-        android:label="Analytics" />
+        android:name="ru.iuturakulov.mybudget.ui.analytics.OverviewAnalyticsFragment"
+        android:label="Общая аналитика">
+        <action
+            android:id="@+id/action_analytics_to_settings"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 
-    <!--    &lt;!&ndash; Настройки &ndash;&gt;-->
-    <!--    <fragment-->
-    <!--        android:id="@+id/settingsFragment"-->
-    <!--        android:name="ru.iuturakulov.mybudget.ui.settings.SettingsFragment"-->
-    <!--        android:label="Settings" />-->
+    <!-- Настройки -->
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="ru.iuturakulov.mybudget.ui.settings.SettingsFragment"
+        android:label="Settings" />
 
     <!--    &lt;!&ndash; Профиль &ndash;&gt;-->
     <!--    <fragment-->
@@ -221,20 +231,12 @@
     <fragment
         android:id="@+id/projectParticipantsFragment"
         android:name="ru.iuturakulov.mybudget.ui.projects.participants.ProjectParticipantsFragment"
-        android:label="Project Participants" />
+        android:label="Project Participants">
 
-    <!-- Добавить проект -->
-    <dialog
-        android:id="@+id/projectAcceptInviteFragment"
-        android:name="ru.iuturakulov.mybudget.ui.projects.join.ProjectAcceptInviteDialogFragment"
-        android:label="Project Accept Invite"
-        tools:layout="@layout/fragment_project_accept_invite" />
-
-    <!-- Пригласить в проект -->
-    <dialog
-        android:id="@+id/projectInviteFragment"
-        android:name="ru.iuturakulov.mybudget.ui.projects.join.ProjectInviteDialogFragment"
-        android:label="Project Invite"
-        tools:layout="@layout/fragment_project_invite" />
+        <argument
+            android:name="projectId"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
 
 </navigation>

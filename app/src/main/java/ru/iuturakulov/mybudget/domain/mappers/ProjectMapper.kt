@@ -1,7 +1,7 @@
 package ru.iuturakulov.mybudget.domain.mappers
 
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
-import ru.iuturakulov.mybudget.data.remote.ProjectDto
+import ru.iuturakulov.mybudget.data.remote.dto.ProjectDto
 
 object ProjectMapper {
 

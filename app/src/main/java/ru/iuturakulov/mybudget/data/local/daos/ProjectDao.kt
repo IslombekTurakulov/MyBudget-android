@@ -34,7 +34,6 @@ interface ProjectDao {
     @Query("DELETE FROM projects WHERE id = :projectId")
     suspend fun deleteProject(projectId: String)
 
-    // Новый метод для получения проекта с транзакциями
     @Transaction
     @Query("SELECT * FROM projects WHERE id = :projectId")
     suspend fun getProjectWithTransactions(projectId: String): ProjectWithTransactions?

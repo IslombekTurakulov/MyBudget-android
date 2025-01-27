@@ -1,4 +1,4 @@
-package ru.iuturakulov.mybudget.ui.reset
+package ru.iuturakulov.mybudget.ui.resetPassword
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -16,8 +16,8 @@ enum class ProjectStatus(val type: String) {
             PENDING to listOf(ACTIVE, CANCELLED),
             ACTIVE to listOf(COMPLETED, CANCELLED),
             ALL to listOf(ACTIVE, PENDING, COMPLETED, CANCELLED),
-            COMPLETED to emptyList<ProjectStatus>(),
-            CANCELLED to emptyList<ProjectStatus>()
+            COMPLETED to emptyList(),
+            CANCELLED to emptyList()
         )
         return allowedTransitions[this]?.contains(newStatus) == true
     }

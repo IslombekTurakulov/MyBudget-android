@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Поле ввода имени участника -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Имя участника"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etParticipantName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Поле ввода email -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email участника"
+            android:layout_marginTop="12dp"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etParticipantEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Выбор роли участника -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Роль участника"
+            android:layout_marginTop="12dp"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/spinnerRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Кнопки -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="24dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Сохранить"
+                style="@style/Widget.Material3.Button.ElevatedButton" />
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Удалить"
+                style="@style/Widget.Material3.Button.ElevatedButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Отмена"
+                android:layout_marginStart="16dp"
+                style="@style/Widget.Material3.Button.TextButton" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

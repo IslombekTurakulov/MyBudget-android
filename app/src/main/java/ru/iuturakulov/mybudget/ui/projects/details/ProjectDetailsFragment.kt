@@ -152,7 +152,7 @@ class ProjectDetailsFragment :
 
     private fun navigateToParticipants() {
         // TODO: fix
-//        val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(args.projectId)
+//        val action = ProjectDetailsFragmentDirectionsions.actionDetailsToParticipants(args.projectId)
 //        findNavController().navigate(action)
     }
 

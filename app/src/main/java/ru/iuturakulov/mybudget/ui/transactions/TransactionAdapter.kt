@@ -6,7 +6,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import ru.iuturakulov.mybudget.core.Extensions.toIso8601Date
+import ru.iuturakulov.mybudget.core.DateTimeExtension.toIso8601Date
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.databinding.ItemTransactionBinding
 import kotlin.math.absoluteValue

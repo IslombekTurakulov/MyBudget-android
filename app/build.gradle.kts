@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.dagger.hilt)
     id("kotlin-parcelize")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 
@@ -81,7 +82,7 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
 
     // MPAndroidChart для диаграмм
-    // implementation(libs.mpandroidchart)
+    implementation(libs.mpandroidchart)
 
     // OpenCSV для экспорта в CSV
     implementation(libs.opencsv)
