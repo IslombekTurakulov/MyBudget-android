@@ -94,6 +94,12 @@ dependencies {
 
     implementation(libs.timber)
 
+//    implementation("com.google.mlkit:text-recognition:16.0.0")
+//    implementation(libs.tess.two)
+//    implementation("org.tensorflow:tensorflow-lite:2.11.0")
+//    implementation("org.tensorflow:tensorflow-lite-gpu:2.11.0") // GPU поддержка для ускорения
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+//    implementation(libs.tesseract.platform)
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

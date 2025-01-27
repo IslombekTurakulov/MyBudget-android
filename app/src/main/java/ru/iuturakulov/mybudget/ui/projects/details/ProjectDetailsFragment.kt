@@ -29,10 +29,6 @@ import ru.iuturakulov.mybudget.ui.transactions.TransactionDetailsDialogFragment
 class ProjectDetailsFragment :
     BaseFragment<FragmentProjectDetailsBinding>(R.layout.fragment_project_details) {
 
-    data class ProjectDetailsFragmentArgs(
-        val projectId: String
-    )
-
     private val viewModel: ProjectDetailsViewModel by viewModels()
     private val args: ProjectDetailsFragmentArgs by navArgs()
     private lateinit var transactionAdapter: TransactionAdapter
@@ -199,7 +195,7 @@ class ProjectDetailsFragment :
     }
 
     private fun showAddTransactionDialog() {
-        val dialog = AddTransactionDialogFragment.newInstance(args.projectId, "mockUserId")
+        val dialog = AddTransactionDialogFragment.newInstance(args.projectId, args.userId)
         dialog.setOnTransactionAdded { transaction ->
             viewModel.addTransaction(args.projectId, transaction.toEntity())
         }

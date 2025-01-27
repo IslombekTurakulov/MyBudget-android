@@ -1,11 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="?attr/colorSurface">
+
+    <!-- Превью изображения -->
+    <ImageView
+        android:id="@+id/ivReceiptPreview"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="Превью изображения" />
+
+    <!-- Распознанная сумма -->
+    <TextView
+        android:id="@+id/tvRecognizedAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Распознанная сумма: 0.0"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_marginBottom="8dp" />
 
     <!-- Название транзакции -->
     <com.google.android.material.textfield.TextInputLayout
@@ -35,6 +53,18 @@
             android:layout_height="wrap_content"
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Кнопка "Сканировать чек" -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnScanReceipt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сканировать чек"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_marginTop="16dp"
+            android:icon="@drawable/baseline_camera_alt_24"
+            app:iconGravity="start" />
+
 
     <!-- Категория и иконка -->
     <LinearLayout

@@ -9,7 +9,8 @@
     <color name="red">#FF0000</color>
     <color name="gray">#808080</color>
 
-    <color name="networkStatusBackground">#FFCCBC</color> <!-- Светло-красный фон -->
+    <color name="networkStatusBackgroundOff">#FFCCBC</color> <!-- Светло-красный фон -->
+    <color name="networkStatusBackgroundOn">#C5FF98</color> <!-- Светло-красный фон -->
     <color name="networkStatusIconTintOff">#D32F2F</color> <!-- Красный цвет для иконки -->
-    <color name="networkStatusIconTintOn">#48D32F</color> <!-- Красный цвет для иконки -->
+    <color name="networkStatusIconTintOn">#136801</color> <!-- Красный цвет для иконки -->
 </resources>

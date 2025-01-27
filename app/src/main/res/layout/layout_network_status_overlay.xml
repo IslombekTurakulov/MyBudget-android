@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="@color/networkStatusBackground"
+    android:background="@color/networkStatusBackgroundOff"
     android:padding="8dp"
     android:elevation="4dp"
     android:visibility="gone"

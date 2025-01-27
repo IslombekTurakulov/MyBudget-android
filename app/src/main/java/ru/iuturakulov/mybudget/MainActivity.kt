@@ -88,6 +88,7 @@ class MainActivity : AppCompatActivity() {
         val ivStatusIcon = networkStatusOverlay.ivStatusIcon
 
         if (isConnected) {
+            networkStatusOverlay.root.setBackgroundColor(ContextCompat.getColor(this, R.color.networkStatusBackgroundOn))
             tvStatus.text = getString(R.string.connected)
             tvStatus.setTextColor(ContextCompat.getColor(this, R.color.networkStatusIconTintOn))
             ivStatusIcon.setImageResource(R.drawable.baseline_wifi_24)
@@ -103,6 +104,7 @@ class MainActivity : AppCompatActivity() {
                 hideOverlay(networkStatusOverlay.root)
             }
         } else {
+            networkStatusOverlay.root.setBackgroundColor(ContextCompat.getColor(this, R.color.networkStatusBackgroundOff))
             tvStatus.text = getString(R.string.no_internet_connection)
             tvStatus.setTextColor(ContextCompat.getColor(this, R.color.networkStatusIconTintOff))
             ivStatusIcon.setImageResource(R.drawable.baseline_wifi_off_24)

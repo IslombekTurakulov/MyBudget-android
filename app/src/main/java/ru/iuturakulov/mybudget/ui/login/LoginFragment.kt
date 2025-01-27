@@ -10,6 +10,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.databinding.FragmentLoginBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment
 
 @AndroidEntryPoint
 class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login) {
@@ -22,6 +23,10 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login
 
     override fun setupViews() {
         binding.btnLogin.setOnClickListener {
+            // TODO: remove
+//            val dialog = AddTransactionDialogFragment.newInstance("adasda", "sadsadas")
+//            dialog.show(childFragmentManager, "AddTransactionDialog")
+//            return@setOnClickListener
             val email = binding.etEmail.text?.toString().orEmpty().trim()
             val password = binding.etPassword.text?.toString().orEmpty().trim()
             val emailPattern = Patterns.EMAIL_ADDRESS
