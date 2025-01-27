@@ -30,4 +30,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/menu_main" />
 
+    <!-- Оверлей состояния сети -->
+    <include
+        layout="@layout/layout_network_status_overlay"
+        android:id="@+id/networkStatusOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

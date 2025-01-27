@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@color/networkStatusBackground"
+    android:padding="8dp"
+    android:elevation="4dp"
+    android:visibility="gone"
+    android:gravity="center_vertical"
+    tools:visibility="visible">
+
+    <ImageView
+        android:id="@+id/ivStatusIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/baseline_wifi_off_24"
+        android:contentDescription="@string/network_status_icon"
+        app:tint="@color/networkStatusIconTintOff" />
+
+    <TextView
+        android:id="@+id/tvNetworkStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:text="@string/no_internet_connection"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="@color/networkStatusIconTintOff" />
+</LinearLayout>
