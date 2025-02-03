@@ -2,7 +2,9 @@ package ru.iuturakulov.mybudget.data.remote
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface AuthService {
 
@@ -15,8 +17,8 @@ interface AuthService {
     suspend fun register(@Body request: RegisterRequest): Response<Void>
 
     // Восстановление пароля
-    @POST("auth/reset-password")
-    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<Void>
+    @GET("auth/reset-password")
+    suspend fun resetPassword(@Query("email") email: String): Response<Void>
 
     // Смена пароля
     @POST("auth/change-password")

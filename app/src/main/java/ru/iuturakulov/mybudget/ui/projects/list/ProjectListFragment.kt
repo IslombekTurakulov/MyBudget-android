@@ -23,6 +23,7 @@ import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.databinding.DialogFilterBinding
 import ru.iuturakulov.mybudget.databinding.FragmentProjectListBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import ru.iuturakulov.mybudget.ui.projects.create.CreateProjectFragment
 
 @AndroidEntryPoint
 class ProjectListFragment :
@@ -60,7 +61,8 @@ class ProjectListFragment :
         }
 
         binding.fabAddProject.setOnClickListener {
-            findNavController().navigate(R.id.action_projects_to_create)
+            val createProjectBottomSheet = CreateProjectFragment()
+            createProjectBottomSheet.show(this.requireActivity().supportFragmentManager, "CreateProjectFragment")
         }
 
         binding.fabFilterProjects.setOnClickListener {

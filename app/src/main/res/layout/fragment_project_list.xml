@@ -83,7 +83,8 @@
                 android:layout_height="match_parent"
                 android:padding="8dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_project" />
+                tools:listitem="@layout/item_project"
+                tools:itemCount="1"/>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <!-- Кнопка добавления проекта -->

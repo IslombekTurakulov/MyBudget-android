@@ -54,6 +54,22 @@
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Дата и тип транзакции"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etTransactionDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
     <!-- Кнопка "Сканировать чек" -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnScanReceipt"
@@ -130,3 +146,6 @@
             android:layout_marginStart="16dp" />
     </LinearLayout>
 </LinearLayout>
+
+
+

@@ -7,13 +7,13 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/navigation_analytics"
+        android:id="@+id/analyticsFragment"
         android:icon="@drawable/outline_analytics_24"
         android:title="Аналитика"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/navigation_settings"
+        android:id="@+id/settingsFragment"
         android:icon="@drawable/outline_settings_24"
         android:title="Настройки"
         app:showAsAction="ifRoom" />

@@ -12,12 +12,12 @@ import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.databinding.FragmentProjectCreateBinding
-import ru.iuturakulov.mybudget.ui.BaseFragment
+import ru.iuturakulov.mybudget.ui.BaseBottomSheetDialogFragment
 import java.util.UUID
 
 @AndroidEntryPoint
 class CreateProjectFragment :
-    BaseFragment<FragmentProjectCreateBinding>(R.layout.fragment_project_create) {
+    BaseBottomSheetDialogFragment<FragmentProjectCreateBinding>(R.layout.fragment_project_create) {
 
     private val viewModel: CreateProjectViewModel by viewModels()
 
@@ -31,7 +31,7 @@ class CreateProjectFragment :
 
     private fun setupListeners() {
         binding.btnCancel.setOnClickListener {
-            findNavController().navigateUp()
+            dismiss()
         }
 
         binding.btnCreate.setOnClickListener {
@@ -92,7 +92,7 @@ class CreateProjectFragment :
 
     private fun handleSuccess() {
         binding.progressBar.isVisible = false
-        findNavController().navigateUp()
+        dismiss()
     }
 
     private fun showError(message: String) {

@@ -22,7 +22,7 @@ class ResetPasswordViewModel @Inject constructor(
         _resetPasswordState.value = ResetPasswordState.Loading
         viewModelScope.launch {
             try {
-                val response = authService.resetPassword(AuthService.ResetPasswordRequest(email))
+                val response = authService.resetPassword(email)
                 if (response.isSuccessful) {
                     _resetPasswordState.value = ResetPasswordState.Success
                 } else {
