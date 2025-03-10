@@ -14,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -35,10 +36,12 @@ class ProjectListFragment :
     override fun getViewBinding(view: View): FragmentProjectListBinding =
         FragmentProjectListBinding.bind(view)
 
+    @OptIn(FlowPreview::class)
     override fun setupViews() {
         adapter = ProjectAdapter { project ->
-//            val action = ProjectListFragmentDirections.actionProjectsToDetails(project.id)
-//            findNavController().navigate(action)
+            val action =
+                ProjectListFragmentDirections.actionProjectsToDetails(projectId = project.id)
+            findNavController().navigate(action)
         }
         setupToolbar()
         binding.recyclerViewProjects.adapter = adapter
@@ -62,7 +65,10 @@ class ProjectListFragment :
 
         binding.fabAddProject.setOnClickListener {
             val createProjectBottomSheet = CreateProjectFragment()
-            createProjectBottomSheet.show(this.requireActivity().supportFragmentManager, "CreateProjectFragment")
+            createProjectBottomSheet.show(
+                this.requireActivity().supportFragmentManager,
+                "CreateProjectFragment"
+            )
         }
 
         binding.fabFilterProjects.setOnClickListener {

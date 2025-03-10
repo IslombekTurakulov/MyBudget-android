@@ -5,12 +5,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import ru.iuturakulov.mybudget.auth.TokenStorage
-import ru.iuturakulov.mybudget.data.remote.AuthService
+import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository
 import ru.iuturakulov.mybudget.domain.repositories.TransactionRepository
-import ru.iuturakulov.mybudget.domain.usecases.AddTransactionUseCase
-import ru.iuturakulov.mybudget.domain.usecases.project.FetchProjectsUseCase
 import ru.iuturakulov.mybudget.domain.usecases.auth.LoginUseCase
+import ru.iuturakulov.mybudget.domain.usecases.project.FetchProjectsUseCase
 import ru.iuturakulov.mybudget.domain.usecases.project.SyncProjectsUseCase
 
 @Module
@@ -29,13 +28,6 @@ object UseCaseModule {
         projectRepository: ProjectRepository
     ): SyncProjectsUseCase {
         return SyncProjectsUseCase(projectRepository)
-    }
-
-    @Provides
-    fun provideAddTransactionUseCase(
-        transactionRepository: TransactionRepository
-    ): AddTransactionUseCase {
-        return AddTransactionUseCase(transactionRepository)
     }
 
     @Provides

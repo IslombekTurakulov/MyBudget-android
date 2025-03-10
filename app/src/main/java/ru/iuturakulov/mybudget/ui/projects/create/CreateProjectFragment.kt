@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
@@ -47,8 +46,8 @@ class CreateProjectFragment :
                     budgetLimit = budgetLimit,
                     amountSpent = 0.0,
                     status = ProjectStatus.ACTIVE,
-                    createdDate = System.currentTimeMillis().toString(),
-                    lastModified = System.currentTimeMillis().toString()
+                    createdDate = System.currentTimeMillis(),
+                    lastModified = System.currentTimeMillis()
                 )
 
                 viewModel.createProject(project)

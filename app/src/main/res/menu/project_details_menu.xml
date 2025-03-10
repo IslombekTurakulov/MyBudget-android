@@ -14,7 +14,7 @@
         android:id="@+id/menuDelete"
         android:icon="@drawable/baseline_delete_forever_24"
         android:title="Удалить"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menuParticipants"

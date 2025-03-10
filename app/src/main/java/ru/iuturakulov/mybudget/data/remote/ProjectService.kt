@@ -1,5 +1,6 @@
 package ru.iuturakulov.mybudget.data.remote
 
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -16,26 +17,29 @@ interface ProjectService {
 
     // Получение списка проектов
     @GET("projects")
-    suspend fun fetchProjects(): List<ProjectDto>
+    suspend fun fetchProjects(): Response<List<ProjectDto>>
 
     // Получение деталей проекта
     @GET("projects/{id}")
-    suspend fun fetchProjectDetails(@Path("id") projectId: String): ProjectDto
+    suspend fun fetchProjectDetails(@Path("id") projectId: String): Response<ProjectDto>
 
     // Получение транзакций проекта
     @GET("projects/{id}/transactions")
-    suspend fun fetchTransactions(@Path("id") projectId: String): List<TransactionDto>
+    suspend fun fetchTransactions(@Path("id") projectId: String): Response<List<TransactionDto>>
 
     // Добавление проекта
     @POST("projects")
-    suspend fun addProject(@Body project: ProjectDto)
+    suspend fun addProject(@Body project: ProjectDto): Response<ProjectDto>
 
     // Обновление проекта
     @PUT("projects/{id}")
-    suspend fun updateProject(@Path("id") projectId: String, @Body project: ProjectDto): ProjectDto
+    suspend fun updateProject(
+        @Path("id") projectId: String,
+        @Body project: ProjectDto
+    ): Response<ProjectDto>
 
     @GET("projects/invite/{code}")
-    suspend fun getProjectByInviteCode(@Path("code") code: String): ProjectDto
+    suspend fun getProjectByInviteCode(@Path("code") code: String): Response<ProjectDto>
 
     // Удаление проекта
     @DELETE("projects/{id}")
@@ -46,14 +50,14 @@ interface ProjectService {
     suspend fun addTransaction(
         @Path("id") projectId: String,
         @Body transaction: TransactionDto
-    ): TransactionDto
+    ): Response<TransactionDto>
 
     // Добавление транзакции в проект
     @POST("projects/{id}/transactions")
     suspend fun updateTransaction(
         @Path("id") projectId: String,
         @Body transaction: TransactionDto
-    ): TransactionDto
+    ): Response<TransactionDto>
 
     // Удаление транзакции из проекта
     @DELETE("projects/{id}/transactions/{transactionId}")

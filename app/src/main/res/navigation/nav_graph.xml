@@ -169,10 +169,6 @@
         <argument
             android:name="projectId"
             app:argType="string" />
-
-        <argument
-            android:name="userId"
-            app:argType="string" />
     </fragment>
 
     <dialog

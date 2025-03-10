@@ -7,7 +7,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.NetworkErrorHandler
-import ru.iuturakulov.mybudget.data.remote.AuthService
+import ru.iuturakulov.mybudget.data.remote.auth.AuthService
+import ru.iuturakulov.mybudget.data.remote.auth.ChangePasswordRequest
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,7 +24,7 @@ class ChangePasswordViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val response = authService.changePassword(
-                    AuthService.ChangePasswordRequest(
+                    ChangePasswordRequest(
                         email = email,
                         oldPassword = oldPassword,
                         newPassword = newPassword,

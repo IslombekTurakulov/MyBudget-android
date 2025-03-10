@@ -19,15 +19,15 @@ class TransactionRepository @Inject constructor(
 
     // Добавление транзакции
     suspend fun addTransaction(projectId: String, transaction: TransactionEntity) {
-        transactionDao.insertTransaction(transaction) // Сохраняем локально
         try {
             val dto = TransactionMapper.entityToDto(transaction)
-            val response = projectService.addTransaction(projectId, dto)
+            val response = projectService.addTransaction(projectId, dto).body()
+
+            requireNotNull(response)
+
             val updatedTransaction = TransactionMapper.dtoToEntity(response)
-            transactionDao.updateTransaction(updatedTransaction) // Обновляем локальный кэш
+            transactionDao.insertTransaction(updatedTransaction)
         } catch (e: Exception) {
-            transaction.id?.let { tr -> transactionDao.deleteTransaction(tr) }
-            // Откат изменений
             throw Exception("Ошибка добавления транзакции: ${e.localizedMessage}")
         }
     }
@@ -36,7 +36,10 @@ class TransactionRepository @Inject constructor(
     suspend fun updateTransaction(projectId: String, transaction: TransactionEntity) {
         try {
             val dto = TransactionMapper.entityToDto(transaction)
-            val response = projectService.updateTransaction(projectId, dto)
+            val response = projectService.updateTransaction(projectId, dto).body()
+
+            requireNotNull(response)
+
             val updatedTransaction = TransactionMapper.dtoToEntity(response)
             transactionDao.updateTransaction(updatedTransaction) // Обновляем локальный кэш
         } catch (e: Exception) {
@@ -59,7 +62,10 @@ class TransactionRepository @Inject constructor(
     // Синхронизация транзакций с сервером
     suspend fun syncTransactions(projectId: String) {
         try {
-            val remoteTransactions = projectService.fetchTransactions(projectId)
+            val remoteTransactions = projectService.fetchTransactions(projectId).body()
+
+            requireNotNull(remoteTransactions)
+
             val entities = remoteTransactions.map { TransactionMapper.dtoToEntity(it) }
 
             // Очистка локального кэша и обновление из сервера

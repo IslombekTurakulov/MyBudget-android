@@ -83,7 +83,6 @@ class ProjectDetailsFragment :
             setNavigationOnClickListener {
                 findNavController().navigateUp()
             }
-            inflateMenu(R.menu.project_details_menu)
             setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.menuEdit -> {
@@ -147,15 +146,13 @@ class ProjectDetailsFragment :
     }
 
     private fun navigateToParticipants() {
-        // TODO: fix
-//        val action = ProjectDetailsFragmentDirectionsions.actionDetailsToParticipants(args.projectId)
-//        findNavController().navigate(action)
+        val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(args.projectId)
+        findNavController().navigate(action)
     }
 
     private fun navigateToAnalytics() {
-        // TODO: fix
-//        val action = ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
-//        findNavController().navigate(action)
+        val action = ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
+        findNavController().navigate(action)
     }
 
     private fun showLoading() {
@@ -166,7 +163,11 @@ class ProjectDetailsFragment :
 
     private fun showProjectDetails(project: ProjectWithTransactions) {
         binding.progressBarTransactions.isVisible = false
+        binding.tvEmptyTransactions.isVisible = false
+        binding.tvEmptyTransactions.text = ""
         binding.rvTransactions.isVisible = true
+
+        binding.toolbar.subtitle = project.project.name
 
         binding.tvProjectBudget.text = "Бюджет: ${project.project.budgetLimit} ₽"
         binding.tvProjectSpent.text = "Потрачено: ${project.project.amountSpent} ₽"
@@ -180,7 +181,7 @@ class ProjectDetailsFragment :
         binding.progressBarTransactions.isVisible = false
         binding.rvTransactions.isVisible = false
         binding.tvEmptyTransactions.isVisible = true
-        binding.tvEmptyTransactions.text = "Ошибка: $message"
+        binding.tvEmptyTransactions.text = message
     }
 
     private fun updateTransactions(transactions: List<TransactionEntity>) {
@@ -195,7 +196,7 @@ class ProjectDetailsFragment :
     }
 
     private fun showAddTransactionDialog() {
-        val dialog = AddTransactionDialogFragment.newInstance(args.projectId, args.userId)
+        val dialog = AddTransactionDialogFragment.newInstance(args.projectId)
         dialog.setOnTransactionAdded { transaction ->
             viewModel.addTransaction(args.projectId, transaction.toEntity())
         }

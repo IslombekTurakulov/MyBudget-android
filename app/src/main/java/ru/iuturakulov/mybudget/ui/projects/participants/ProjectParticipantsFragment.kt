@@ -115,7 +115,7 @@ class ProjectParticipantsFragment :
     private fun showError(message: String) {
         binding.progressBar.isVisible = false
         binding.tvEmptyParticipants.isVisible = true
-        binding.tvEmptyParticipants.text = "Ошибка: $message"
+        binding.tvEmptyParticipants.text = "$message"
     }
 
     private fun showAddParticipantDialog() {

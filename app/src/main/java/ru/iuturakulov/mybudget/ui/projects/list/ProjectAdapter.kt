@@ -31,7 +31,7 @@ class ProjectAdapter(
 
             // Описание проекта
             binding.tvProjectDescription.text =
-                project.description.ifBlank { "Описание отсутствует" }
+                project.description?.ifBlank { "Описание отсутствует" }
 
             // Финансовые данные
             binding.tvProjectBudget.text = "Бюджет: ${project.budgetLimit} ₽"

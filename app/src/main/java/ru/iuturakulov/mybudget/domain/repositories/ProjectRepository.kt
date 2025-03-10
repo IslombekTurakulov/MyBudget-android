@@ -1,8 +1,9 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import ru.iuturakulov.mybudget.data.local.daos.ProjectDao
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
@@ -19,28 +20,37 @@ class ProjectRepository @Inject constructor(
 ) {
 
     // Получение всех проектов в режиме Flow
-    fun getProjectsFlow(): Flow<List<ProjectEntity>> = projectDao.getAllProjectsFlow()
+    fun getProjectsFlow(): Flow<List<ProjectEntity>> {
+        return projectDao.getAllProjectsFlow()
+    }
 
     // Синхронизация данных с сервером
-    suspend fun syncProjects(): Flow<List<ProjectEntity>> {
+    suspend fun syncProjects(): Flow<List<ProjectEntity>> = flow {
         try {
-            val remoteProjects = projectService.fetchProjects()
-            val entities = remoteProjects.map { ProjectMapper.dtoToEntity(it) }
-            projectDao.insertProjects(entities) // Обновляем локальную базу
-            entities.asFlow()
+            val response = projectService.fetchProjects()
+            if (response.isSuccessful) {
+                val remoteProjects =
+                    response.body()?.map { ProjectMapper.dtoToEntity(it) } ?: emptyList()
+                projectDao.insertProjects(remoteProjects) // Обновляем локальную базу
+                emit(remoteProjects) // Отправляем результат в поток
+            } else {
+                throw Exception("Ошибка загрузки проектов: ${response.code()} ${response.message()}")
+            }
         } catch (e: Exception) {
             throw Exception("Ошибка синхронизации данных: ${e.localizedMessage}")
         }
-        return emptyFlow()
-    }
+    }.flowOn(Dispatchers.IO) // Перенос выполнения в IO-поток
+
 
     // Добавление нового проекта
     suspend fun addProject(project: ProjectEntity) {
-        projectDao.insertProject(project) // Локальное добавление
         try {
-            projectService.addProject(ProjectMapper.entityToDto(project)) // Сохранение на сервере
+            val response =
+                projectService.addProject(ProjectMapper.entityToDto(project)) // Сохранение на сервере
+            response.body()?.let { data ->
+                projectDao.insertProject(ProjectMapper.dtoToEntity(data))
+            } ?: throw Exception()
         } catch (e: Exception) {
-            projectDao.deleteProject(project.id) // Удаляем локально при ошибке
             throw Exception("Ошибка добавления проекта: ${e.localizedMessage}")
         }
     }
@@ -62,7 +72,9 @@ class ProjectRepository @Inject constructor(
                 project.id,
                 ProjectMapper.entityToDto(project)
             ) // Обновление на сервере
-            val updatedEntity = ProjectMapper.dtoToEntity(updatedDto)
+            val body = updatedDto.body()
+            requireNotNull(body)
+            val updatedEntity = ProjectMapper.dtoToEntity(body)
             projectDao.updateProject(updatedEntity) // Синхронизируем локально
         } catch (e: Exception) {
             throw Exception("Ошибка обновления проекта: ${e.localizedMessage}")
@@ -76,14 +88,11 @@ class ProjectRepository @Inject constructor(
 
     // Загрузка проекта с транзакциями
     suspend fun getProjectWithTransactions(projectId: String): ProjectWithTransactions {
-        val localProjectWithTransactions = projectDao.getProjectWithTransactions(projectId)
-        if (localProjectWithTransactions != null) {
-            return localProjectWithTransactions
-        }
+        val projectDto = projectService.fetchProjectDetails(projectId).body()
+        val transactionDtos = projectService.fetchTransactions(projectId).body()
 
-        // Если локальных данных нет, загружаем с сервера
-        val projectDto = projectService.fetchProjectDetails(projectId)
-        val transactionDtos = projectService.fetchTransactions(projectId)
+        requireNotNull(projectDto)
+        requireNotNull(transactionDtos)
 
         val projectEntity = ProjectMapper.dtoToEntity(projectDto)
         val transactionEntities = transactionDtos.map { TransactionMapper.dtoToEntity(it) }
@@ -108,7 +117,8 @@ class ProjectRepository @Inject constructor(
 //    }
 
     suspend fun getProjectByInviteCode(code: String): ProjectEntity {
-        val projectDto = projectService.getProjectByInviteCode(code)
+        val projectDto = projectService.getProjectByInviteCode(code).body()
+        requireNotNull(projectDto)
         return ProjectMapper.dtoToEntity(projectDto)
     }
 

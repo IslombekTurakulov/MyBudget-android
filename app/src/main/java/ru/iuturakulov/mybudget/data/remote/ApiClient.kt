@@ -38,11 +38,22 @@ object ApiClient {
     private fun getHttpClient(tokenStorage: TokenStorage): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(getAuthInterceptor(tokenStorage))
+            .addInterceptor(getDefaultHeadersInterceptor())
             .addInterceptor(getLoggingInterceptor())
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
+    }
+
+    private fun getDefaultHeadersInterceptor(): Interceptor {
+        return Interceptor { chain ->
+            val request = chain.request().newBuilder()
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json")
+                .build()
+            chain.proceed(request)
+        }
     }
 
     // Создание Retrofit instance

@@ -24,7 +24,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -32,9 +31,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
@@ -85,7 +81,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                         categoryIcon = binding.ivTransactionCategoryIcon.tag?.toString() ?: "",
                         date = System.currentTimeMillis(),
                         projectId = argument.projectId,
-                        userId = argument.userId
+                        userId = ""
                     )
                     onTransactionAdded?.invoke(temporaryTransaction)
                     dismiss()
@@ -157,7 +153,11 @@ class AddTransactionDialogFragment : DialogFragment() {
         if (allGranted) {
             showImageSourceDialog()
         } else {
-            Toast.makeText(requireContext(), "Необходимо предоставить разрешения", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "Необходимо предоставить разрешения",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -251,7 +251,8 @@ class AddTransactionDialogFragment : DialogFragment() {
             val inputStream = requireContext().contentResolver.openInputStream(uri)
             BitmapFactory.decodeStream(inputStream)
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Ошибка загрузки изображения", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Ошибка загрузки изображения", Toast.LENGTH_SHORT)
+                .show()
             null
         }
     }
@@ -263,7 +264,8 @@ class AddTransactionDialogFragment : DialogFragment() {
         matrix.setSaturation(0f) // Устанавливаем насыщенность на 0 (черно-белое изображение)
         val filter = ColorMatrixColorFilter(matrix)
         val paint = Paint().apply { colorFilter = filter }
-        val grayscaleBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        val grayscaleBitmap =
+            Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(grayscaleBitmap)
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
 
@@ -306,7 +308,8 @@ class AddTransactionDialogFragment : DialogFragment() {
                 val processedText = preprocessText(visionText.text)
                 val totalAmount = extractTotalAmount(processedText)
 
-                binding.tvRecognizedAmount.text = "Распознанная сумма: ${totalAmount.toDoubleOrNull() ?: 0.0}"
+                binding.tvRecognizedAmount.text =
+                    "Распознанная сумма: ${totalAmount.toDoubleOrNull() ?: 0.0}"
                 updateTransactionAmount(totalAmount)
 
                 val duration = System.currentTimeMillis() - startTime
@@ -337,7 +340,10 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun extractTotalAmount(text: String): String {
         val patterns = listOf(
             // Основные паттерны
-            Regex("""(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""", RegexOption.IGNORE_CASE),
+            Regex(
+                """(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""",
+                RegexOption.IGNORE_CASE
+            ),
             Regex("""([€$₽])\s*([\d\s]+[.,]\d{2})\b"""),
             Regex("""\b(\d{1,3}(?:[ ,]\d{3})*[.,]\d{2})(?=\s*(?:руб|р|usd|€|\$))"""),
 
@@ -394,13 +400,12 @@ class AddTransactionDialogFragment : DialogFragment() {
         @kotlinx.parcelize.Parcelize
         data class AddTransactionArgs(
             val projectId: String,
-            val userId: String,
         ) : Parcelable
 
-        fun newInstance(projectId: String, userId: String): AddTransactionDialogFragment {
+        fun newInstance(projectId: String): AddTransactionDialogFragment {
             val fragment = AddTransactionDialogFragment()
             val args = Bundle()
-            args.putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId, userId))
+            args.putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId))
             fragment.arguments = args
             return fragment
         }

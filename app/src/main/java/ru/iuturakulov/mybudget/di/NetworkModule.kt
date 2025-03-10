@@ -9,9 +9,9 @@ import retrofit2.Retrofit
 import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.data.remote.AnalyticsService
 import ru.iuturakulov.mybudget.data.remote.ApiClient
-import ru.iuturakulov.mybudget.data.remote.AuthService
 import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
+import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import javax.inject.Singleton
 
 @Module

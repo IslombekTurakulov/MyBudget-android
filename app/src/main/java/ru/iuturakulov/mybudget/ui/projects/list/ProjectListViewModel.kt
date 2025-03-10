@@ -44,13 +44,13 @@ class ProjectListViewModel @Inject constructor(
             (query.isEmpty() || project.name.contains(
                 query,
                 ignoreCase = true
-            ) || project.description.contains(query, ignoreCase = true)) &&
+            ) || project.description?.contains(query, ignoreCase = true) == true) &&
                     (status == ProjectStatus.ALL || status.canTransitionTo(project.status))
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
-        loadProjects()
+        syncProjects()
     }
 
     private fun loadProjects() {

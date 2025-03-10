@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.dagger.hilt)
     id("kotlin-parcelize")
+    kotlin("plugin.serialization")
+    id("com.google.gms.google-services")
     id("androidx.navigation.safeargs.kotlin")
 }
 
@@ -96,6 +98,12 @@ dependencies {
 
 
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+
+    // push-notifications
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
 
     // Testing
     testImplementation(libs.junit)

@@ -11,18 +11,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import ru.iuturakulov.mybudget.core.worker.ProjectSyncWorker
 import ru.iuturakulov.mybudget.databinding.ActivityMainBinding
-import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -36,17 +31,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val workRequest = PeriodicWorkRequestBuilder<ProjectSyncWorker>(
-            5, TimeUnit.MINUTES
-        ).build()
+//        val workRequest = PeriodicWorkRequestBuilder<ProjectSyncWorker>(
+//            5, TimeUnit.MINUTES
+//        ).build()
 
         observeNetworkChanges()
 
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "ProjectSync",
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
+//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//            "ProjectSync",
+//            ExistingPeriodicWorkPolicy.KEEP,
+//            workRequest
+//        )
 
         // Инициализация NavController
         val navHostFragment =
@@ -92,7 +87,12 @@ class MainActivity : AppCompatActivity() {
         val ivStatusIcon = networkStatusOverlay.ivStatusIcon
 
         if (isConnected) {
-            networkStatusOverlay.root.setBackgroundColor(ContextCompat.getColor(this, R.color.networkStatusBackgroundOn))
+            networkStatusOverlay.root.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.networkStatusBackgroundOn
+                )
+            )
             tvStatus.text = getString(R.string.connected)
             tvStatus.setTextColor(ContextCompat.getColor(this, R.color.networkStatusIconTintOn))
             ivStatusIcon.setImageResource(R.drawable.baseline_wifi_24)
@@ -108,7 +108,12 @@ class MainActivity : AppCompatActivity() {
                 hideOverlay(networkStatusOverlay.root)
             }
         } else {
-            networkStatusOverlay.root.setBackgroundColor(ContextCompat.getColor(this, R.color.networkStatusBackgroundOff))
+            networkStatusOverlay.root.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.networkStatusBackgroundOff
+                )
+            )
             tvStatus.text = getString(R.string.no_internet_connection)
             tvStatus.setTextColor(ContextCompat.getColor(this, R.color.networkStatusIconTintOff))
             ivStatusIcon.setImageResource(R.drawable.baseline_wifi_off_24)
