@@ -15,7 +15,7 @@ import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
         TransactionEntity::class,
         ParticipantEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

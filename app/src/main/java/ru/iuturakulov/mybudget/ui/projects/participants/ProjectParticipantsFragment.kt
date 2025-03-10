@@ -28,9 +28,6 @@ class ProjectParticipantsFragment :
 
     override fun setupViews() {
         // Сначала загружаем локальные данные
-        viewModel.loadParticipants(args.projectId)
-
-        // Затем синхронизируем с сервером
         viewModel.syncParticipants(args.projectId)
         setupToolbar()
         setupRecyclerView()
@@ -103,7 +100,8 @@ class ProjectParticipantsFragment :
 
     private fun showParticipants(participants: List<ParticipantEntity>) {
         binding.progressBar.isVisible = false
-        binding.tvEmptyParticipants.isVisible = participants.isEmpty()
+        binding.tvEmptyParticipants.isVisible = participants.isNullOrEmpty()
+        binding.rvParticipants.isVisible = true
         adapter.submitList(participants)
     }
 

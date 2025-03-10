@@ -1,5 +1,6 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -9,6 +10,7 @@ import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
+import ru.iuturakulov.mybudget.data.remote.ErrorResponse
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import ru.iuturakulov.mybudget.domain.mappers.ProjectMapper
 import javax.inject.Inject
@@ -57,9 +59,11 @@ class ProjectRepository @Inject constructor(
 
     // Удаление проекта
     suspend fun deleteProject(projectId: String) {
-        projectDao.deleteProject(projectId) // Локальное удаление
         try {
-            projectService.deleteProject(projectId) // Удаление на сервере
+            val response = projectService.deleteProject(projectId) // Удаление на сервере
+            if (response.isSuccessful) {
+                projectDao.deleteProject(projectId) // Локальное удаление
+            }
         } catch (e: Exception) {
             throw Exception("Ошибка удаления проекта: ${e.localizedMessage}")
         }
@@ -117,7 +121,16 @@ class ProjectRepository @Inject constructor(
 //    }
 
     suspend fun getProjectByInviteCode(code: String): ProjectEntity {
-        val projectDto = projectService.getProjectByInviteCode(code).body()
+        val response = projectService.getProjectByInviteCode(code)
+        if (!response.isSuccessful) {
+            throw Exception(
+                Gson().fromJson(
+                    response.errorBody()?.string(),
+                    ErrorResponse::class.java
+                ).error
+            )
+        }
+        val projectDto = response.body()
         requireNotNull(projectDto)
         return ProjectMapper.dtoToEntity(projectDto)
     }

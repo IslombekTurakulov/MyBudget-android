@@ -18,7 +18,7 @@ interface ParticipantsDao {
     suspend fun insertParticipant(participant: ParticipantEntity)
 
     @Query("DELETE FROM participants WHERE id = :participantId")
-    suspend fun deleteParticipant(participantId: Int)
+    suspend fun deleteParticipant(participantId: String)
 
     @Transaction
     suspend fun replaceParticipantsForProject(

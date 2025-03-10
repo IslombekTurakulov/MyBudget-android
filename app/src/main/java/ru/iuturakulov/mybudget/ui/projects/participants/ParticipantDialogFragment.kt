@@ -58,7 +58,7 @@ class ParticipantDialogFragment : DialogFragment() {
                         role = binding.spinnerRole.text.toString()
                     ) ?: projectId?.let { it1 ->
                         ParticipantEntity(
-                            id = 0, // Новый ID будет назначен на сервере
+                            id = "", // Новый ID будет назначен на сервере
                             projectId = it1,
                             userId = "", // Здесь может быть ID текущего пользователя, если нужно
                             name = binding.etParticipantName.text.toString(),

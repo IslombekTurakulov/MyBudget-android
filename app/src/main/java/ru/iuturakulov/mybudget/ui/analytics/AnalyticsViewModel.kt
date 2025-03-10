@@ -39,7 +39,7 @@ class AnalyticsViewModel @Inject constructor(
         viewModelScope.launch {
             _overviewAnalytics.value = UiState.Loading
             try {
-                val analytics = analyticsRepository.getOverviewAnalytics()
+                val analytics = analyticsRepository.getOverviewAnalytics().body()
                 _overviewAnalytics.value = UiState.Success(analytics)
             } catch (e: IOException) {
                 _overviewAnalytics.value = UiState.Error("Ошибка сети. Проверьте соединение.")
@@ -55,7 +55,7 @@ class AnalyticsViewModel @Inject constructor(
         viewModelScope.launch {
             _projectAnalytics.value = UiState.Loading
             try {
-                val analytics = analyticsRepository.getProjectAnalytics(projectId)
+                val analytics = analyticsRepository.getProjectAnalytics(projectId).body()
                 _projectAnalytics.value = UiState.Success(analytics)
             } catch (e: IOException) {
                 _projectAnalytics.value = UiState.Error("Ошибка сети. Проверьте соединение.")

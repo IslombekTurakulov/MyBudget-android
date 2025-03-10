@@ -1,9 +1,11 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
+import ru.iuturakulov.mybudget.data.remote.ErrorResponse
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import javax.inject.Inject
 
@@ -21,14 +23,25 @@ class TransactionRepository @Inject constructor(
     suspend fun addTransaction(projectId: String, transaction: TransactionEntity) {
         try {
             val dto = TransactionMapper.entityToDto(transaction)
-            val response = projectService.addTransaction(projectId, dto).body()
+            val response = projectService.addTransaction(projectId, dto)
 
-            requireNotNull(response)
+            if (!response.isSuccessful) {
+                throw Exception(
+                    Gson().fromJson(
+                        response.errorBody()?.string(),
+                        ErrorResponse::class.java
+                    ).error
+                )
+            }
 
-            val updatedTransaction = TransactionMapper.dtoToEntity(response)
+            val responseBody = response.body()
+
+            requireNotNull(responseBody)
+
+            val updatedTransaction = TransactionMapper.dtoToEntity(responseBody)
             transactionDao.insertTransaction(updatedTransaction)
         } catch (e: Exception) {
-            throw Exception("Ошибка добавления транзакции: ${e.localizedMessage}")
+            throw Exception(e.localizedMessage)
         }
     }
 
@@ -43,7 +56,7 @@ class TransactionRepository @Inject constructor(
             val updatedTransaction = TransactionMapper.dtoToEntity(response)
             transactionDao.updateTransaction(updatedTransaction) // Обновляем локальный кэш
         } catch (e: Exception) {
-            throw Exception("Ошибка добавления транзакции: ${e.localizedMessage}")
+            throw Exception(e.localizedMessage)
         }
     }
 
@@ -55,7 +68,7 @@ class TransactionRepository @Inject constructor(
             // Удаление на сервере
             projectService.deleteTransaction(projectId, transactionId)
         } catch (e: Exception) {
-            throw Exception("Ошибка удаления транзакции: ${e.localizedMessage}")
+            throw Exception(e.localizedMessage)
         }
     }
 

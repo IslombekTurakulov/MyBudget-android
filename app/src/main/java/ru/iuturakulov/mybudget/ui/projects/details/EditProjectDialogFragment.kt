@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -18,6 +18,7 @@ import ru.iuturakulov.mybudget.databinding.DialogEditProjectBinding
 class EditProjectDialogFragment : DialogFragment() {
 
     private var _binding: DialogEditProjectBinding? = null
+    private val args: EditProjectDialogFragmentArgs by navArgs()
     private val binding get() = _binding!!
 
     private val viewModel: ProjectDetailsViewModel by activityViewModels()
@@ -33,6 +34,7 @@ class EditProjectDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.loadProjectDetails(args.projectId)
         setupViews()
     }
 
@@ -42,38 +44,50 @@ class EditProjectDialogFragment : DialogFragment() {
     }
 
     private fun setupViews() {
-        val project = (viewModel.uiState.value as? UiState.Success)?.data?.project
-        project?.let { projectEntity ->
-            binding.etProjectName.setText(projectEntity.name)
-            binding.etProjectDescription.setText(projectEntity.description)
-            binding.etBudgetLimit.setText(projectEntity.budgetLimit.toString())
-        }
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.uiState.collect { state ->
+                when (state) {
+                    is UiState.Loading -> {}
+                    is UiState.Success -> {
+                        val project = state.data?.project
+                        project?.let { projectEntity ->
+                            binding.etProjectName.setText(projectEntity.name)
+                            binding.etProjectDescription.setText(projectEntity.description)
+                            binding.etBudgetLimit.setText(projectEntity.budgetLimit.toString())
+                        }
 
-        binding.btnSave.setOnClickListener {
-            if (!isInputValid()) return@setOnClickListener
+                        binding.btnSave.setOnClickListener {
+                            if (!isInputValid()) return@setOnClickListener
 
-            val updatedProject = project?.copy(
-                name = binding.etProjectName.text.toString(),
-                description = binding.etProjectDescription.text.toString(),
-                budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull() ?: 0.0
-            )
+                            val updatedProject = project?.copy(
+                                name = binding.etProjectName.text.toString(),
+                                description = binding.etProjectDescription.text.toString(),
+                                budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull()
+                                    ?: 0.0
+                            )
 
-            updatedProject?.let {
-                // Отключаем кнопку, чтобы предотвратить повторные нажатия
-                binding.btnSave.isEnabled = false
+                            updatedProject?.let {
+                                // Отключаем кнопку, чтобы предотвратить повторные нажатия
+                                binding.btnSave.isEnabled = false
 
-                viewModel.updateProject(it)
+                                viewModel.updateProject(it)
 
-                // Включаем кнопку через 1 секунду
-                lifecycleScope.launch {
-                    delay(1000L) // Задержка 1 секунда
-                    binding.btnSave.isEnabled = true
+                                // Включаем кнопку через 1 секунду
+                                lifecycleScope.launch {
+                                    delay(1000L) // Задержка 1 секунда
+                                    binding.btnSave.isEnabled = true
+                                }
+
+                                dismiss()
+                            }
+                        }
+                    }
+
+                    is UiState.Error -> {}
+                    is UiState.Idle -> {}
                 }
-
-                dismiss()
             }
         }
-
 
         binding.btnCancel.setOnClickListener {
             dismiss()

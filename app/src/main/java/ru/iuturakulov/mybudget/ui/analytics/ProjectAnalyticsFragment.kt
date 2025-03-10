@@ -56,6 +56,7 @@ class ProjectAnalyticsFragment :
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.loadProjectAnalytics(args.projectId)
+            binding.swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -108,7 +109,6 @@ class ProjectAnalyticsFragment :
 
     private fun showError(message: String) {
         binding.progressBar.isVisible = false
-        binding.swipeRefreshLayout.isVisible = true
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
@@ -135,7 +135,7 @@ class ProjectAnalyticsFragment :
         binding.periodBarChart.invalidate()
 
         // Обновление Task Comparison Chart
-        updateTaskComparisonChart(data.taskComparison)
+//        updateTaskComparisonChart(data.taskComparison)
     }
 
     private fun updateTaskComparisonChart(taskComparison: List<TaskComparisonDto>) {

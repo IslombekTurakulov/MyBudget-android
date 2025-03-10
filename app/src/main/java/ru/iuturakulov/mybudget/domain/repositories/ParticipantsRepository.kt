@@ -16,17 +16,22 @@ class ParticipantsRepository @Inject constructor(
     /**
      * Получение участников проекта из локальной базы данных.
      */
-    fun getParticipantsForProject(projectId: String): Flow<List<ParticipantEntity>> {
-        return participantDao.getParticipantsForProject(projectId)
+    suspend fun getParticipantsForProject(projectId: String): Flow<List<ParticipantEntity>> {
+        syncParticipants(projectId).also {
+            return participantDao.getParticipantsForProject(projectId)
+        }
     }
 
     /**
      * Сохранение участника (локально и на сервере).
      */
     suspend fun saveParticipant(participant: ParticipantEntity) {
-        participantDao.insertParticipant(participant)
         try {
-            participantService.addOrUpdateParticipant(ParticipantMapper.entityToDto(participant))
+            val response =
+                participantService.addOrUpdateParticipant(ParticipantMapper.entityToDto(participant))
+            if (response.isSuccessful) {
+                participantDao.insertParticipant(participant)
+            }
         } catch (e: Exception) {
             throw Exception("Ошибка сохранения участника на сервере: ${e.localizedMessage}")
         }
@@ -35,10 +40,12 @@ class ParticipantsRepository @Inject constructor(
     /**
      * Удаление участника (локально и на сервере).
      */
-    suspend fun deleteParticipant(participantId: Int) {
-        participantDao.deleteParticipant(participantId)
+    suspend fun deleteParticipant(participantId: String) {
         try {
-            participantService.deleteParticipant(participantId)
+            val response = participantService.deleteParticipant(participantId)
+            if (response.isSuccessful) {
+                participantDao.deleteParticipant(participantId)
+            }
         } catch (e: Exception) {
             throw Exception("Ошибка удаления участника на сервере: ${e.localizedMessage}")
         }
@@ -47,11 +54,12 @@ class ParticipantsRepository @Inject constructor(
     /**
      * Синхронизация участников с сервером.
      */
-    suspend fun syncParticipants(projectId: String) {
+    suspend fun syncParticipants(projectId: String): List<ParticipantEntity> {
         try {
-            val remoteParticipants = participantService.getParticipantsForProject(projectId)
-            val entities = remoteParticipants.map { ParticipantMapper.dtoToEntity(it) }
+            val remoteParticipants = participantService.getParticipantsForProject(projectId).body()
+            val entities = remoteParticipants?.map { ParticipantMapper.dtoToEntity(it) }.orEmpty()
             participantDao.replaceParticipantsForProject(projectId, entities)
+            return entities
         } catch (e: Exception) {
             throw Exception("Ошибка синхронизации участников: ${e.localizedMessage}")
         }

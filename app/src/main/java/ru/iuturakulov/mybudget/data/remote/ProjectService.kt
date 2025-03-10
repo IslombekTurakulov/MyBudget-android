@@ -38,12 +38,12 @@ interface ProjectService {
         @Body project: ProjectDto
     ): Response<ProjectDto>
 
-    @GET("projects/invite/{code}")
-    suspend fun getProjectByInviteCode(@Path("code") code: String): Response<ProjectDto>
+    @POST("projects/accept-invite/{inviteCode}")
+    suspend fun getProjectByInviteCode(@Path("inviteCode") code: String): Response<ProjectDto>
 
     // Удаление проекта
-    @DELETE("projects/{id}")
-    suspend fun deleteProject(@Path("id") projectId: String)
+    @DELETE("projects/{projectId}")
+    suspend fun deleteProject(@Path("projectId") projectId: String): Response<Unit>
 
     // Добавление транзакции в проект
     @POST("projects/{id}/transactions")
@@ -64,5 +64,5 @@ interface ProjectService {
     suspend fun deleteTransaction(
         @Path("id") projectId: String,
         @Path("transactionId") transactionId: String
-    )
+    ): Response<Unit>
 }

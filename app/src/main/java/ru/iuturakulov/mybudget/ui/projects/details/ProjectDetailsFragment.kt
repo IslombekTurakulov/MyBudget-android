@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
@@ -129,8 +130,8 @@ class ProjectDetailsFragment :
     }
 
     private fun navigateToEditProject() {
-        val dialog = EditProjectDialogFragment()
-        dialog.show(childFragmentManager, "EditProjectDialog")
+        val action = ProjectDetailsFragmentDirections.actionProjectToEdit(args.projectId)
+        findNavController().navigate(action)
     }
 
     private fun confirmDeleteProject() {
@@ -179,9 +180,11 @@ class ProjectDetailsFragment :
 
     private fun showError(message: String) {
         binding.progressBarTransactions.isVisible = false
-        binding.rvTransactions.isVisible = false
-        binding.tvEmptyTransactions.isVisible = true
-        binding.tvEmptyTransactions.text = message
+//        binding.rvTransactions.isVisible = false
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+            .show()
+//        binding.tvEmptyTransactions.isVisible = true
+//        binding.tvEmptyTransactions.text = message
     }
 
     private fun updateTransactions(transactions: List<TransactionEntity>) {

@@ -33,7 +33,17 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="?attr/actionBarSize"
                 android:orientation="vertical">
+
+                <!-- Категории -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Распределение по категории"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
 
                 <!-- Категории (PieChart) -->
                 <com.github.mikephil.charting.charts.PieChart
@@ -42,12 +52,31 @@
                     android:layout_height="300dp"
                     android:layout_marginBottom="24dp" />
 
+                <!-- Периоды -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Распределение по периодам"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
+
+
                 <!-- Периоды (BarChart) -->
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/periodBarChart"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
                     android:layout_marginBottom="24dp" />
+
+                <!-- Сравнение затрат по задачам -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Распределение по затратам на задачи"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
 
                 <!-- Сравнение затрат по задачам -->
                 <com.github.mikephil.charting.charts.BarChart

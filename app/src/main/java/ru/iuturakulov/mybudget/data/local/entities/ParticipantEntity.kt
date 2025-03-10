@@ -8,7 +8,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @Entity(tableName = "participants")
 data class ParticipantEntity(
-    @PrimaryKey val id: Int, // ID участника, который приходит с сервера
+    @PrimaryKey val id: String, // ID участника, который приходит с сервера
     val projectId: String,      // Связь с проектом
     val userId: String,      // Уникальный идентификатор пользователя
     val name: String,        // Имя участника

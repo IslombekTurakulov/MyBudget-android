@@ -27,7 +27,7 @@ class ProjectAnalyticsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {
-                val analytics = analyticsRepository.getProjectAnalytics(projectId)
+                val analytics = analyticsRepository.getProjectAnalytics(projectId).body()
                 _uiState.value = UiState.Success(analytics)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.localizedMessage ?: "Ошибка загрузки аналитики")

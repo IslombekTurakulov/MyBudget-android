@@ -21,7 +21,7 @@ class ProjectParticipantsViewModel @Inject constructor(
     val participants: StateFlow<List<ParticipantEntity>> = _participants.asStateFlow()
 
     private val _uiState = MutableStateFlow<UiState<List<ParticipantEntity>>>(UiState.Idle)
-    val uiState: StateFlow<UiState<List<ParticipantEntity>>> = _uiState
+    val uiState: StateFlow<UiState<List<ParticipantEntity>>> = _uiState.asStateFlow()
 
     private val _invitationCodeState =
         MutableStateFlow<InvitationState<Boolean>>(InvitationState.Idle)
@@ -76,8 +76,11 @@ class ProjectParticipantsViewModel @Inject constructor(
      */
     fun syncParticipants(projectId: String) {
         viewModelScope.launch {
+            _uiState.value = UiState.Loading
             try {
-                participantRepository.syncParticipants(projectId)
+                val participants = participantRepository.syncParticipants(projectId)
+                _participants.value = participants
+                _uiState.value = UiState.Success(participants)
             } catch (e: Exception) {
                 _uiState.value =
                     UiState.Error(e.localizedMessage ?: "Ошибка синхронизации участников")

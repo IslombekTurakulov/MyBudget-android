@@ -36,20 +36,11 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvParticipants"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_project_participants" />
 
-            <!-- Placeholder для пустого списка -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvEmptyParticipants"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:visibility="gone"
-                android:text="Участников пока нет"
-                style="@style/TextAppearance.Material3.BodyLarge"
-                android:layout_marginTop="16dp" />
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -70,4 +61,16 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone" />
+
+    <!-- Placeholder для пустого списка -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvEmptyParticipants"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:visibility="visible"
+        android:text="Участников пока нет :("
+        style="@style/TextAppearance.Material3.BodyLarge"
+        android:layout_marginTop="16dp" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
