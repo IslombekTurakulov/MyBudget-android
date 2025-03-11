@@ -28,11 +28,11 @@ class LoginUseCase @Inject constructor(
                 if (response.isSuccessful) {
                     val body = response.body()
                     val token = body?.token ?: return@withContext false
-                    tokenStorage.saveToken(token) // Сохраняем токен
+                    tokenStorage.saveAccessTokenAsync(token) // Сохраняем токен
                     true
                 } else {
                     val errorResponse = response.errorBody()?.string()
-                    Timber.e("Ошибка авторизации: $errorResponse")
+                    Timber.e("$errorResponse")
                     false
                 }
             } catch (e: Exception) {

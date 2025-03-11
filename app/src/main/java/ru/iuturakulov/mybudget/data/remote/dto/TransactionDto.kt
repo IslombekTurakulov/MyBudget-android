@@ -1,5 +1,8 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class TransactionDto(
     val id: String,
     val projectId: String,

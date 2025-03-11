@@ -34,29 +34,12 @@ class OverviewAnalyticsFragment :
     }
 
     override fun setupViews() {
-        setupToolbar()
         setupSwipeRefresh()
         setupCharts()
     }
 
     override fun setupObservers() {
         observeOverviewAnalytics()
-    }
-
-    private fun setupToolbar() {
-        binding.toolbar.apply {
-            inflateMenu(R.menu.analytics_menu)
-            setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.menuSettings -> {
-                        findNavController().navigate(R.id.action_analytics_to_settings)
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        }
     }
 
     private fun setupSwipeRefresh() {

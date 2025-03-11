@@ -26,7 +26,7 @@ class RegisterUseCase @Inject constructor(
                     if (loginResponse.isSuccessful) {
                         val body = loginResponse.body()
                         val token = body?.token ?: return@withContext false
-                        tokenStorage.saveToken(token) // Сохраняем токен
+                        tokenStorage.saveAccessTokenAsync(token) // Сохраняем токен
                         return@withContext true
                     }
                 }

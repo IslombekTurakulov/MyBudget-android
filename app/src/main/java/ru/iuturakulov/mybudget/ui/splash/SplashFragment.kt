@@ -3,8 +3,10 @@ package ru.iuturakulov.mybudget.ui.splash
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.databinding.FragmentSplashBinding
@@ -22,13 +24,17 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
     }
 
     override fun setupViews() {
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (this::tokenStorage.isInitialized && tokenStorage.getToken() != null) {
-                findNavController().navigate(R.id.action_splash_to_projects)
-            } else {
-                findNavController().navigate(R.id.action_splash_to_login)
+        lifecycleScope.launch {
+            tokenStorage.getAccessTokenFlow().collect { token ->
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (token != null) {
+                        findNavController().navigate(R.id.action_splash_to_projects)
+                    } else {
+                        findNavController().navigate(R.id.action_splash_to_login)
+                    }
+                }, 2000) // 2 секунды задержки для визуализации загруз
             }
-        }, 2000) // 2 секунды задержки для визуализации загрузки
+        }
     }
 
     override fun setupObservers() {

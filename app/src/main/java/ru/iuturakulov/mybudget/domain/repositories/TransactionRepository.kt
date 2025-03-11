@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.domain.repositories
 
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
+import okhttp3.ResponseBody.Companion.toResponseBody
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
@@ -49,7 +50,7 @@ class TransactionRepository @Inject constructor(
     suspend fun updateTransaction(projectId: String, transaction: TransactionEntity) {
         try {
             val dto = TransactionMapper.entityToDto(transaction)
-            val response = projectService.updateTransaction(projectId, dto).body()
+            val response = projectService.updateTransaction(projectId, transaction.id, dto).body()
 
             requireNotNull(response)
 

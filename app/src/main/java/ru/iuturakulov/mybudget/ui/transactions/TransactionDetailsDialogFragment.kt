@@ -58,8 +58,8 @@ class TransactionDetailsDialogFragment : DialogFragment() {
             binding.btnEditTransaction.setOnClickListener {
                 if (validateInput()) {
                     val updatedTransaction = trans.copy(
-                        name = binding.etTransactionName.text.toString(),
-                        amount = binding.etTransactionAmount.text.toString().toDoubleOrNull()
+                        name = binding.etTransactionName.text?.toString().orEmpty(),
+                        amount = binding.etTransactionAmount.text?.toString()?.toDoubleOrNull()
                             ?: trans.amount,
                         category = binding.spinnerCategory.text.toString(),
                         categoryIcon = CategoryIconMapper.getIconForCategory(binding.spinnerCategory.text.toString()),

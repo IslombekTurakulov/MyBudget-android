@@ -15,8 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Общая аналитика"
-            app:titleCentered="true"
-            app:menu="@menu/analytics_menu" />
+            app:titleCentered="true" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Основное содержимое с SwipeRefreshLayout -->

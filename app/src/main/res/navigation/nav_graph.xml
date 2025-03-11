@@ -175,7 +175,7 @@
         android:id="@+id/editProjectDialogFragment"
         android:name="ru.iuturakulov.mybudget.ui.projects.details.EditProjectDialogFragment"
         android:label="Редактировать проект"
-        tools:layout="@layout/dialog_edit_project">
+        tools:layout="@layout/dialog_edit_project" >
 
         <argument
             android:name="projectId"

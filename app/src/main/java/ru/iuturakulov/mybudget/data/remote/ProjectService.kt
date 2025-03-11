@@ -53,9 +53,10 @@ interface ProjectService {
     ): Response<TransactionDto>
 
     // Добавление транзакции в проект
-    @POST("projects/{id}/transactions")
+    @PUT("projects/{projectId}/transactions/{transactionId}")
     suspend fun updateTransaction(
-        @Path("id") projectId: String,
+        @Path("projectId") projectId: String,
+        @Path("transactionId") transactionId: String,
         @Body transaction: TransactionDto
     ): Response<TransactionDto>
 

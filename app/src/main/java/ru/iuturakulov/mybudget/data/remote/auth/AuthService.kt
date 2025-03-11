@@ -21,4 +21,7 @@ interface AuthService {
     // Смена пароля
     @POST("auth/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Void>
+
+    @POST("auth/refresh-token")
+    suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<String>
 }

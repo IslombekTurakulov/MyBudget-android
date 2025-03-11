@@ -20,7 +20,6 @@ object TransactionMapper {
 
     fun entityToDto(entity: TransactionEntity): TransactionDto {
         return TransactionDto(
-            // TODO: фикс
             id = entity.id,
             projectId = entity.projectId,
             name = entity.name,

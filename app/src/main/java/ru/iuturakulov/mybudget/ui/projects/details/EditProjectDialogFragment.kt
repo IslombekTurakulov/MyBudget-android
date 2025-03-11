@@ -62,8 +62,7 @@ class EditProjectDialogFragment : DialogFragment() {
                             val updatedProject = project?.copy(
                                 name = binding.etProjectName.text.toString(),
                                 description = binding.etProjectDescription.text.toString(),
-                                budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull()
-                                    ?: 0.0
+                                budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull() ?: 0.0
                             )
 
                             updatedProject?.let {

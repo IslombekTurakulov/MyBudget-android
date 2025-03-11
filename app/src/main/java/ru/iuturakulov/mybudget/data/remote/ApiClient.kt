@@ -7,61 +7,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.iuturakulov.mybudget.auth.TokenStorage
+import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
 
-    private const val BASE_URL = "http://localhost:8080/"
-
-    // Получение Interceptor для авторизации
-    private fun getAuthInterceptor(tokenStorage: TokenStorage): Interceptor {
-        return Interceptor { chain ->
-            val token = tokenStorage.getToken()
-            val original: Request = chain.request()
-            val requestBuilder = original.newBuilder()
-            if (!token.isNullOrEmpty()) {
-                requestBuilder.header("Authorization", "Bearer $token")
-            }
-            requestBuilder.method(original.method, original.body)
-            chain.proceed(requestBuilder.build())
-        }
-    }
-
-    // Interceptor для логирования
-    private fun getLoggingInterceptor(): HttpLoggingInterceptor {
-        val loggingInterceptor = HttpLoggingInterceptor()
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-        return loggingInterceptor
-    }
-
-    // Конфигурация OkHttpClient
-    private fun getHttpClient(tokenStorage: TokenStorage): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(getAuthInterceptor(tokenStorage))
-            .addInterceptor(getDefaultHeadersInterceptor())
-            .addInterceptor(getLoggingInterceptor())
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
-    private fun getDefaultHeadersInterceptor(): Interceptor {
-        return Interceptor { chain ->
-            val request = chain.request().newBuilder()
-                .addHeader("Accept", "application/json")
-                .addHeader("Content-Type", "application/json")
-                .build()
-            chain.proceed(request)
-        }
-    }
-
-    // Создание Retrofit instance
-    fun getRetrofitInstance(tokenStorage: TokenStorage): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(getHttpClient(tokenStorage))
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
 }

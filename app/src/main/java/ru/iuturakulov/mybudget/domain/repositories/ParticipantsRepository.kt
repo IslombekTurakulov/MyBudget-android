@@ -27,8 +27,7 @@ class ParticipantsRepository @Inject constructor(
      */
     suspend fun saveParticipant(participant: ParticipantEntity) {
         try {
-            val response =
-                participantService.addOrUpdateParticipant(ParticipantMapper.entityToDto(participant))
+            val response = participantService.addOrUpdateParticipant(ParticipantMapper.entityToDto(participant))
             if (response.isSuccessful) {
                 participantDao.insertParticipant(participant)
             }
