@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.data.local.entities
 
 import android.content.Context
 import androidx.core.content.ContextCompat
+import kotlinx.serialization.SerialName
 import ru.iuturakulov.mybudget.R
 
 enum class ProjectStatus(val type: String) {

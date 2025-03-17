@@ -76,6 +76,11 @@ class ProjectListFragment :
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.syncProjects()
+    }
+
     override fun setupObservers() {
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { state ->

@@ -1,6 +1,7 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
 import kotlinx.serialization.Serializable
+import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity.TransactionType
 
 @Serializable
 data class TransactionDto(
@@ -11,5 +12,7 @@ data class TransactionDto(
     val category: String,
     val categoryIcon: String,
     val amount: Double,
-    val date: Long
+    val date: Long,
+    val transactionType: TransactionType = TransactionType.INCOME,
+    val images: List<String> = emptyList()
 )

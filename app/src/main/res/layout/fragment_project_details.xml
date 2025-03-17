@@ -34,6 +34,62 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/projectDescriptionCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="8dp"
+                android:layout_marginBottom="8dp"
+                app:cardElevation="4dp"
+                android:visibility="gone"
+                app:strokeColor="?attr/colorOutline"
+                app:strokeWidth="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvProjectTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        style="@style/TextAppearance.Material3.TitleMedium"
+                        android:text="Описание проекта"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvProjectDescription"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        style="@style/TextAppearance.Material3.BodyMedium"
+                        android:ellipsize="end"
+                        android:maxLines="3"
+                        tools:text="@string/lorem_ipsum"
+                        app:layout_constraintTop_toBottomOf="@id/tvProjectTitle"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toTopOf="@id/btnToggleDescription"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnToggleDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Показать больше"
+                        app:icon="@drawable/baseline_expand_more_24"
+                        app:iconGravity="textStart"
+                        app:layout_constraintTop_toBottomOf="@id/tvProjectDescription"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Финансовая информация -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

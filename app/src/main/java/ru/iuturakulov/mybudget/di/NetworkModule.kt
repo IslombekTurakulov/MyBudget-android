@@ -48,7 +48,7 @@ object NetworkModule {
     @Named("AuthRetrofit")
     fun provideAuthRetrofit(baseOkHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://localhost:8080/")
+            .baseUrl(BASE_URL)
             .client(baseOkHttpClient)
             .addConverterFactory(
                 GsonConverterFactory.create()
@@ -80,11 +80,6 @@ object NetworkModule {
     ): OkHttpClient {
         return baseOkHttpClient.newBuilder()
             .addInterceptor(authInterceptor)
-            .addInterceptor(getDefaultHeadersInterceptor())
-            .addInterceptor(getLoggingInterceptor())
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 
@@ -95,11 +90,9 @@ object NetworkModule {
         @Named("AuthenticatedOkHttp") authenticatedOkHttpClient: OkHttpClient
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://localhost:8080/")
+            .baseUrl(BASE_URL)
             .client(authenticatedOkHttpClient)
-            .addConverterFactory(
-                GsonConverterFactory.create()
-            )
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 

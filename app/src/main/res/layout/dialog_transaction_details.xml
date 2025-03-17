@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="?attr/colorSurface">
@@ -37,6 +37,31 @@
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Выбор типа транзакции -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleTransactionType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIncome"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Доход" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExpense"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Расход" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
     <!-- Категория и иконка -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,7 +70,7 @@
         android:gravity="center_vertical"
         android:layout_marginTop="16dp">
 
-        <!-- Иконка категории -->
+        <!-- Иконка категории (фиксированная) -->
         <TextView
             android:id="@+id/ivTransactionCategoryIcon"
             android:layout_width="48dp"
@@ -54,8 +79,7 @@
             android:textSize="24sp"
             android:background="?attr/colorSecondaryContainer"
             android:contentDescription="Иконка категории"
-            android:layout_gravity="center_vertical"
-            tools:text="🍕" />
+            android:text="🍕" />
 
         <!-- Список категорий -->
         <com.google.android.material.textfield.TextInputLayout
@@ -63,20 +87,41 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Категория"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+            android:layout_marginStart="12dp">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:minHeight="40dp"
-                android:layout_marginStart="12dp"
-                style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense"
                 android:id="@+id/spinnerCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
+                android:inputType="none"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:cursorVisible="false"
+                android:minHeight="40dp"
+                android:paddingStart="12dp"
+                style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
-    <!-- Кнопки -->
+    <!-- Поле для ввода своей категории (появляется при выборе "Другое") -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCustomCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите свою категорию"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+        android:layout_marginTop="8dp"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCustomCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Кнопки "Сохранить" и "Удалить" -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

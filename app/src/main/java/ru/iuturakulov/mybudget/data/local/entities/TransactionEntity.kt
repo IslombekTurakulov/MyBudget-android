@@ -20,7 +20,6 @@ import kotlinx.parcelize.Parcelize
     indices = [Index(value = ["projectId"])]
 )
 data class TransactionEntity(
-    // TODO: отказ от автогенерации String(projectId-userId-uuid)
     @PrimaryKey(autoGenerate = false) val id: String,
     val projectId: String,
     val name: String,
@@ -28,8 +27,23 @@ data class TransactionEntity(
     val categoryIcon: String, // URL или имя ресурса
     val amount: Double,
     val userId: String,
-    val date: Long // ISO 8601: "YYYY-MM-DD"
+    val date: Long, // ISO 8601: "YYYY-MM-DD"
+    val type: String, // Тип транзакции: "Доход" или "Расход"
+    val images: List<String>
 ) {
+
+    enum class TransactionType(val typeName: String) {
+        INCOME("income"),
+        EXPENSE("expense");
+
+        companion object {
+            fun fromString(value: String): TransactionType {
+                return entries.firstOrNull {
+                    it.typeName.lowercase().trim() == value
+                } ?: TransactionType.INCOME
+            }
+        }
+    }
 
     companion object {
         fun TransactionEntity.toTemporaryModel(): TemporaryTransaction {
@@ -41,7 +55,9 @@ data class TransactionEntity(
                 category = category,
                 categoryIcon = categoryIcon,
                 userId = userId,
-                date = date
+                date = date,
+                type = TransactionType.fromString(type),
+                images = images
             )
         }
     }
@@ -57,6 +73,8 @@ data class TemporaryTransaction(
     val categoryIcon: String,
     val userId: String,
     val date: Long,
+    val type: TransactionEntity.TransactionType,           // Тип транзакции: "Доход" или "Расход"
+    val images: List<String>    // Список путей/URI изображений транзакции
 ) : Parcelable {
     companion object {
         fun TemporaryTransaction.toEntity(): TransactionEntity {
@@ -68,7 +86,9 @@ data class TemporaryTransaction(
                 category = category,
                 categoryIcon = categoryIcon,
                 userId = userId,
-                date = date
+                date = date,
+                type = type.typeName,
+                images = images
             )
         }
     }

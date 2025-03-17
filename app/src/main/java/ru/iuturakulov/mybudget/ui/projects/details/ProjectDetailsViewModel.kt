@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
@@ -159,6 +160,20 @@ class ProjectDetailsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value =
                     UiState.Error("Ошибка синхронизации проекта: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    /**
+     * Синхронизация всех проектов
+     */
+    fun syncProjects() {
+        viewModelScope.launch {
+            _uiState.value = UiState.Loading
+            try {
+                projectRepository.syncProjects()
+            } catch (e: Exception) {
+                _uiState.value = UiState.Error(e.localizedMessage ?: "Ошибка загрузки")
             }
         }
     }

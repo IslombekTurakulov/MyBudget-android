@@ -9,6 +9,8 @@
     <string name="network_status_icon">Иконка статуса сети</string>
     <string name="no_internet_connection">Нет подключения к Интернету</string>
     <string name="connected">Подключено к Интернету</string>
+    <string name="show_more">Показать больше</string>
+    <string name="show_less">Показать меньше</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
@@ -20,25 +22,37 @@
 
     <string-array name="transaction_categories">
         <item>Еда</item>
+        <item>Ресторан</item>
         <item>Транспорт</item>
         <item>Развлечения</item>
+        <item>Продукты</item>
+        <item>Покупки</item>
+        <item>Финансы</item>
+        <item>Банки</item>
+        <item>Инвестиции</item>
+        <item>Недвижимость</item>
+        <item>Игры</item>
+        <item>Путешествия</item>
         <item>Прочее</item>
+        <item>Другое</item>
     </string-array>
 
+    <!-- Список эмодзи для выбора и отображения -->
     <string-array name="emoji_list">
-        <item>😊</item>
-        <item>🚗</item>
         <item>🍕</item>
+        <item>🍔</item>
+        <item>🚗</item>
         <item>🎉</item>
+        <item>🛒</item>
         <item>💵</item>
         <item>💳</item>
         <item>📈</item>
-        <item>💰</item>
-        <item>🛒</item>
-        <item>🍔</item>
+        <item>🏡</item>
         <item>🎮</item>
         <item>✈️</item>
-        <item>🏡</item>
+        <item>💼</item>
+        <item>✏️</item>
+        <item>❓</item>
     </string-array>
 
     <string-array name="roles_list">

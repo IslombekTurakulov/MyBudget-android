@@ -1,8 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="?attr/colorSurface">
@@ -14,7 +14,8 @@
         android:layout_height="200dp"
         android:scaleType="centerCrop"
         android:layout_marginBottom="8dp"
-        android:contentDescription="Превью изображения" />
+        android:contentDescription="Превью изображения"
+        tools:src="@drawable/ic_launcher_foreground" />
 
     <!-- Распознанная сумма -->
     <TextView
@@ -54,11 +55,11 @@
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
-
+    <!-- Дата транзакции -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Дата и тип транзакции"
+        android:hint="Дата транзакции"
         style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
         android:layout_marginTop="8dp">
 
@@ -66,21 +67,46 @@
             android:id="@+id/etTransactionDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal" />
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="date" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Выбор типа транзакции -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleTransactionType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        android:layout_marginTop="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnIncome"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Доход" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExpense"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Расход" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <!-- Кнопка "Сканировать чек" -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnScanReceipt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Сканировать чек"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginTop="16dp"
-            android:icon="@drawable/baseline_camera_alt_24"
-            app:iconGravity="start" />
-
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnScanReceipt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Сканировать чек"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_marginTop="16dp"
+        android:icon="@drawable/baseline_camera_alt_24"
+        app:iconGravity="start" />
 
     <!-- Категория и иконка -->
     <LinearLayout
@@ -93,14 +119,13 @@
         <!-- Иконка категории -->
         <TextView
             android:id="@+id/ivTransactionCategoryIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="58dp"
+            android:layout_height="58dp"
             android:gravity="center"
             android:textSize="24sp"
             android:background="?attr/colorSecondaryContainer"
             android:contentDescription="Иконка категории"
-            android:layout_gravity="center_vertical"
-            tools:text="🍕" />
+            android:text="🍕" />
 
         <!-- Список категорий -->
         <com.google.android.material.textfield.TextInputLayout
@@ -108,22 +133,54 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Категория"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+            android:minHeight="60dp"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+            android:layout_marginStart="12dp">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:minHeight="40dp"
-                android:paddingStart="12dp"
-                android:layout_marginStart="12dp"
-                style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense"
                 android:id="@+id/spinnerCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
+                android:inputType="none"
+                android:focusable="true"
+                android:minHeight="60dp"
+                android:paddingTop="14dp"
+                android:focusableInTouchMode="true"
+                android:cursorVisible="false"
+                android:paddingStart="12dp"
+                style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
-    <!-- Кнопки -->
+    <!-- Поле для ввода собственной категории (появляется при выборе "Другое") -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilCustomCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите свою категорию"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+        android:layout_marginTop="8dp"
+        android:visibility="gone">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCustomCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- RecyclerView для отображения загруженных изображений чеков -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvReceiptImages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_receipt_image" />
+
+    <!-- Кнопки "Отмена" и "Сохранить" -->
     <LinearLayout
+        android:id="@+id/addTransactionLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -145,7 +202,30 @@
             style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_marginStart="16dp" />
     </LinearLayout>
+
+    <!-- Кнопки "Сохранить" и "Удалить" -->
+    <LinearLayout
+        android:id="@+id/removeTransactionLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="24dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEditTransaction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Сохранить"
+            style="@style/Widget.Material3.Button.ElevatedButton" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteTransaction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Удалить"
+            android:textColor="?attr/colorError"
+            android:layout_marginStart="16dp"
+            style="@style/Widget.Material3.Button.TextButton" />
+    </LinearLayout>
 </LinearLayout>
-
-
-

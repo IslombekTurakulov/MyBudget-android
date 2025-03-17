@@ -14,7 +14,9 @@ object TransactionMapper {
             categoryIcon = dto.categoryIcon, // Преобразуем иконку
             amount = dto.amount,
             date = dto.date,
-            userId = dto.userId
+            userId = dto.userId,
+            type = dto.transactionType.typeName,
+            images = dto.images,
         )
     }
 
@@ -27,7 +29,9 @@ object TransactionMapper {
             categoryIcon = entity.categoryIcon, // Преобразуем обратно
             amount = entity.amount,
             date = entity.date,
-            userId = entity.userId
+            userId = entity.userId,
+            transactionType = TransactionEntity.TransactionType.fromString(entity.type),
+            images = entity.images,
         )
     }
 }

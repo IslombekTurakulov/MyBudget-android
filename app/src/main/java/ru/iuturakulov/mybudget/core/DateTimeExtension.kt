@@ -1,12 +1,15 @@
 package ru.iuturakulov.mybudget.core
 
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 object DateTimeExtension {
     fun Long.toIso8601Date(): String {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault())
-        return formatter.format(Instant.ofEpochMilli(this))
+        val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())
+        return dateTime.format(formatter)
     }
 }

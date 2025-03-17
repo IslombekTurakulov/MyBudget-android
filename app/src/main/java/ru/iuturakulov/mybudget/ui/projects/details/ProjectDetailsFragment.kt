@@ -32,6 +32,7 @@ class ProjectDetailsFragment :
 
     private val viewModel: ProjectDetailsViewModel by viewModels()
     private val args: ProjectDetailsFragmentArgs by navArgs()
+    private var isTextExpanded = false
     private lateinit var transactionAdapter: TransactionAdapter
 
     override fun getViewBinding(view: View): FragmentProjectDetailsBinding {
@@ -48,6 +49,27 @@ class ProjectDetailsFragment :
         setupToolbar()
         setupRecyclerView()
         setupListeners()
+        updateTextView()
+        binding.btnToggleDescription.setOnClickListener {
+            toggleTextView()
+        }
+    }
+
+    private fun toggleTextView() {
+        isTextExpanded = !isTextExpanded
+        updateTextView()
+    }
+
+    private fun updateTextView() {
+        if (isTextExpanded) {
+            binding.tvProjectDescription.maxLines = Int.MAX_VALUE
+            binding.btnToggleDescription.text = getString(R.string.show_less)
+            binding.btnToggleDescription.setIconResource(R.drawable.baseline_expand_less_24)
+        } else {
+            binding.tvProjectDescription.maxLines = 3
+            binding.btnToggleDescription.text = getString(R.string.show_more)
+            binding.btnToggleDescription.setIconResource(R.drawable.baseline_expand_more_24)
+        }
     }
 
     override fun setupObservers() {
@@ -140,6 +162,7 @@ class ProjectDetailsFragment :
             .setMessage("Вы уверены, что хотите удалить этот проект?")
             .setPositiveButton("Удалить") { _, _ ->
                 viewModel.deleteProject(args.projectId)
+                viewModel.syncProjects()
                 findNavController().navigateUp()
             }
             .setNegativeButton("Отмена", null)
@@ -175,6 +198,18 @@ class ProjectDetailsFragment :
         binding.tvRemainingBudget.text =
             "Осталось: ${(project.project.budgetLimit - project.project.amountSpent)} ₽"
 
+        if (project.project.description.isNullOrEmpty()) {
+            binding.projectDescriptionCard.visibility = View.GONE
+        } else {
+            binding.projectDescriptionCard.visibility = View.VISIBLE
+            if (project.project.description.length >= 300) {
+                binding.btnToggleDescription.visibility = View.VISIBLE
+            } else {
+                binding.btnToggleDescription.visibility = View.GONE
+            }
+        }
+
+        binding.tvProjectDescription.text = project.project.description
         updateTransactions(project.transactions)
     }
 
@@ -207,25 +242,20 @@ class ProjectDetailsFragment :
     }
 
     private fun showTransactionDetailsDialog(transaction: TransactionEntity) {
-        val dialog = TransactionDetailsDialogFragment.newInstance(transaction.toTemporaryModel())
+        val dialog = AddTransactionDialogFragment.newInstance(
+            projectId = args.projectId,
+            transaction = transaction.toTemporaryModel()
+        )
+
         dialog.setOnTransactionUpdated { updatedTransaction ->
             viewModel.updateTransaction(args.projectId, updatedTransaction.toEntity())
         }
-        dialog.setOnTransactionDeleted {
-            showDeleteTransactionDialog(transaction)
-        }
-        dialog.show(childFragmentManager, "TransactionDetailsDialog")
-    }
 
-    private fun showDeleteTransactionDialog(transaction: TransactionEntity) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Удалить транзакцию")
-            .setMessage("Вы уверены, что хотите удалить эту транзакцию?")
-            .setPositiveButton("Удалить") { _, _ ->
-                viewModel.deleteTransaction(args.projectId, transaction.id)
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
+        dialog.setOnTransactionDeleted {
+            viewModel.deleteTransaction(args.projectId, transaction.id)
+        }
+
+        dialog.show(childFragmentManager, "TransactionDetailsDialog")
     }
 
     private fun showFilterDialog() {
