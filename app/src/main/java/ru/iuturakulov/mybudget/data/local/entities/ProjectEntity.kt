@@ -12,7 +12,7 @@ data class ProjectEntity(
     @ColumnInfo(name = "budget_limit") val budgetLimit: Double,
     @ColumnInfo(name = "amount_spent") val amountSpent: Double,
     @ColumnInfo(name = "status") val status: ProjectStatus,
-    @ColumnInfo(name = "created_date") val createdDate: Long,
+    @ColumnInfo(name = "created_date") val createdAt: Long,
     @ColumnInfo(name = "last_modified") val lastModified: Long
 )
 

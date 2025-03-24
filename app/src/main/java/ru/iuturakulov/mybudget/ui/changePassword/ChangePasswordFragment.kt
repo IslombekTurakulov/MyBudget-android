@@ -2,12 +2,11 @@ package ru.iuturakulov.mybudget.ui.changePassword
 
 import android.util.Patterns
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.databinding.FragmentChangePasswordBinding
@@ -18,32 +17,37 @@ class ChangePasswordFragment :
     BaseFragment<FragmentChangePasswordBinding>(R.layout.fragment_change_password) {
 
     private val viewModel: ChangePasswordViewModel by viewModels()
-    override fun getViewBinding(view: View): FragmentChangePasswordBinding {
-        return FragmentChangePasswordBinding.bind(view)
-    }
+
+    override fun getViewBinding(view: View): FragmentChangePasswordBinding =
+        FragmentChangePasswordBinding.bind(view)
 
     override fun setupViews() {
-        binding.toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
+        binding.apply {
+            toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
+            btnChangePassword.setOnClickListener {
+                val email = etEmail.text?.toString().orEmpty().trim()
+                val oldPassword = etOldPassword.text?.toString().orEmpty().trim()
+                val newPassword = etNewPassword.text?.toString().orEmpty().trim()
 
-        binding.btnChangePassword.setOnClickListener {
-            val email = binding.etEmail.text?.toString().orEmpty().trim()
-            val etOldPassword = binding.etOldPassword.text?.toString().orEmpty().trim()
-            val etNewPassword = binding.etNewPassword.text?.toString().orEmpty().trim()
-
-            if (validateInputs(email, etOldPassword, etNewPassword)) {
-                viewModel.changePassword(email, etOldPassword, etNewPassword)
+                if (validateInputs(email, oldPassword, newPassword)) {
+                    viewModel.changePassword(email, oldPassword, newPassword)
+                }
+            }
+            // Автоматическая очистка ошибок при вводе
+            etEmail.doOnTextChanged { _, _, _, _ ->
+                etEmailInputLayout.error = null
+            }
+            etOldPassword.doOnTextChanged { _, _, _, _ ->
+                etOldPasswordInputLayout.error = null
+            }
+            etNewPassword.doOnTextChanged { _, _, _, _ ->
+                etNewPasswordInputLayout.error = null
             }
         }
     }
 
-    private fun validateInputs(
-        email: String,
-        etOldPassword: String,
-        etNewPassword: String
-    ): Boolean {
-        fun showError(inputLayout: TextInputLayout, error: String?): Boolean {
+    private fun validateInputs(email: String, oldPassword: String, newPassword: String): Boolean {
+        fun showError(inputLayout: com.google.android.material.textfield.TextInputLayout, error: String?): Boolean {
             inputLayout.error = error
             inputLayout.isErrorEnabled = error != null
             if (error != null) inputLayout.requestFocus()
@@ -53,10 +57,8 @@ class ChangePasswordFragment :
         if (!showError(
                 inputLayout = binding.etEmailInputLayout,
                 error = when {
-                    email.isBlank() -> "Email не может быть пустым"
-                    !Patterns.EMAIL_ADDRESS.matcher(email)
-                        .matches() -> "Некорректный Email"
-
+                    email.isBlank() -> getString(R.string.error_empty_email)
+                    !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> getString(R.string.error_invalid_email)
                     else -> null
                 }
             )
@@ -67,8 +69,8 @@ class ChangePasswordFragment :
         if (!showError(
                 inputLayout = binding.etOldPasswordInputLayout,
                 error = when {
-                    etOldPassword.isBlank() -> "Пароль не может быть пустым"
-                    etOldPassword.length < 6 -> "Пароль должен содержать минимум 6 символов"
+                    oldPassword.isBlank() -> getString(R.string.error_empty_password)
+                    oldPassword.length < 6 -> getString(R.string.error_short_password)
                     else -> null
                 }
             )
@@ -79,8 +81,8 @@ class ChangePasswordFragment :
         if (!showError(
                 inputLayout = binding.etNewPasswordInputLayout,
                 error = when {
-                    etNewPassword.isBlank() -> "Пароль не может быть пустым"
-                    etNewPassword.length < 6 -> "Пароль должен содержать минимум 6 символов"
+                    newPassword.isBlank() -> getString(R.string.error_empty_password)
+                    newPassword.length < 6 -> getString(R.string.error_short_password)
                     else -> null
                 }
             )
@@ -92,24 +94,23 @@ class ChangePasswordFragment :
 
     override fun setupObservers() {
         viewModel.changePasswordState.observe(viewLifecycleOwner) { state ->
-            binding.btnChangePassword.isEnabled =
-                state !is ChangePasswordViewModel.ChangePasswordState.Loading
-            binding.progressBar.isVisible =
-                state is ChangePasswordViewModel.ChangePasswordState.Loading
+            binding.apply {
+                btnChangePassword.isEnabled = state !is ChangePasswordViewModel.ChangePasswordState.Loading
+                progressBar.isVisible = state is ChangePasswordViewModel.ChangePasswordState.Loading
+            }
 
             when (state) {
                 is ChangePasswordViewModel.ChangePasswordState.Success -> {
-                    Snackbar.make(binding.root, "Успех! Проверьте почту", Snackbar.LENGTH_LONG)
+                    Snackbar.make(binding.root, getString(R.string.password_change_success), Snackbar.LENGTH_LONG)
                         .show()
                     findNavController().navigateUp()
                 }
-
                 is ChangePasswordViewModel.ChangePasswordState.Error -> {
-                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG)
+                        .show()
                 }
-
                 is ChangePasswordViewModel.ChangePasswordState.Loading -> {
-                    // Отобразить прогресс
+                    // Прогресс-бар уже отображается
                 }
             }
         }

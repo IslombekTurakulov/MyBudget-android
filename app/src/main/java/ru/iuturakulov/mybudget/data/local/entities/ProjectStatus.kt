@@ -2,23 +2,20 @@ package ru.iuturakulov.mybudget.data.local.entities
 
 import android.content.Context
 import androidx.core.content.ContextCompat
-import kotlinx.serialization.SerialName
 import ru.iuturakulov.mybudget.R
 
 enum class ProjectStatus(val type: String) {
     ACTIVE("active"),
-    COMPLETED("completed"),
-    PENDING("pending"),
-    CANCELLED("cancelled"),
+    DELETED("completed"),
+    ARCHIVED("cancelled"),
     ALL("all");
 
     fun canTransitionTo(newStatus: ProjectStatus): Boolean {
         val allowedTransitions = mapOf(
-            PENDING to listOf(ACTIVE, CANCELLED),
-            ACTIVE to listOf(COMPLETED, CANCELLED),
-            ALL to listOf(ACTIVE, PENDING, COMPLETED, CANCELLED),
-            COMPLETED to emptyList(),
-            CANCELLED to emptyList()
+            ACTIVE to listOf(DELETED, ARCHIVED),
+            ALL to listOf(ACTIVE, DELETED, ARCHIVED),
+            DELETED to emptyList(),
+            ARCHIVED to emptyList()
         )
         return allowedTransitions[this]?.contains(newStatus) == true
     }
@@ -27,10 +24,18 @@ enum class ProjectStatus(val type: String) {
         fun ProjectStatus.getStatusColor(context: Context): Int {
             return when (this) {
                 ACTIVE -> ContextCompat.getColor(context, R.color.green)
-                COMPLETED -> ContextCompat.getColor(context, R.color.blue)
-                PENDING -> ContextCompat.getColor(context, R.color.orange)
-                CANCELLED -> ContextCompat.getColor(context, R.color.red)
+                DELETED -> ContextCompat.getColor(context, R.color.blue)
+                ARCHIVED -> ContextCompat.getColor(context, R.color.red)
                 ALL -> ContextCompat.getColor(context, R.color.gray)
+            }
+        }
+
+        fun ProjectStatus.getStatusText(): String {
+            return when (this) {
+                ACTIVE -> "Активный"
+                DELETED -> "Удален"
+                ARCHIVED -> "Архивирован"
+                ALL -> ""
             }
         }
     }

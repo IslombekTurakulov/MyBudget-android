@@ -23,14 +23,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Роль участника"
-        android:layout_marginTop="12dp"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+        android:layout_weight="1"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
+        android:layout_marginTop="12dp">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/spinnerRole"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none" />
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:cursorVisible="false"
+            android:minHeight="40dp"
+            android:paddingStart="12dp"
+            style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Кнопка отправки приглашения -->

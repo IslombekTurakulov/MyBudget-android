@@ -12,6 +12,55 @@
     <string name="show_more">Показать больше</string>
     <string name="show_less">Показать меньше</string>
 
+    <!-- Ошибки ввода -->
+    <string name="error_empty_email">Email не может быть пустым</string>
+    <string name="error_invalid_email">Некорректный Email</string>
+    <string name="error_empty_password">Пароль не может быть пустым</string>
+    <string name="error_short_password">Пароль должен содержать минимум 6 символов</string>
+
+    <!-- Сообщения -->
+    <string name="password_change_success">Успех! Проверьте почту</string>
+
+    <!-- Диалог выбора источника изображения -->
+    <string name="camera">Камера</string>
+    <string name="gallery">Галерея</string>
+    <string name="select_image_source">Выберите источник изображения</string>
+
+    <!-- Ошибки ввода -->
+    <string name="error_loading_image">Ошибка загрузки изображения</string>
+    <string name="error_enter_name">Введите название</string>
+    <string name="error_enter_valid_amount">Введите корректную сумму</string>
+    <string name="error_enter_custom_category">Введите свою категорию</string>
+
+    <!-- Сообщение о распознанной сумме -->
+    <string name="recognized_amount">Распознанная сумма: %.2f</string>
+
+    <!-- Тексты кнопок -->
+    <string name="save">Сохранить</string>
+    <string name="add">Добавить</string>
+    <string name="delete_transaction">Удалить транзакцию</string>
+    <string name="delete_transaction_confirmation">Вы уверены, что хотите удалить эту транзакцию?</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
+
+    <!-- Заголовки и кнопки -->
+    <string name="delete_project">Удалить проект</string>
+    <string name="delete_project_confirmation">Вы уверены, что хотите удалить этот проект?</string>
+
+    <!-- Информация о бюджете -->
+    <string name="project_budget">Бюджет: %1$.2f ₽</string>
+    <string name="project_spent">Потрачено: %1$.2f ₽</string>
+    <string name="project_remaining">Осталось: %1$.2f ₽</string>
+
+    <!-- Транзакции -->
+    <string name="no_transactions">Нет транзакций</string>
+    <string name="empty_transactions_desc">Пусто</string>
+    <string name="transaction_section_name">Транзакции</string>
+    <string name="all">Все</string>
+
+    <!-- Сообщения об ошибках -->
+    <string name="error_loading_data">Ошибка загрузки данных</string>
+
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
         Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae, molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor bibendum, vel congue leo egestas.\n\n

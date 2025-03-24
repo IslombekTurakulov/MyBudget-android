@@ -23,51 +23,54 @@ class TransactionAdapter(
             parent,
             false
         )
-        return TransactionViewHolder(binding)
+        return TransactionViewHolder(binding, onTransactionClicked)
     }
 
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    inner class TransactionViewHolder(private val binding: ItemTransactionBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class TransactionViewHolder(
+        private val binding: ItemTransactionBinding,
+        private val onTransactionClicked: (TransactionEntity) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        companion object {
+            private val currencyFormatter: NumberFormat = NumberFormat.getCurrencyInstance(Locale("ru", "RU")).apply {
+                currency = Currency.getInstance("RUB")
+                maximumFractionDigits = 2
+                minimumFractionDigits = 2
+            }
+        }
 
         fun bind(transaction: TransactionEntity) {
             binding.apply {
                 tvTransactionName.text = transaction.name
                 tvTransactionCategory.text = transaction.category
-                tvTransactionUser.text = "От: ${transaction.userId}" // TODO: заменить на имя пользователя
+                tvTransactionUser.text = "От: ${transaction.userId}"
                 tvTransactionDate.text = transaction.date.toIso8601Date()
-                tvTransactionAmount.text = formatAmount(transaction)
 
-                // Устанавливаем цвет суммы на основе типа транзакции
-                val amountColorRes = when (TransactionEntity.TransactionType.fromString(transaction.type)) {
+                val transactionType = TransactionEntity.TransactionType.fromString(transaction.type)
+                tvTransactionAmount.text = formatAmount(transaction, transactionType)
+
+                // Устанавливаем цвет суммы в зависимости от типа транзакции
+                val amountColorRes = when (transactionType) {
                     TransactionEntity.TransactionType.EXPENSE -> android.R.color.holo_red_dark
                     TransactionEntity.TransactionType.INCOME -> android.R.color.holo_green_dark
                 }
-                tvTransactionAmount.setTextColor(
-                    ContextCompat.getColor(root.context, amountColorRes)
-                )
-
-                // Устанавливаем иконку категории
+                tvTransactionAmount.setTextColor(ContextCompat.getColor(root.context, amountColorRes))
                 ivTransactionCategoryIcon.text = transaction.categoryIcon
 
-                // Обработчик нажатия на элемент списка
                 root.setOnClickListener { onTransactionClicked(transaction) }
             }
         }
 
-        private fun formatAmount(transaction: TransactionEntity): String {
-            // Создаем NumberFormat для локали "ru_RU" и устанавливаем валюту RUB
-            val nf = NumberFormat.getCurrencyInstance(Locale("ru", "RU")).apply {
-                currency = Currency.getInstance("RUB")
-                maximumFractionDigits = 2
-                minimumFractionDigits = 2
-            }
-            // Форматируем сумму, например "1 234,56 ₽"
-            val formattedAmount = nf.format(transaction.amount)
-            return when (TransactionEntity.TransactionType.fromString(transaction.type)) {
+        private fun formatAmount(
+            transaction: TransactionEntity,
+            type: TransactionEntity.TransactionType
+        ): String {
+            val formattedAmount = currencyFormatter.format(transaction.amount)
+            return when (type) {
                 TransactionEntity.TransactionType.EXPENSE -> "-$formattedAmount"
                 TransactionEntity.TransactionType.INCOME -> "+$formattedAmount"
             }
@@ -86,3 +89,4 @@ class TransactionAdapter(
         ): Boolean = oldItem == newItem
     }
 }
+

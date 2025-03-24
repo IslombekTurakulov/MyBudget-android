@@ -9,6 +9,6 @@ data class ProjectDto(
     val budgetLimit: Double,
     val amountSpent: Double,
     val status: ProjectStatus,
-    val createdDate: Long,
+    val createdAt: Long,
     val lastModified: Long
 )

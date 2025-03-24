@@ -21,14 +21,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -52,11 +51,36 @@ class AddTransactionDialogFragment : DialogFragment() {
     private var onTransactionUpdated: ((TemporaryTransaction) -> Unit)? = null
     private var onTransactionDeleted: (() -> Unit)? = null
 
-    // Новое: список для загруженных изображений
+    // Список для загруженных изображений
     private val selectedImages = mutableListOf<Bitmap>()
-
-    // Новое: адаптер для RecyclerView с изображениями
+    // Адаптер для RecyclerView с изображениями чеков
     private lateinit var receiptImageAdapter: ReceiptImageAdapter
+
+    // Лаунчер для выбора изображения из галереи
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            getBitmapFromUri(it)?.let { bitmap ->
+                val processedBitmap = preprocessBitmap(bitmap)
+                selectedImages.add(processedBitmap)
+                receiptImageAdapter.notifyDataSetChanged()
+                recognizeTextFromImage(processedBitmap)
+            }
+        }
+    }
+
+    // Лаунчер для запроса разрешений
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            showImageSourceDialog()
+        } else {
+            Snackbar.make(binding.root, "Необходимо предоставить разрешения", Snackbar.LENGTH_SHORT)
+                .show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,107 +102,72 @@ class AddTransactionDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         args = arguments?.getParcelable(ARG_TRANSACTION)
+        setupReceiptImagesRecyclerView() // Инициализация RecyclerView для изображений
         setupViews()
-        setupReceiptImagesRecyclerView() // Новое: инициализация RecyclerView для изображений
     }
 
     private fun setupViews() {
         args?.let { argument ->
-
             transaction = argument.transaction
-            // Если транзакция уже есть – заполняем поля, иначе остаётся пустой
-            transaction?.let { trans ->
-                binding.apply {
-                    etTransactionName.setText(trans.name)
-                    etTransactionAmount.setText(trans.amount.toString())
-                    spinnerCategory.setText(trans.category, false)
-                    updateCategoryIcon(trans.categoryIcon)
-                    // Заполняем список изображений, если они есть
-                    selectedImages.addAll(trans.images.mapNotNull(::decodeBase64ToBitmap))
-                    setupReceiptImagesRecyclerView()
-                    // Если редактируем – показываем кнопку удаления
+            binding.apply {
+                if (transaction != null) {
+                    // Режим редактирования: заполняем поля
+                    etTransactionName.setText(transaction?.name)
+                    etTransactionAmount.setText(transaction?.amount.toString())
+                    spinnerCategory.setText(transaction?.category, false)
+                    updateCategoryIcon(transaction?.categoryIcon.orEmpty())
+                    selectedImages.addAll(transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList())
+                    receiptImageAdapter.notifyDataSetChanged()
                     removeTransactionLayout.visibility = View.VISIBLE
-                    binding.addTransactionLayout.visibility = View.GONE
-                    btnSave.text = "Сохранить"
-
-                    // Устанавливаем значение по умолчанию (например, "Расход")
-                    binding.toggleTransactionType.check(
-                        if (trans.type == TransactionEntity.TransactionType.INCOME) {
-                            R.id.btnIncome
-                        } else {
-                            R.id.btnExpense
-                        }
+                    addTransactionLayout.visibility = View.GONE
+                    btnSave.text = getString(R.string.save)
+                    toggleTransactionType.check(
+                        if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
+                        else R.id.btnExpense
                     )
-
-                    btnEditTransaction.setOnClickListener {
-                        processSaveButton(onTransactionUpdated, argument)
-                    }
-
-                    btnDeleteTransaction.setOnClickListener {
-                        showDeleteConfirmationDialog()
-                    }
+                    btnEditTransaction.setOnClickListener { processSaveButton(onTransactionUpdated, argument) }
+                    btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
+                } else {
+                    // Режим добавления: скрываем кнопку удаления
+                    removeTransactionLayout.visibility = View.GONE
+                    addTransactionLayout.visibility = View.VISIBLE
+                    btnSave.text = getString(R.string.add)
+                    btnSave.setOnClickListener { processSaveButton(onTransactionAdded, argument) }
+                    toggleTransactionType.check(R.id.btnIncome)
+                    btnCancel.setOnClickListener { dismiss() }
+                    setupTransactionIcon()
                 }
-            } ?: run {
-                // Режим добавления: скрываем кнопку удаления
-                binding.removeTransactionLayout.visibility = View.GONE
-                binding.addTransactionLayout.visibility = View.VISIBLE
-                binding.btnSave.text = "Добавить"
-
-                // Кнопка "Сохранить"
-                binding.btnSave.setOnClickListener {
-                    processSaveButton(onTransactionAdded, argument)
-                }
-
-                // Устанавливаем значение по умолчанию (например, "Расход")
-                binding.toggleTransactionType.check(R.id.btnIncome)
-
-                // Кнопка "Отмена"
-                binding.btnCancel.setOnClickListener {
-                    dismiss()
-                }
-                setupReceiptImagesRecyclerView()
-            }
-
-            setupCategorySpinner()
-            setupEmojiPicker()
-            setupTransactionTypeToggle() // Новое: настройка выбора типа транзакции
-
-            // Кнопка "Сканировать чек"
-            binding.btnScanReceipt.setOnClickListener {
-                checkAndRequestPermissions()
+                setupCategorySpinner()
+                setupEmojiPicker()
+                setupTransactionTypeToggle()
+                btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
             }
         }
     }
 
-    private fun processSaveButton(invoker: ((TemporaryTransaction) -> Unit)?, argument: AddTransactionArgs) {
+    private fun processSaveButton(
+        invoker: ((TemporaryTransaction) -> Unit)?,
+        argument: AddTransactionArgs
+    ) {
         if (validateInput()) {
-            // Чтение выбранного типа транзакции из MaterialButtonToggleGroup
             val transactionType = when (binding.toggleTransactionType.checkedButtonId) {
                 R.id.btnIncome -> TransactionEntity.TransactionType.INCOME
                 R.id.btnExpense -> TransactionEntity.TransactionType.EXPENSE
                 else -> TransactionEntity.TransactionType.INCOME
             }
-
-            // Если выбрана опция "Другое", берем значение из поля ввода
-            val category = if (binding.spinnerCategory.text.toString()
-                    .equals("Другое", ignoreCase = true)
-            ) {
-                binding.etCustomCategory.text.toString()
-            } else {
-                binding.spinnerCategory.text.toString()
-            }
-            // Передаем новые поля: тип транзакции и список изображений
+            val category = if (binding.spinnerCategory.text.toString().equals("Другое", ignoreCase = true))
+                binding.etCustomCategory.text.toString() else binding.spinnerCategory.text.toString()
             val temporaryTransaction = TemporaryTransaction(
                 id = transaction?.id ?: "${argument.projectId}-${System.currentTimeMillis()}",
                 name = binding.etTransactionName.text.toString(),
                 amount = binding.etTransactionAmount.text.toString().toDouble(),
                 category = category,
-                categoryIcon = binding.ivTransactionCategoryIcon.tag?.toString() ?: "",
+                categoryIcon = binding.ivTransactionCategoryIcon.tag?.toString().orEmpty(),
                 date = transaction?.date ?: System.currentTimeMillis(),
                 projectId = argument.projectId,
-                userId = transaction?.userId ?: "",
-                type = transactionType,           // Новое поле для типа транзакции
-                images = selectedImages.map { bitmapToBase64(it) }    // Новое поле для прикрепленных изображений
+                userId = transaction?.userId.orEmpty(),
+                type = transactionType,
+                images = selectedImages.map { bitmapToBase64(it) }
             )
             invoker?.invoke(temporaryTransaction)
             dismiss()
@@ -186,17 +175,11 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun setupTransactionTypeToggle() {
-        // Добавляем слушатель для отслеживания изменений выбора
-        binding.toggleTransactionType.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        binding.toggleTransactionType.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
-                    R.id.btnIncome -> {
-                        binding.btnIncome.isChecked = true
-                    }
-
-                    R.id.btnExpense -> {
-                        binding.btnExpense.isChecked = true
-                    }
+                    R.id.btnIncome -> binding.btnIncome.isChecked = true
+                    R.id.btnExpense -> binding.btnExpense.isChecked = true
                 }
             }
         }
@@ -204,18 +187,21 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Удалить транзакцию")
-            .setMessage("Вы уверены, что хотите удалить эту транзакцию?")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setTitle(getString(R.string.delete_transaction))
+            .setMessage(getString(R.string.delete_transaction_confirmation))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
                 onTransactionDeleted?.invoke()
                 dismiss()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
 
     private fun updateCategoryIcon(icon: String) {
-        binding.ivTransactionCategoryIcon.text = icon
+        binding.ivTransactionCategoryIcon.apply {
+            text = icon
+            tag = icon
+        }
     }
 
     private fun decodeBase64ToBitmap(base64String: String): Bitmap? {
@@ -227,36 +213,27 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
+    private fun setupTransactionIcon() {
+        val emojis = resources.getStringArray(R.array.emoji_list).toList()
+        binding.ivTransactionCategoryIcon.text = emojis.shuffled().first()
+    }
+
     private fun setupCategorySpinner() {
         val categories = resources.getStringArray(R.array.transaction_categories)
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
-            categories
-        )
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
         binding.spinnerCategory.setAdapter(adapter)
-
-        binding.spinnerCategory.setOnClickListener {
-            binding.spinnerCategory.showDropDown()
-        }
-
+        binding.spinnerCategory.setOnClickListener { binding.spinnerCategory.showDropDown() }
         binding.spinnerCategory.setOnItemClickListener { _, _, position, _ ->
             val selectedCategory = categories[position]
-            if (selectedCategory.equals("Другое", ignoreCase = true)) {
-                // Показываем поле для ввода собственной категории
-                binding.tilCustomCategory.visibility = View.VISIBLE
-                binding.etCustomCategory.requestFocus()
-            } else {
-                // Если выбрана другая категория — скрываем поле для ввода своей категории
-                binding.tilCustomCategory.visibility = View.GONE
-            }
+            binding.tilCustomCategory.visibility = if (selectedCategory.equals("Другое", ignoreCase = true))
+                View.VISIBLE else View.GONE
         }
     }
 
     private fun setupEmojiPicker() {
         binding.ivTransactionCategoryIcon.setOnClickListener {
             showEmojiPickerDialog { selectedEmoji ->
-                binding.ivTransactionCategoryIcon.text = selectedEmoji // Устанавливаем эмодзи
+                binding.ivTransactionCategoryIcon.text = selectedEmoji
                 binding.ivTransactionCategoryIcon.tag = selectedEmoji
             }
         }
@@ -265,73 +242,41 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun showEmojiPickerDialog(onEmojiSelected: (String) -> Unit) {
         val emojis = resources.getStringArray(R.array.emoji_list).toList()
         val dialog = BottomSheetDialog(requireContext())
-        val dialogView = RecyclerView(requireContext()).apply {
-            layoutManager = GridLayoutManager(context, 5) // Сетка 5xN
+        val recyclerView = RecyclerView(requireContext()).apply {
+            layoutManager = GridLayoutManager(context, 5)
             adapter = EmojiPickerAdapter(emojis) { emoji ->
                 onEmojiSelected(emoji)
                 dialog.dismiss()
             }
         }
-        dialog.setContentView(dialogView)
+        dialog.setContentView(recyclerView)
         dialog.show()
     }
 
-    private val requestPermissionsLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val allGranted = permissions.values.all { it }
-        if (allGranted) {
-            showImageSourceDialog()
-        } else {
-            Toast.makeText(
-                requireContext(),
-                "Необходимо предоставить разрешения",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    private fun requestPermissions() {
-        val permissions = mutableListOf(
-            Manifest.permission.CAMERA
-        )
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        } else {
-            permissions.add(Manifest.permission.READ_MEDIA_IMAGES)
-        }
-        requestPermissionsLauncher.launch(permissions.toTypedArray())
-    }
-
     private fun checkAndRequestPermissions() {
-        val cameraPermission = ContextCompat.checkSelfPermission(
-            requireContext(),
-            Manifest.permission.CAMERA
-        )
-        val storagePermission = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            )
-        } else {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.READ_MEDIA_IMAGES
-            )
-        }
-        if (cameraPermission == PackageManager.PERMISSION_GRANTED &&
-            storagePermission == PackageManager.PERMISSION_GRANTED
-        ) {
+        val cameraPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+        val storagePermission = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+        else
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES)
+        if (cameraPermission == PackageManager.PERMISSION_GRANTED && storagePermission == PackageManager.PERMISSION_GRANTED) {
             showImageSourceDialog()
         } else {
-            requestPermissions()
+            requestPermissionsLauncher.launch(
+                arrayOf(
+                    Manifest.permission.CAMERA,
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    else Manifest.permission.READ_MEDIA_IMAGES
+                )
+            )
         }
     }
 
     private fun showImageSourceDialog() {
-        val options = arrayOf("Камера", "Галерея")
+        val options = arrayOf(getString(R.string.camera), getString(R.string.gallery))
         AlertDialog.Builder(requireContext())
-            .setTitle("Выберите источник изображения")
+            .setTitle(getString(R.string.select_image_source))
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> openCamera()
@@ -339,21 +284,6 @@ class AddTransactionDialogFragment : DialogFragment() {
                 }
             }
             .show()
-    }
-
-    // Обновлённый imagePickerLauncher: после получения изображения добавляем его в список и обновляем RecyclerView
-    private val imagePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri?.let {
-            val bitmap = getBitmapFromUri(uri)
-            bitmap?.let {
-                val processedBitmap = preprocessBitmap(it)
-                selectedImages.add(processedBitmap)
-                receiptImageAdapter.notifyDataSetChanged()
-                recognizeTextFromImage(processedBitmap)
-            }
-        }
     }
 
     private fun openCamera() {
@@ -368,11 +298,10 @@ class AddTransactionDialogFragment : DialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            val imageUri = data?.data
-            imageUri?.let { uri ->
-                val bitmap = getBitmapFromUri(uri)
-                bitmap?.let {
-                    val processedBitmap = preprocessBitmap(it)
+            // Получаем изображение из data; для некоторых устройств может понадобиться сохранять Uri
+            data?.data?.let { uri ->
+                getBitmapFromUri(uri)?.let { bitmap ->
+                    val processedBitmap = preprocessBitmap(bitmap)
                     selectedImages.add(processedBitmap)
                     receiptImageAdapter.notifyDataSetChanged()
                     recognizeTextFromImage(processedBitmap)
@@ -381,11 +310,8 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-    // Новое: настройка RecyclerView для отображения выбранных изображений
     private fun setupReceiptImagesRecyclerView() {
-        // Предполагается, что в layout есть RecyclerView с id rvReceiptImages
         receiptImageAdapter = ReceiptImageAdapter(selectedImages) { position ->
-            // Удаление изображения по нажатию кнопки "удалить"
             selectedImages.removeAt(position)
             receiptImageAdapter.notifyItemRemoved(position)
         }
@@ -395,82 +321,53 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun getBitmapFromUri(uri: Uri): Bitmap? {
         return try {
-            val inputStream = requireContext().contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream)
+            requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream)
+            }
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Ошибка загрузки изображения", Toast.LENGTH_SHORT)
-                .show()
+            Snackbar.make(binding.root, getString(R.string.error_loading_image), Snackbar.LENGTH_SHORT).show()
             null
         }
     }
 
-    // Предварительная обработка изображения для улучшения качества распознавания
+    // Применение предобработки: преобразование в Ч/Б и изменение размера
     private fun preprocessBitmap(bitmap: Bitmap): Bitmap {
-        // Преобразование в Ч/Б изображение
-        val matrix = ColorMatrix()
-        matrix.setSaturation(0f)
-        val filter = ColorMatrixColorFilter(matrix)
-        val paint = Paint().apply { colorFilter = filter }
-        val grayscaleBitmap =
-            Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(grayscaleBitmap)
+        val grayscale = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(grayscale)
+        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) }) }
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
-
-        // Сжатие изображения до 1024px по большей стороне
-        return resizeBitmap(grayscaleBitmap, 1024, 1024)
+        return resizeBitmap(grayscale, 1024, 1024)
     }
 
-    // Изменение размера изображения
     private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
         val (width, height) = if (bitmap.width > maxWidth || bitmap.height > maxHeight) {
             val aspectRatio = bitmap.width.toFloat() / bitmap.height
-            when {
-                aspectRatio > 1 -> maxWidth to (maxWidth / aspectRatio).toInt()
-                else -> (maxHeight * aspectRatio).toInt() to maxHeight
-            }
-        } else {
-            bitmap.width to bitmap.height
-        }
-
-        return Bitmap.createScaledBitmap(bitmap, width, height, true).apply {
-            setHasAlpha(false)
-        }
+            if (aspectRatio > 1) maxWidth to (maxWidth / aspectRatio).toInt()
+            else (maxHeight * aspectRatio).toInt() to maxHeight
+        } else bitmap.width to bitmap.height
+        return Bitmap.createScaledBitmap(bitmap, width, height, true).apply { setHasAlpha(false) }
     }
 
     private fun recognizeTextFromImage(bitmap: Bitmap) {
-        val startTime = System.currentTimeMillis() // Время начала распознавания
-
+        val startTime = System.currentTimeMillis()
         val inputImage = InputImage.fromBitmap(bitmap, 0)
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.Builder().build())
-
         recognizer.process(inputImage)
             .addOnSuccessListener { visionText ->
                 val processedText = preprocessText(visionText.text)
                 val totalAmount = extractTotalAmount(processedText)
-
-                binding.tvRecognizedAmount.text =
-                    "Распознанная сумма: ${totalAmount.toDoubleOrNull() ?: 0.0}"
+                binding.tvRecognizedAmount.text = getString(R.string.recognized_amount, totalAmount.toDoubleOrNull() ?: 0.0)
                 updateTransactionAmount(totalAmount)
-
                 val duration = System.currentTimeMillis() - startTime
-                Toast.makeText(
-                    requireContext(),
-                    "Распознавание завершено за ${duration}ms",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Snackbar.make(binding.root, "Распознавание завершено за ${duration}ms", Snackbar.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Toast.makeText(
-                    requireContext(),
-                    "Ошибка распознавания текста: ${e.localizedMessage}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Snackbar.make(binding.root, "Ошибка распознавания: ${e.localizedMessage}", Snackbar.LENGTH_SHORT).show()
             }
     }
 
     private fun preprocessText(text: String): String {
-        return text
-            .replace(Regex("[©®™•§]"), "")
+        return text.replace(Regex("[©®™•§]"), "")
             .replace(Regex("\\s+"), " ")
             .replace(Regex("(?<=\\d) (?=\\d)"), "")
             .replace(Regex("o", RegexOption.IGNORE_CASE), "0")
@@ -479,19 +376,14 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun extractTotalAmount(text: String): String {
         val patterns = listOf(
-            Regex(
-                """(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""",
-                RegexOption.IGNORE_CASE
-            ),
+            Regex("""(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""", RegexOption.IGNORE_CASE),
             Regex("""([€$₽])\s*([\d\s]+[.,]\d{2})\b"""),
             Regex("""\b(\d{1,3}(?:[ ,]\d{3})*[.,]\d{2})(?=\s*(?:руб|р|usd|€|\$))"""),
             Regex("""\b(\d+[.,]\d{2})\b""")
         )
         patterns.forEach { regex ->
             regex.findAll(text).lastOrNull()?.let {
-                return it.groupValues.last()
-                    .replace(Regex("""[ ,]"""), "")
-                    .replace(',', '.')
+                return it.groupValues.last().replace(Regex("""[ ,]"""), "").replace(',', '.')
             }
         }
         return "0.00"
@@ -504,22 +396,21 @@ class AddTransactionDialogFragment : DialogFragment() {
         binding.etTransactionAmount.setText(updatedAmount.toString())
     }
 
-    // Оптимизированная валидация с проверкой корректности суммы
+    // Валидация введенных данных
     private fun validateInput(): Boolean {
         val name = binding.etTransactionName.text?.toString()
         val amountStr = binding.etTransactionAmount.text?.toString()
         val customCategory = binding.etCustomCategory?.text?.toString() ?: ""
         if (name.isNullOrBlank()) {
-            binding.etTransactionName.error = "Введите название"
+            binding.etTransactionName.error = getString(R.string.error_enter_name)
             return false
         }
         if (amountStr.isNullOrBlank() || amountStr.toDoubleOrNull() == null || amountStr.toDouble() <= 0) {
-            binding.etTransactionAmount.error = "Введите корректную сумму"
+            binding.etTransactionAmount.error = getString(R.string.error_enter_valid_amount)
             return false
         }
-        // Если выбрана опция "Другое", проверяем, что пользователь ввёл свою категорию
-        if (binding.spinnerCategory.text.toString() == "Другое" && customCategory.isBlank()) {
-            Toast.makeText(requireContext(), "Введите свою категорию", Toast.LENGTH_SHORT).show()
+        if (binding.spinnerCategory.text.toString().equals("Другое", ignoreCase = true) && customCategory.isBlank()) {
+            Snackbar.make(binding.root, getString(R.string.error_enter_custom_category), Snackbar.LENGTH_SHORT).show()
             return false
         }
         return true
@@ -543,14 +434,13 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun bitmapToBase64(bitmap: Bitmap): String {
-        ByteArrayOutputStream().use { baos ->
+        return ByteArrayOutputStream().use { baos ->
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-            val byteArray = baos.toByteArray()
-            return Base64.encodeToString(byteArray, Base64.DEFAULT)
+            Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT)
         }
     }
 
-    // Новая внутренняя реализация адаптера для RecyclerView с изображениями чеков
+    // Внутренний адаптер для RecyclerView с изображениями чеков
     inner class ReceiptImageAdapter(
         private val images: List<Bitmap>,
         private val onDelete: (Int) -> Unit
@@ -562,16 +452,13 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_receipt_image, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_receipt_image, parent, false)
             return ImageViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
             holder.imageView.setImageBitmap(images[position])
-            holder.btnDelete.setOnClickListener {
-                onDelete(position)
-            }
+            holder.btnDelete.setOnClickListener { onDelete(position) }
         }
 
         override fun getItemCount(): Int = images.size
@@ -587,13 +474,11 @@ class AddTransactionDialogFragment : DialogFragment() {
             var transaction: TemporaryTransaction? = null
         ) : Parcelable
 
-        fun newInstance(
-            projectId: String,
-            transaction: TemporaryTransaction? = null
-        ): AddTransactionDialogFragment {
+        fun newInstance(projectId: String, transaction: TemporaryTransaction? = null): AddTransactionDialogFragment {
             val fragment = AddTransactionDialogFragment()
-            val args = Bundle()
-            args.putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId, transaction))
+            val args = Bundle().apply {
+                putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId, transaction))
+            }
             fragment.arguments = args
             return fragment
         }

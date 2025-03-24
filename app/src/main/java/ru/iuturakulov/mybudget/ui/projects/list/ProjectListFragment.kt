@@ -69,16 +69,14 @@ class ProjectListFragment :
                 this.requireActivity().supportFragmentManager,
                 "CreateProjectFragment"
             )
+            createProjectBottomSheet.setOnProjectAdded {
+                viewModel.syncProjects()
+            }
         }
 
         binding.fabFilterProjects.setOnClickListener {
             showFilterDialog()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.syncProjects()
     }
 
     override fun setupObservers() {
@@ -142,15 +140,29 @@ class ProjectListFragment :
     private fun showFilterDialog() {
         val bottomSheet = BottomSheetDialog(requireContext())
         val dialogBinding = DialogFilterBinding.inflate(layoutInflater)
-
         bottomSheet.setContentView(dialogBinding.root)
+
+        lifecycleScope.launchWhenStarted {
+            viewModel.filterStatus.collect { status ->
+                dialogBinding.radioGroupStatus.check(
+                    when (status) {
+                        ProjectStatus.ACTIVE -> R.id.radioActive
+                        ProjectStatus.DELETED -> R.id.radioDeleted
+                        ProjectStatus.ARCHIVED -> R.id.radioArchived
+                        else -> R.id.radioAll
+                    }
+                )
+            }
+        }
 
         dialogBinding.radioGroupStatus.setOnCheckedChangeListener { _, checkedId ->
             val filter = when (checkedId) {
                 R.id.radioActive -> ProjectStatus.ACTIVE
-                R.id.radioCompleted -> ProjectStatus.COMPLETED
+                R.id.radioDeleted -> ProjectStatus.DELETED
+                R.id.radioArchived -> ProjectStatus.ARCHIVED
                 else -> ProjectStatus.ALL
             }
+            dialogBinding.radioGroupStatus.check(checkedId)
             viewModel.setFilterStatus(filter)
             bottomSheet.dismiss()
         }

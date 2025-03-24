@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
@@ -33,7 +32,8 @@ class ProjectDetailsViewModel @Inject constructor(
     private val _transactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val transactions: StateFlow<List<TransactionEntity>> = _transactions.asStateFlow()
 
-    private val currentFilter = MutableStateFlow(TransactionFilter())
+    private val _currentFilter = MutableStateFlow(TransactionFilter())
+    val currentFilter: StateFlow<TransactionFilter> = _currentFilter
 
     init {
         observeFilterChanges()
@@ -61,7 +61,7 @@ class ProjectDetailsViewModel @Inject constructor(
      */
     private fun observeFilterChanges() {
         viewModelScope.launch {
-            currentFilter.collect { filter ->
+            _currentFilter.collect { filter ->
                 val transactions = _transactions.value
                 applyCurrentFilter(transactions)
             }
@@ -133,11 +133,11 @@ class ProjectDetailsViewModel @Inject constructor(
      * Применение фильтра.
      */
     fun applyFilter(filter: TransactionFilter) {
-        currentFilter.value = filter
+        _currentFilter.value = filter
     }
 
     private fun applyCurrentFilter(transactions: List<TransactionEntity>) {
-        val filter = currentFilter.value
+        val filter = _currentFilter.value
         val minAmount = filter.minAmount
         val maxAmount = filter.maxAmount
         val category = filter.category

@@ -62,10 +62,6 @@ class MainActivity : AppCompatActivity() {
 
                 else -> View.VISIBLE
             }
-
-            when (destination.id) {
-
-            }
         }
     }
 

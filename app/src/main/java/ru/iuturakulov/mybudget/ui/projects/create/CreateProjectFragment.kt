@@ -19,6 +19,7 @@ class CreateProjectFragment :
     BaseBottomSheetDialogFragment<FragmentProjectCreateBinding>(R.layout.fragment_project_create) {
 
     private val viewModel: CreateProjectViewModel by viewModels()
+    private var onProjectAdded: (() -> Unit)? = null
 
     override fun getViewBinding(view: View): FragmentProjectCreateBinding {
         return FragmentProjectCreateBinding.bind(view)
@@ -35,9 +36,9 @@ class CreateProjectFragment :
 
         binding.btnCreate.setOnClickListener {
             if (validateInputs()) {
-                val name = binding.etProjectName.text.toString()
-                val description = binding.etProjectDescription.text.toString()
-                val budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull() ?: 0.0
+                val name = binding.etProjectName.text?.trim().toString()
+                val description = binding.etProjectDescription.text?.trim().toString()
+                val budgetLimit = binding.etBudgetLimit.text?.trim().toString().toDoubleOrNull() ?: 0.0
 
                 val project = ProjectEntity(
                     id = UUID.randomUUID().toString(),
@@ -46,11 +47,12 @@ class CreateProjectFragment :
                     budgetLimit = budgetLimit,
                     amountSpent = 0.0,
                     status = ProjectStatus.ACTIVE,
-                    createdDate = System.currentTimeMillis(),
+                    createdAt = System.currentTimeMillis(),
                     lastModified = System.currentTimeMillis()
                 )
 
                 viewModel.createProject(project)
+                onProjectAdded?.invoke()
             }
         }
     }
@@ -68,15 +70,19 @@ class CreateProjectFragment :
         }
     }
 
+    fun setOnProjectAdded(listener: () -> Unit) {
+        onProjectAdded = listener
+    }
+
     private fun validateInputs(): Boolean {
         var isValid = true
 
-        if (binding.etProjectName.text.isNullOrBlank()) {
+        if (binding.etProjectName.text?.trim().isNullOrBlank()) {
             binding.etProjectName.error = "Введите название проекта"
             isValid = false
         }
 
-        if (binding.etBudgetLimit.text.isNullOrBlank()) {
+        if (binding.etBudgetLimit.text?.trim().isNullOrBlank()) {
             binding.etBudgetLimit.error = "Введите лимит бюджета"
             isValid = false
         }

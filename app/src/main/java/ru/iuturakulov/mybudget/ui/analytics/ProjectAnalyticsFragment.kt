@@ -2,7 +2,6 @@ package ru.iuturakulov.mybudget.ui.analytics
 
 import android.graphics.Color
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +16,7 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
@@ -56,27 +56,46 @@ class ProjectAnalyticsFragment :
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.loadProjectAnalytics(args.projectId)
-            binding.swipeRefreshLayout.isRefreshing = false
+            // Сброс состояния будет выполнен после получения данных
         }
     }
 
     private fun setupCharts() {
+        // Настройка PieChart для категорий
         binding.categoryPieChart.apply {
             description.isEnabled = false
             isRotationEnabled = true
             legend.isEnabled = false
+            setNoDataText("Нет данных по категориям")
+            setNoDataTextColor(R.color.orange)
         }
 
+        // Настройка BarChart для периодов
         binding.periodBarChart.apply {
             description.isEnabled = false
             setFitBars(true)
             legend.isEnabled = false
+            xAxis.apply {
+                granularity = 1f
+                setDrawGridLines(false)
+                position = XAxis.XAxisPosition.BOTTOM
+            }
+            setNoDataText("Нет данных по периодам")
+            setNoDataTextColor(R.color.orange)
         }
 
+        // Настройка BarChart для сравнения задач
         binding.taskComparisonChart.apply {
             description.isEnabled = false
             setFitBars(true)
             legend.isEnabled = false
+            xAxis.apply {
+                granularity = 1f
+                setDrawGridLines(false)
+                position = XAxis.XAxisPosition.BOTTOM
+            }
+            setNoDataText("Нет данных по задачам")
+            setNoDataTextColor(R.color.orange)
         }
     }
 
@@ -87,10 +106,13 @@ class ProjectAnalyticsFragment :
                     is UiState.Loading -> showLoading()
                     is UiState.Success -> {
                         showContent()
-                        state.data?.let { updateCharts(it) }
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        state.data?.let { updateCharts(it) } ?: showFallback("Нет данных аналитики")
                     }
-
-                    is UiState.Error -> showError(state.message)
+                    is UiState.Error -> {
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        showError(state.message)
+                    }
                     else -> Unit
                 }
             }
@@ -107,39 +129,69 @@ class ProjectAnalyticsFragment :
         binding.swipeRefreshLayout.isVisible = true
     }
 
+    private fun showFallback(message: String) {
+        showContent()
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
     private fun showError(message: String) {
         binding.progressBar.isVisible = false
-        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
+            .setAction("Повторить") {
+                viewModel.loadProjectAnalytics(args.projectId)
+            }
+            .show()
     }
 
     private fun updateCharts(data: ProjectAnalyticsDto) {
-        // Обновление PieChart
-        val pieEntries = data.categoryDistribution.map {
-            PieEntry(it.amount.toFloat(), it.category)
-        }
-        val pieDataSet = PieDataSet(pieEntries, "Категории").apply {
-            colors = ColorTemplate.MATERIAL_COLORS.toList()
-            valueTextSize = 12f
-        }
-        binding.categoryPieChart.data = PieData(pieDataSet)
-        binding.categoryPieChart.invalidate()
+        try {
+            // Обновление PieChart для категорий
+            val pieEntries = data.categoryDistribution.map {
+                PieEntry(it.amount.toFloat(), it.category)
+            }
+            if (pieEntries.isNotEmpty()) {
+                val pieDataSet = PieDataSet(pieEntries, "Категории").apply {
+                    colors = ColorTemplate.MATERIAL_COLORS.toList()
+                    valueTextSize = 12f
+                }
+                binding.categoryPieChart.apply {
+                    this.data = PieData(pieDataSet)
+                    animateY(1000)
+                    invalidate()
+                }
+            } else {
+                binding.categoryPieChart.clear()
+            }
 
-        // Обновление Period BarChart
-        val periodEntries = data.periodDistribution.mapIndexed { index, period ->
-            BarEntry(index.toFloat(), period.amount.toFloat())
-        }
-        val periodDataSet = BarDataSet(periodEntries, "Периоды").apply {
-            colors = ColorTemplate.COLORFUL_COLORS.toList()
-        }
-        binding.periodBarChart.data = BarData(periodDataSet)
-        binding.periodBarChart.invalidate()
+            // Обновление BarChart для периодов
+            val periodEntries = data.periodDistribution.mapIndexed { index, period ->
+                BarEntry(index.toFloat(), period.amount.toFloat())
+            }
+            if (periodEntries.isNotEmpty()) {
+                val periodDataSet = BarDataSet(periodEntries, "Периоды").apply {
+                    colors = ColorTemplate.COLORFUL_COLORS.toList()
+                    valueTextSize = 12f
+                }
+                binding.periodBarChart.apply {
+                    this.data = BarData(periodDataSet)
+                    xAxis.valueFormatter = IndexAxisValueFormatter(data.periodDistribution.map { it.period })
+                    animateY(1000)
+                    invalidate()
+                }
+            } else {
+                binding.periodBarChart.clear()
+            }
 
-        // Обновление Task Comparison Chart
-//        updateTaskComparisonChart(data.taskComparison)
+            // Обновление BarChart для сравнения задач
+            // updateTaskComparisonChart(data.taskComparison)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showError("Ошибка отображения данных")
+        }
     }
 
     private fun updateTaskComparisonChart(taskComparison: List<TaskComparisonDto>) {
-        // Создаем список для выполненных и невыполненных задач
+        // Создаем списки для выполненных и невыполненных задач
         val completedEntries = mutableListOf<BarEntry>()
         val pendingEntries = mutableListOf<BarEntry>()
 
@@ -153,42 +205,38 @@ class ProjectAnalyticsFragment :
             )
         }
 
-        // DataSet для выполненных задач
-        val completedDataSet = BarDataSet(completedEntries, "Выполнено").apply {
-            color = Color.GREEN
-            valueTextSize = 12f
-        }
-
-        // DataSet для невыполненных задач
-        val pendingDataSet = BarDataSet(pendingEntries, "Ожидает").apply {
-            color = Color.RED
-            valueTextSize = 12f
-        }
-
-        // Установка данных в BarData
-        val barData = BarData(completedDataSet, pendingDataSet).apply {
-            barWidth = 0.4f // Ширина столбцов
-        }
-
-        val taskLabels = taskComparison.mapIndexed { index, _ -> "Task ${index + 1}" }
-
-
-        // Настройка графика
-        binding.taskComparisonChart.apply {
-            data = barData
-            description.isEnabled = false
-            setFitBars(true)
-            xAxis.apply {
-                granularity = 1f
-                position = XAxis.XAxisPosition.BOTTOM
-                valueFormatter = IndexAxisValueFormatter(taskLabels)
+        if (completedEntries.isNotEmpty() && pendingEntries.isNotEmpty()) {
+            val completedDataSet = BarDataSet(completedEntries, "Выполнено").apply {
+                color = Color.GREEN
+                valueTextSize = 12f
             }
-            axisLeft.axisMinimum = 0f
-            axisRight.isEnabled = false
-            legend.isEnabled = true
-            groupBars(0f, 0.2f, 0.05f) // Группировка столбцов
-            invalidate()
+            val pendingDataSet = BarDataSet(pendingEntries, "Ожидает").apply {
+                color = Color.RED
+                valueTextSize = 12f
+            }
+
+            val barData = BarData(completedDataSet, pendingDataSet).apply {
+                barWidth = 0.4f
+            }
+
+            // Формирование подписей для оси X
+            val taskLabels = taskComparison.mapIndexed { index, _ -> "Task ${index + 1}" }
+
+            binding.taskComparisonChart.apply {
+                data = barData
+                xAxis.valueFormatter = IndexAxisValueFormatter(taskLabels)
+                xAxis.granularity = 1f
+                xAxis.setDrawGridLines(false)
+                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                axisLeft.axisMinimum = 0f
+                axisRight.isEnabled = false
+                legend.isEnabled = true
+                groupBars(0f, 0.2f, 0.05f)
+                animateY(1000)
+                invalidate()
+            }
+        } else {
+            binding.taskComparisonChart.clear()
         }
     }
-
 }

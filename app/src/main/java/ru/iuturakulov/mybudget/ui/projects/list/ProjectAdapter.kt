@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.iuturakulov.mybudget.core.DateTimeExtension.toIso8601Date
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus.Companion.getStatusColor
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus.Companion.getStatusText
 import ru.iuturakulov.mybudget.databinding.ItemProjectBinding
 
 class ProjectAdapter(
@@ -41,13 +42,13 @@ class ProjectAdapter(
                 "Осталось: ${(project.budgetLimit - project.amountSpent).coerceAtLeast(0.0)} ₽"
 
             // Статус проекта
-            binding.tvProjectStatus.text = project.status.type
+            binding.tvProjectStatus.text = project.status.getStatusText()
             binding.tvProjectStatus.setTextColor(
                 project.status.getStatusColor(context = binding.root.context)
             )
 
             // Дата создания
-            binding.tvProjectDate.text = "Создан: ${project.createdDate.toIso8601Date()}"
+            binding.tvProjectDate.text = "Создан: ${project.createdAt.toIso8601Date()}"
 
             // Обработка нажатия на элемент
             binding.root.setOnClickListener {

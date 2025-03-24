@@ -124,8 +124,7 @@
             android:gravity="center"
             android:textSize="24sp"
             android:background="?attr/colorSecondaryContainer"
-            android:contentDescription="Иконка категории"
-            android:text="🍕" />
+            android:contentDescription="Иконка категории" />
 
         <!-- Список категорий -->
         <com.google.android.material.textfield.TextInputLayout

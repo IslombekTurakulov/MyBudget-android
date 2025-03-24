@@ -29,6 +29,7 @@ class ProjectListViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     private val _filterStatus = MutableStateFlow(ProjectStatus.ALL)
+    val filterStatus: SharedFlow<ProjectStatus> = _filterStatus
     private val _projects = MutableStateFlow<List<ProjectEntity>>(emptyList())
     private val _syncEvent = MutableSharedFlow<Boolean>()
     val syncEvent: SharedFlow<Boolean> = _syncEvent

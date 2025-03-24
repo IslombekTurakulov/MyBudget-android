@@ -13,7 +13,7 @@ object ProjectMapper {
             budgetLimit = dto.budgetLimit,
             amountSpent = dto.amountSpent,
             status = dto.status,
-            createdDate = dto.createdDate,
+            createdAt = dto.createdAt,
             lastModified = dto.lastModified
         )
     }
@@ -26,7 +26,7 @@ object ProjectMapper {
             budgetLimit = entity.budgetLimit,
             amountSpent = entity.amountSpent,
             status = entity.status,
-            createdDate = entity.createdDate,
+            createdAt = entity.createdAt,
             lastModified = entity.lastModified
         )
     }

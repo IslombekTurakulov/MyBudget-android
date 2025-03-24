@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_height="match_parent">
 
+    <!-- AppBarLayout с MaterialToolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -14,8 +16,8 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            tools:subtitle="Название проекта"
             android:layout_height="?attr/actionBarSize"
+            tools:subtitle="Название проекта"
             app:menu="@menu/project_details_menu"
             app:navigationIcon="?attr/homeAsUpIndicator" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -34,16 +36,17 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Карточка с описанием проекта -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/projectDescriptionCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="8dp"
                 android:layout_marginBottom="8dp"
+                app:cardCornerRadius="8dp"
                 app:cardElevation="4dp"
-                android:visibility="gone"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1dp"
+                android:visibility="gone">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -58,7 +61,7 @@
                         android:text="Описание проекта"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"/>
+                        app:layout_constraintEnd_toEndOf="parent" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvProjectDescription"
@@ -73,7 +76,7 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintBottom_toTopOf="@id/btnToggleDescription"
                         android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"/>
+                        android:layout_marginBottom="8dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnToggleDescription"
@@ -85,12 +88,11 @@
                         app:layout_constraintTop_toBottomOf="@id/tvProjectDescription"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent"/>
-
+                        app:layout_constraintBottom_toBottomOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Финансовая информация -->
+            <!-- Карточка с финансовой информацией -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -137,13 +139,13 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Заголовок и кнопка фильтрации -->
+            <!-- Заголовок раздела транзакций и кнопка фильтрации -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="8dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvTransactionTitle"
@@ -151,7 +153,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     style="@style/TextAppearance.Material3.TitleMedium"
-                    android:text="Транзакции" />
+                    android:text="@string/transaction_section_name" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFilterTransactions"
@@ -164,27 +166,46 @@
                     android:layout_marginStart="8dp" />
             </LinearLayout>
 
-            <!-- RecyclerView -->
+            <!-- Список транзакций (RecyclerView) -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTransactions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_transaction" />
 
-            <!-- Состояние пустого списка -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvEmptyTransactions"
+            <!-- Фолбэк для пустого списка транзакций -->
+            <LinearLayout
+                android:id="@+id/emptyTransactionsLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:gravity="center"
-                android:visibility="gone"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                tools:text="Нет транзакций" />
+                android:padding="16dp"
+                android:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/ivEmptyTransactions"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:src="@drawable/ic_empty_box_state"
+                    android:contentDescription="@string/empty_transactions_desc" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvEmptyTransactions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/no_transactions"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:textColor="?attr/colorOnSurface" />
+            </LinearLayout>
+
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- ProgressBar -->
+    <!-- Центрированный ProgressBar -->
     <ProgressBar
         android:id="@+id/progressBarTransactions"
         android:layout_width="wrap_content"
@@ -192,14 +213,14 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <!-- Плавающая кнопка -->
+    <!-- Плавающая кнопка добавления транзакции -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddTransaction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
         android:layout_marginBottom="16dp"
         android:outlineSpotShadowColor="@color/black"
         app:icon="@drawable/baseline_add_24"
-        android:text="Добавить транзакцию"
-        android:layout_gravity="bottom|center" />
+        android:text="Добавить транзакцию" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

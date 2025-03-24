@@ -32,6 +32,7 @@ class AnalyticsViewModel @Inject constructor(
 
     init {
         observeFilters()
+        loadOverviewAnalytics()
     }
 
     // Загрузка общей аналитики
