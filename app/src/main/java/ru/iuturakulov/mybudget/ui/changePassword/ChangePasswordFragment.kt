@@ -6,6 +6,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
@@ -18,10 +19,16 @@ class ChangePasswordFragment :
 
     private val viewModel: ChangePasswordViewModel by viewModels()
 
+    private val args: ChangePasswordFragmentArgs by navArgs()
+
     override fun getViewBinding(view: View): FragmentChangePasswordBinding =
         FragmentChangePasswordBinding.bind(view)
 
     override fun setupViews() {
+        args.email?.let {
+            binding.etEmail.setText(args.email)
+            binding.etEmail.isEnabled = false
+        }
         binding.apply {
             toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
             btnChangePassword.setOnClickListener {
@@ -47,7 +54,10 @@ class ChangePasswordFragment :
     }
 
     private fun validateInputs(email: String, oldPassword: String, newPassword: String): Boolean {
-        fun showError(inputLayout: com.google.android.material.textfield.TextInputLayout, error: String?): Boolean {
+        fun showError(
+            inputLayout: com.google.android.material.textfield.TextInputLayout,
+            error: String?
+        ): Boolean {
             inputLayout.error = error
             inputLayout.isErrorEnabled = error != null
             if (error != null) inputLayout.requestFocus()
@@ -58,7 +68,9 @@ class ChangePasswordFragment :
                 inputLayout = binding.etEmailInputLayout,
                 error = when {
                     email.isBlank() -> getString(R.string.error_empty_email)
-                    !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> getString(R.string.error_invalid_email)
+                    !Patterns.EMAIL_ADDRESS.matcher(email)
+                        .matches() -> getString(R.string.error_invalid_email)
+
                     else -> null
                 }
             )
@@ -95,20 +107,27 @@ class ChangePasswordFragment :
     override fun setupObservers() {
         viewModel.changePasswordState.observe(viewLifecycleOwner) { state ->
             binding.apply {
-                btnChangePassword.isEnabled = state !is ChangePasswordViewModel.ChangePasswordState.Loading
+                btnChangePassword.isEnabled =
+                    state !is ChangePasswordViewModel.ChangePasswordState.Loading
                 progressBar.isVisible = state is ChangePasswordViewModel.ChangePasswordState.Loading
             }
 
             when (state) {
                 is ChangePasswordViewModel.ChangePasswordState.Success -> {
-                    Snackbar.make(binding.root, getString(R.string.password_change_success), Snackbar.LENGTH_LONG)
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.password_change_success),
+                        Snackbar.LENGTH_LONG
+                    )
                         .show()
                     findNavController().navigateUp()
                 }
+
                 is ChangePasswordViewModel.ChangePasswordState.Error -> {
                     Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG)
                         .show()
                 }
+
                 is ChangePasswordViewModel.ChangePasswordState.Loading -> {
                     // Прогресс-бар уже отображается
                 }

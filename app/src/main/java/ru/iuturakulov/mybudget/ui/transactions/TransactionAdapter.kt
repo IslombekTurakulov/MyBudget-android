@@ -36,18 +36,19 @@ class TransactionAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         companion object {
-            private val currencyFormatter: NumberFormat = NumberFormat.getCurrencyInstance(Locale("ru", "RU")).apply {
-                currency = Currency.getInstance("RUB")
-                maximumFractionDigits = 2
-                minimumFractionDigits = 2
-            }
+            private val currencyFormatter: NumberFormat =
+                NumberFormat.getCurrencyInstance(Locale("ru", "RU")).apply {
+                    currency = Currency.getInstance("RUB")
+                    maximumFractionDigits = 2
+                    minimumFractionDigits = 2
+                }
         }
 
         fun bind(transaction: TransactionEntity) {
             binding.apply {
                 tvTransactionName.text = transaction.name
                 tvTransactionCategory.text = transaction.category
-                tvTransactionUser.text = "От: ${transaction.userId}"
+                tvTransactionUser.text = "Автор: ${transaction.userName}"
                 tvTransactionDate.text = transaction.date.toIso8601Date()
 
                 val transactionType = TransactionEntity.TransactionType.fromString(transaction.type)
@@ -58,7 +59,12 @@ class TransactionAdapter(
                     TransactionEntity.TransactionType.EXPENSE -> android.R.color.holo_red_dark
                     TransactionEntity.TransactionType.INCOME -> android.R.color.holo_green_dark
                 }
-                tvTransactionAmount.setTextColor(ContextCompat.getColor(root.context, amountColorRes))
+                tvTransactionAmount.setTextColor(
+                    ContextCompat.getColor(
+                        root.context,
+                        amountColorRes
+                    )
+                )
                 ivTransactionCategoryIcon.text = transaction.categoryIcon
 
                 root.setOnClickListener { onTransactionClicked(transaction) }

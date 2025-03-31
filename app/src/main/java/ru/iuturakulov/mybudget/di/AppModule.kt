@@ -50,4 +50,7 @@ object AppModule {
 
     @Provides
     fun provideParticipantsDao(database: AppDatabase) = database.participantsDao()
+
+    @Provides
+    fun provideUserSettingsDao(database: AppDatabase) = database.userSettingsDao()
 }

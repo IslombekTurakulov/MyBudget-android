@@ -70,6 +70,7 @@
     </string>
 
     <string-array name="transaction_categories">
+        <item>Все</item>
         <item>Еда</item>
         <item>Ресторан</item>
         <item>Транспорт</item>
@@ -102,10 +103,35 @@
         <item>💼</item>
         <item>✏️</item>
         <item>❓</item>
+        <item>📱</item>
+        <item>⌚️</item>
+        <item>💡</item>
+        <item>🚀</item>
+        <item>📚</item>
+        <item>🌐</item>
+        <item>🔒</item>
+        <item>💻</item>
+        <item>🖥</item>
+        <item>🎵</item>
+        <item>📷</item>
+        <item>🖨</item>
+        <item>🎥</item>
+        <item>📝</item>
+        <item>📖</item>
+        <item>🧩</item>
+        <item>🔔</item>
+        <item>🏆</item>
+        <item>🎯</item>
+        <item>📊</item>
     </string-array>
 
     <string-array name="roles_list">
         <item>Наблюдатель</item>
         <item>Редактор</item>
+    </string-array>
+
+    <string-array name="languages">
+        <item>Русский</item>
+        <item>English</item>
     </string-array>
 </resources>

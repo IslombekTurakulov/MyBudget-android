@@ -1,12 +1,8 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
-import com.google.gson.Gson
-import kotlinx.coroutines.flow.Flow
-import okhttp3.ResponseBody.Companion.toResponseBody
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
-import ru.iuturakulov.mybudget.data.remote.ErrorResponse
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import javax.inject.Inject
 
@@ -15,11 +11,6 @@ class TransactionRepository @Inject constructor(
     private val projectService: ProjectService
 ) {
 
-    // Получение списка транзакций проекта
-    fun getTransactionsForProject(projectId: String): Flow<List<TransactionEntity>> {
-        return transactionDao.getTransactionsForProject(projectId)
-    }
-
     // Добавление транзакции
     suspend fun addTransaction(projectId: String, transaction: TransactionEntity) {
         try {
@@ -27,12 +18,7 @@ class TransactionRepository @Inject constructor(
             val response = projectService.addTransaction(projectId, dto)
 
             if (!response.isSuccessful) {
-                throw Exception(
-                    Gson().fromJson(
-                        response.errorBody()?.string(),
-                        ErrorResponse::class.java
-                    ).error
-                )
+                throw Exception(response.errorBody()?.string())
             }
 
             val responseBody = response.body()
@@ -63,11 +49,11 @@ class TransactionRepository @Inject constructor(
 
     // Удаление транзакции
     suspend fun deleteTransaction(projectId: String, transactionId: String) {
-        // Локальное удаление
-        transactionDao.deleteTransaction(transactionId)
         try {
             // Удаление на сервере
             projectService.deleteTransaction(projectId, transactionId)
+            // Локальное удаление
+            transactionDao.deleteTransaction(transactionId)
         } catch (e: Exception) {
             throw Exception(e.localizedMessage)
         }

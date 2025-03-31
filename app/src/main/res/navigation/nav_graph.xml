@@ -175,7 +175,7 @@
         android:id="@+id/editProjectDialogFragment"
         android:name="ru.iuturakulov.mybudget.ui.projects.details.EditProjectDialogFragment"
         android:label="Редактировать проект"
-        tools:layout="@layout/dialog_edit_project" >
+        tools:layout="@layout/dialog_edit_project">
 
         <argument
             android:name="projectId"
@@ -220,17 +220,24 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="ru.iuturakulov.mybudget.ui.settings.SettingsFragment"
-        android:label="Settings" />
+        android:label="Settings">
 
-    <!--    &lt;!&ndash; Профиль &ndash;&gt;-->
-    <!--    <fragment-->
-    <!--        android:id="@+id/profileFragment"-->
-    <!--        android:name="ru.iuturakulov.mybudget.ui.profile.ProfileFragment"-->
-    <!--        android:label="Profile">-->
-    <!--        <action-->
-    <!--            android:id="@+id/action_profile_to_participants"-->
-    <!--            app:destination="@id/participantsFragment" />-->
-    <!--    </fragment>-->
+        <action
+            android:id="@+id/action_settings_to_changepassword"
+            app:destination="@+id/changePasswordFragment">
+
+            <argument
+                android:name="email"
+                app:argType="string" />
+        </action>
+
+        <action
+            android:id="@+id/action_settings_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/settingsFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
 
     <!-- Участники проекта -->
     <fragment
@@ -242,6 +249,19 @@
             android:name="projectId"
             app:argType="string"
             app:nullable="false" />
+    </fragment>
+
+
+    <!-- Смена пароля -->
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="ru.iuturakulov.mybudget.ui.changePassword.ChangePasswordFragment"
+        android:label="Change password">
+
+        <argument
+            android:name="email"
+            app:nullable="true"
+            app:argType="string" />
     </fragment>
 
 </navigation>

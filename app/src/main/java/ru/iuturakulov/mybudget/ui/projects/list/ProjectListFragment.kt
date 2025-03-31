@@ -1,18 +1,18 @@
 package ru.iuturakulov.mybudget.ui.projects.list
 
 import android.app.AlertDialog
-import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -92,6 +92,7 @@ class ProjectListFragment :
                     is UiState.Success -> {
                         binding.swipeRefreshLayout.isRefreshing = false
                         binding.tvEmptyPlaceholder.isVisible = state.data?.isEmpty() == true
+                        binding.recyclerViewProjects.isVisible = state.data?.isEmpty() == false
                         binding.btnRetry.isVisible = false
                     }
 
@@ -116,9 +117,7 @@ class ProjectListFragment :
 
         lifecycleScope.launchWhenStarted {
             viewModel.syncEvent.collect { success ->
-                if (success) {
-                    Snackbar.make(binding.root, "Список обновлён", Snackbar.LENGTH_SHORT).show()
-                } else {
+                if (!success) {
                     Snackbar.make(binding.root, "Ошибка синхронизации", Snackbar.LENGTH_SHORT)
                         .show()
                 }
@@ -186,28 +185,44 @@ class ProjectListFragment :
     }
 
     private fun showJoinByCodeDialog() {
-        val dialog = AlertDialog.Builder(requireContext())
-        val input = EditText(requireContext()).apply {
-            hint = "Введите код проекта"
-            inputType = InputType.TYPE_CLASS_TEXT
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_join_by_code, null)
 
-        dialog.setTitle("Присоединиться к проекту")
-            .setView(input)
-            .setPositiveButton("Присоединиться") { _, _ ->
-                val code = input.text.toString()
-                if (code.isNotBlank()) {
+        val inputLayout = dialogView.findViewById<TextInputLayout>(R.id.inputLayoutProjectCode)
+        val input = dialogView.findViewById<TextInputEditText>(R.id.etProjectCode)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Присоединиться к проекту")
+            .setView(dialogView)
+            .setPositiveButton("Присоединиться", null)
+            .setNegativeButton("Отмена", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val code = input.text?.toString().orEmpty()
+                if (validateProjectCode(inputLayout, code)) {
                     viewModel.joinProjectByCode(code)
-                } else {
-                    Toast.makeText(requireContext(), "Код не может быть пустым", Toast.LENGTH_SHORT)
-                        .show()
+                    viewModel.syncProjects()
+                    dialog.dismiss()
                 }
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+
+        dialog.show()
+    }
+
+    private fun validateProjectCode(
+        inputLayout: TextInputLayout,
+        code: String
+    ): Boolean {
+        return if (code.isBlank()) {
+            inputLayout.error = "Код не может быть пустым"
+            false
+        } else {
+            inputLayout.error = null
+            true
+        }
     }
 }

@@ -9,10 +9,11 @@ data class TransactionDto(
     val projectId: String,
     val userId: String,
     val name: String,
+    val userName: String,
     val category: String,
     val categoryIcon: String,
     val amount: Double,
     val date: Long,
-    val transactionType: TransactionType = TransactionType.INCOME,
+    val type: TransactionType = TransactionType.INCOME,
     val images: List<String> = emptyList()
 )

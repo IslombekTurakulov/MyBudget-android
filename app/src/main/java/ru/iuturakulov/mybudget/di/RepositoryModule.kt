@@ -7,12 +7,15 @@ import dagger.hilt.components.SingletonComponent
 import ru.iuturakulov.mybudget.data.local.daos.ParticipantsDao
 import ru.iuturakulov.mybudget.data.local.daos.ProjectDao
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
+import ru.iuturakulov.mybudget.data.local.daos.UserSettingsDao
 import ru.iuturakulov.mybudget.data.remote.AnalyticsService
 import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
+import ru.iuturakulov.mybudget.data.remote.SettingsService
 import ru.iuturakulov.mybudget.domain.repositories.AnalyticsRepository
 import ru.iuturakulov.mybudget.domain.repositories.ParticipantsRepository
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository
+import ru.iuturakulov.mybudget.domain.repositories.SettingsRepository
 import ru.iuturakulov.mybudget.domain.repositories.TransactionRepository
 import javax.inject.Singleton
 
@@ -54,5 +57,14 @@ object RepositoryModule {
         participantsService: ParticipantsService
     ): ParticipantsRepository {
         return ParticipantsRepository(participantsDao, participantsService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(
+        userSettingsDao: UserSettingsDao,
+        settingsService: SettingsService,
+    ): SettingsRepository {
+        return SettingsRepository(settingsService, userSettingsDao)
     }
 }

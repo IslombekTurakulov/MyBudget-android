@@ -53,6 +53,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     // Список для загруженных изображений
     private val selectedImages = mutableListOf<Bitmap>()
+
     // Адаптер для RecyclerView с изображениями чеков
     private lateinit var receiptImageAdapter: ReceiptImageAdapter
 
@@ -116,7 +117,9 @@ class AddTransactionDialogFragment : DialogFragment() {
                     etTransactionAmount.setText(transaction?.amount.toString())
                     spinnerCategory.setText(transaction?.category, false)
                     updateCategoryIcon(transaction?.categoryIcon.orEmpty())
-                    selectedImages.addAll(transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList())
+                    selectedImages.addAll(
+                        transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList()
+                    )
                     receiptImageAdapter.notifyDataSetChanged()
                     removeTransactionLayout.visibility = View.VISIBLE
                     addTransactionLayout.visibility = View.GONE
@@ -125,7 +128,12 @@ class AddTransactionDialogFragment : DialogFragment() {
                         if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
                         else R.id.btnExpense
                     )
-                    btnEditTransaction.setOnClickListener { processSaveButton(onTransactionUpdated, argument) }
+                    btnEditTransaction.setOnClickListener {
+                        processSaveButton(
+                            onTransactionUpdated,
+                            argument
+                        )
+                    }
                     btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
                 } else {
                     // Режим добавления: скрываем кнопку удаления
@@ -155,17 +163,19 @@ class AddTransactionDialogFragment : DialogFragment() {
                 R.id.btnExpense -> TransactionEntity.TransactionType.EXPENSE
                 else -> TransactionEntity.TransactionType.INCOME
             }
-            val category = if (binding.spinnerCategory.text.toString().equals("Другое", ignoreCase = true))
-                binding.etCustomCategory.text.toString() else binding.spinnerCategory.text.toString()
+            val category =
+                if (binding.spinnerCategory.text.toString().equals("Другое", ignoreCase = true))
+                    binding.etCustomCategory.text.toString() else binding.spinnerCategory.text.toString()
             val temporaryTransaction = TemporaryTransaction(
                 id = transaction?.id ?: "${argument.projectId}-${System.currentTimeMillis()}",
                 name = binding.etTransactionName.text.toString(),
                 amount = binding.etTransactionAmount.text.toString().toDouble(),
                 category = category,
-                categoryIcon = binding.ivTransactionCategoryIcon.tag?.toString().orEmpty(),
+                categoryIcon = binding.ivTransactionCategoryIcon.text?.toString().orEmpty(),
                 date = transaction?.date ?: System.currentTimeMillis(),
                 projectId = argument.projectId,
                 userId = transaction?.userId.orEmpty(),
+                userName = transaction?.userName.orEmpty(),
                 type = transactionType,
                 images = selectedImages.map { bitmapToBase64(it) }
             )
@@ -219,14 +229,20 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun setupCategorySpinner() {
-        val categories = resources.getStringArray(R.array.transaction_categories)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
+        // TODO: перейти на новую фильтрацию
+        val categories = resources.getStringArray(R.array.transaction_categories).filter {
+            it != "Все"
+        }
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
         binding.spinnerCategory.setAdapter(adapter)
+        binding.spinnerCategory.setSelection(0)
         binding.spinnerCategory.setOnClickListener { binding.spinnerCategory.showDropDown() }
         binding.spinnerCategory.setOnItemClickListener { _, _, position, _ ->
             val selectedCategory = categories[position]
-            binding.tilCustomCategory.visibility = if (selectedCategory.equals("Другое", ignoreCase = true))
-                View.VISIBLE else View.GONE
+            binding.tilCustomCategory.visibility =
+                if (selectedCategory.equals("Другое", ignoreCase = true))
+                    View.VISIBLE else View.GONE
         }
     }
 
@@ -254,11 +270,18 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun checkAndRequestPermissions() {
-        val cameraPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+        val cameraPermission =
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
         val storagePermission = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
-            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
         else
-            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES)
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_MEDIA_IMAGES
+            )
         if (cameraPermission == PackageManager.PERMISSION_GRANTED && storagePermission == PackageManager.PERMISSION_GRANTED) {
             showImageSourceDialog()
         } else {
@@ -298,7 +321,6 @@ class AddTransactionDialogFragment : DialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            // Получаем изображение из data; для некоторых устройств может понадобиться сохранять Uri
             data?.data?.let { uri ->
                 getBitmapFromUri(uri)?.let { bitmap ->
                     val processedBitmap = preprocessBitmap(bitmap)
@@ -325,7 +347,11 @@ class AddTransactionDialogFragment : DialogFragment() {
                 BitmapFactory.decodeStream(inputStream)
             }
         } catch (e: Exception) {
-            Snackbar.make(binding.root, getString(R.string.error_loading_image), Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_loading_image),
+                Snackbar.LENGTH_SHORT
+            ).show()
             null
         }
     }
@@ -334,7 +360,9 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun preprocessBitmap(bitmap: Bitmap): Bitmap {
         val grayscale = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(grayscale)
-        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) }) }
+        val paint = Paint().apply {
+            colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
+        }
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
         return resizeBitmap(grayscale, 1024, 1024)
     }
@@ -356,13 +384,22 @@ class AddTransactionDialogFragment : DialogFragment() {
             .addOnSuccessListener { visionText ->
                 val processedText = preprocessText(visionText.text)
                 val totalAmount = extractTotalAmount(processedText)
-                binding.tvRecognizedAmount.text = getString(R.string.recognized_amount, totalAmount.toDoubleOrNull() ?: 0.0)
+                binding.tvRecognizedAmount.text =
+                    getString(R.string.recognized_amount, totalAmount.toDoubleOrNull() ?: 0.0)
                 updateTransactionAmount(totalAmount)
                 val duration = System.currentTimeMillis() - startTime
-                Snackbar.make(binding.root, "Распознавание завершено за ${duration}ms", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(
+                    binding.root,
+                    "Распознавание завершено за ${duration}ms",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
             .addOnFailureListener { e ->
-                Snackbar.make(binding.root, "Ошибка распознавания: ${e.localizedMessage}", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(
+                    binding.root,
+                    "Ошибка распознавания: ${e.localizedMessage}",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -376,7 +413,10 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun extractTotalAmount(text: String): String {
         val patterns = listOf(
-            Regex("""(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""", RegexOption.IGNORE_CASE),
+            Regex(
+                """(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""",
+                RegexOption.IGNORE_CASE
+            ),
             Regex("""([€$₽])\s*([\d\s]+[.,]\d{2})\b"""),
             Regex("""\b(\d{1,3}(?:[ ,]\d{3})*[.,]\d{2})(?=\s*(?:руб|р|usd|€|\$))"""),
             Regex("""\b(\d+[.,]\d{2})\b""")
@@ -391,6 +431,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun updateTransactionAmount(totalAmount: String) {
         val existingAmount = binding.etTransactionAmount.text?.toString()?.toDoubleOrNull() ?: 0.0
+        binding.tvRecognizedAmount.visibility = View.VISIBLE
         val recognizedAmount = totalAmount.toDoubleOrNull() ?: 0.0
         val updatedAmount = existingAmount + recognizedAmount
         binding.etTransactionAmount.setText(updatedAmount.toString())
@@ -409,8 +450,14 @@ class AddTransactionDialogFragment : DialogFragment() {
             binding.etTransactionAmount.error = getString(R.string.error_enter_valid_amount)
             return false
         }
-        if (binding.spinnerCategory.text.toString().equals("Другое", ignoreCase = true) && customCategory.isBlank()) {
-            Snackbar.make(binding.root, getString(R.string.error_enter_custom_category), Snackbar.LENGTH_SHORT).show()
+        if (binding.spinnerCategory.text.toString()
+                .equals("Другое", ignoreCase = true) && customCategory.isBlank()
+        ) {
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_enter_custom_category),
+                Snackbar.LENGTH_SHORT
+            ).show()
             return false
         }
         return true
@@ -452,7 +499,8 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_receipt_image, parent, false)
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_receipt_image, parent, false)
             return ImageViewHolder(view)
         }
 
@@ -474,7 +522,10 @@ class AddTransactionDialogFragment : DialogFragment() {
             var transaction: TemporaryTransaction? = null
         ) : Parcelable
 
-        fun newInstance(projectId: String, transaction: TemporaryTransaction? = null): AddTransactionDialogFragment {
+        fun newInstance(
+            projectId: String,
+            transaction: TemporaryTransaction? = null
+        ): AddTransactionDialogFragment {
             val fragment = AddTransactionDialogFragment()
             val args = Bundle().apply {
                 putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId, transaction))

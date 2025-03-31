@@ -15,7 +15,8 @@ object TransactionMapper {
             amount = dto.amount,
             date = dto.date,
             userId = dto.userId,
-            type = dto.transactionType.typeName,
+            userName = dto.userName,
+            type = dto.type.typeName,
             images = dto.images,
         )
     }
@@ -30,7 +31,8 @@ object TransactionMapper {
             amount = entity.amount,
             date = entity.date,
             userId = entity.userId,
-            transactionType = TransactionEntity.TransactionType.fromString(entity.type),
+            userName = entity.userName,
+            type = TransactionEntity.TransactionType.fromString(entity.type),
             images = entity.images,
         )
     }

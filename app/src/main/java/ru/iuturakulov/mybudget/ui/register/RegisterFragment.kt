@@ -87,6 +87,14 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
         }
 
         if (!showError(
+                inputLayout = binding.etNameInputLayout,
+                error = "У имени должно быть минимум 4 символов!".takeIf { name.trim().length < 4 }
+            )
+        ) {
+            return false
+        }
+
+        if (!showError(
                 inputLayout = binding.etEmailInputLayout,
                 error = when {
                     email.isBlank() -> "Email не может быть пустым"

@@ -1,11 +1,13 @@
 package ru.iuturakulov.mybudget.ui.projects.participants
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.ItemProjectParticipantsBinding
 
 class ParticipantsAdapter(
@@ -33,11 +35,16 @@ class ParticipantsAdapter(
             binding.apply {
                 tvParticipantName.text = participant.name
                 tvParticipantRole.text = participant.role
-                btnEditParticipant.setOnClickListener {
-                    onEditClick(participant)
-                }
-                btnDeleteParticipant.setOnClickListener {
-                    onDeleteClick(participant)
+                if (participant.role == ParticipantRole.OWNER.name) {
+                    btnEditParticipant.visibility = View.GONE
+                    btnDeleteParticipant.visibility = View.GONE
+                } else {
+                    btnEditParticipant.setOnClickListener {
+                        onEditClick(participant)
+                    }
+                    btnDeleteParticipant.setOnClickListener {
+                        onDeleteClick(participant)
+                    }
                 }
             }
         }

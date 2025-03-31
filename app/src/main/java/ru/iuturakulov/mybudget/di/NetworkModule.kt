@@ -1,7 +1,6 @@
 package ru.iuturakulov.mybudget.di
 
 import android.content.SharedPreferences
-import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,6 +15,7 @@ import ru.iuturakulov.mybudget.data.remote.AnalyticsService
 import ru.iuturakulov.mybudget.data.remote.AuthInterceptor
 import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
+import ru.iuturakulov.mybudget.data.remote.SettingsService
 import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -100,6 +100,12 @@ object NetworkModule {
     @Singleton
     fun provideProjectService(@Named("AuthenticatedRetrofit") retrofit: Retrofit): ProjectService {
         return retrofit.create(ProjectService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSettingsService(@Named("AuthenticatedRetrofit") retrofit: Retrofit): SettingsService {
+        return retrofit.create(SettingsService::class.java)
     }
 
     @Provides

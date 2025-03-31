@@ -27,6 +27,7 @@ data class TransactionEntity(
     val categoryIcon: String, // URL или имя ресурса
     val amount: Double,
     val userId: String,
+    val userName: String,
     val date: Long, // ISO 8601: "YYYY-MM-DD"
     val type: String, // Тип транзакции: "Доход" или "Расход"
     val images: List<String>
@@ -55,6 +56,7 @@ data class TransactionEntity(
                 category = category,
                 categoryIcon = categoryIcon,
                 userId = userId,
+                userName = userName,
                 date = date,
                 type = TransactionType.fromString(type),
                 images = images
@@ -72,10 +74,12 @@ data class TemporaryTransaction(
     val category: String,
     val categoryIcon: String,
     val userId: String,
+    val userName: String,
     val date: Long,
     val type: TransactionEntity.TransactionType,           // Тип транзакции: "Доход" или "Расход"
     val images: List<String>    // Список путей/URI изображений транзакции
 ) : Parcelable {
+
     companion object {
         fun TemporaryTransaction.toEntity(): TransactionEntity {
             return TransactionEntity(
@@ -86,6 +90,7 @@ data class TemporaryTransaction(
                 category = category,
                 categoryIcon = categoryIcon,
                 userId = userId,
+                userName = userName,
                 date = date,
                 type = type.typeName,
                 images = images

@@ -38,7 +38,7 @@ class TokenStorage @Inject constructor(
             try {
                 encryptedSharedPreferences.edit().putString(ACCESS_TOKEN_KEY, newToken).apply()
             } catch (e: Exception) {
-               Timber.e("Ошибка сохранения Access Token $e")
+                Timber.e("Ошибка сохранения Access Token $e")
             }
         }
     }
@@ -58,7 +58,7 @@ class TokenStorage @Inject constructor(
         }
     }
 
-    // ✅ Очистка токенов
+    // Очистка токенов
     fun clearTokens() {
         accessTokenFlow.value = null
         refreshTokenFlow.value = null
