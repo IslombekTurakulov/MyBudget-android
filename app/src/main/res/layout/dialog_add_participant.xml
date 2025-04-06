@@ -1,50 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
+
+    <!-- Заголовок диалога -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add_participant_title"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="16dp"/>
 
     <!-- Поле для ввода Email -->
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilParticipantEmail"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email участника"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+        android:hint="@string/email_hint"
+        app:endIconMode="clear_text"
+        app:endIconDrawable="@drawable/baseline_clear_24"
+        app:errorEnabled="true"
+        app:counterEnabled="true"
+        app:counterMaxLength="100">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etParticipantEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:maxLines="1"
+            android:importantForAutofill="no"
+            tools:text="test@example.com" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Выбор роли участника -->
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilRole"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Роль участника"
-        android:layout_weight="1"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="16dp"
+        android:hint="@string/role_hint">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/spinnerRole"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:cursorVisible="false"
-            android:minHeight="40dp"
-            android:paddingStart="12dp"
-            style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense" />
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="true"
+            android:minHeight="48dp"/>
     </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Прогресс бар -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="16dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:trackColor="?attr/colorSurfaceContainerHighest"
+        app:indicatorColor="?attr/colorPrimary" />
 
     <!-- Кнопка отправки приглашения -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSendInvite"
+        style="@style/Widget.Material3.Button.ElevatedButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Отправить приглашение"
-        style="@style/Widget.Material3.Button.ElevatedButton" />
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/send_invitation"
+        app:icon="@drawable/baseline_send_24"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
+
 </LinearLayout>

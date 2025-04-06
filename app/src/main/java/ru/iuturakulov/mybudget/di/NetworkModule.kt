@@ -1,6 +1,7 @@
 package ru.iuturakulov.mybudget.di
 
 import android.content.SharedPreferences
+import android.os.Build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +18,8 @@ import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import ru.iuturakulov.mybudget.data.remote.SettingsService
 import ru.iuturakulov.mybudget.data.remote.auth.AuthService
+import timber.log.Timber
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -131,11 +134,44 @@ object NetworkModule {
 
     private fun getDefaultHeadersInterceptor(): Interceptor {
         return Interceptor { chain ->
-            val request = chain.request().newBuilder()
+            val originalRequest = chain.request()
+
+            val manufacturer = Build.MANUFACTURER
+            val model = Build.MODEL
+            val osVersion = Build.VERSION.RELEASE
+            val appVersion = "1.0"
+
+            // Получаем существующие ID из заголовков или генерируем новые
+            val requestId = originalRequest.header("X-Request-ID") ?: UUID.randomUUID().toString()
+            val correlationId = originalRequest.header("X-Correlation-ID") ?: requestId
+
+            val newRequest = originalRequest.newBuilder()
+                // Стандартные заголовки
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
+
+                // ID для трейсинга
+                .addHeader("X-Request-ID", requestId)
+                .addHeader("X-Correlation-ID", correlationId)
+
+                // Производительность
+                .addHeader("Connection", "keep-alive")
+                .addHeader("Keep-Alive", "timeout=30, max=1000")
+
+                // Пользовательский агент
+                .addHeader("User-Agent", "MyBudget/$appVersion ($manufacturer $model; Android $osVersion)")
                 .build()
-            chain.proceed(request)
+
+            Timber.i(
+                """
+                    Sending request:
+                    URL: ${newRequest.url}
+                    Headers: ${newRequest.headers}
+                    Call ID: $requestId
+                """.trimIndent()
+            )
+
+            chain.proceed(newRequest)
         }
     }
 }

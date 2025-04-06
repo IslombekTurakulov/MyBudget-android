@@ -13,4 +13,16 @@
     <color name="networkStatusBackgroundOn">#C5FF98</color> <!-- Светло-красный фон -->
     <color name="networkStatusIconTintOff">#D32F2F</color> <!-- Красный цвет для иконки -->
     <color name="networkStatusIconTintOn">#136801</color> <!-- Красный цвет для иконки -->
+
+    <!-- Основные цвета для графиков -->
+    <color name="chart_color_primary">#6200EE</color>
+    <color name="chart_color_secondary">#03DAC6</color>
+    <color name="chart_color_accent">#FF4081</color>
+    <color name="chart_color_green">#4CAF50</color>
+    <color name="chart_color_orange">#FF9800</color>
+    <color name="chart_color_red">#F44336</color>
+    <color name="chart_color_purple">#9C27B0</color>
+
+    <color name="chart_text_color">#000000</color>
+    <color name="chart_no_data_text">#757575</color>
 </resources>

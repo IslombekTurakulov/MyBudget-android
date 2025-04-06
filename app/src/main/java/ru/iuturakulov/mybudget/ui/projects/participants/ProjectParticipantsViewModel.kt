@@ -64,7 +64,7 @@ class ProjectParticipantsViewModel @Inject constructor(
     fun deleteParticipant(participant: ParticipantEntity) {
         viewModelScope.launch {
             try {
-                participantRepository.deleteParticipant(participant.id)
+                participantRepository.deleteParticipant(participant.projectId, participant.userId)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.localizedMessage ?: "Ошибка удаления участника")
             }

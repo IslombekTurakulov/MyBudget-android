@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">MyBudget</string>
     <string name="action_settings">Settings</string>
+
+    <!--  Roles -->
+    <string name="role_viewer">Наблюдатель</string>
+    <string name="role_editor">Редактор</string>
+    <string name="role_admin">Владелец</string>
+    <string name="error_select_valid_role">Выберите корректную роль</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -14,9 +21,23 @@
 
     <!-- Ошибки ввода -->
     <string name="error_empty_email">Email не может быть пустым</string>
-    <string name="error_invalid_email">Некорректный Email</string>
     <string name="error_empty_password">Пароль не может быть пустым</string>
     <string name="error_short_password">Пароль должен содержать минимум 6 символов</string>
+
+    <!-- Сообщения о статусе приглашения -->
+    <string name="invitation_sent_success">Приглашение успешно отправлено</string>
+    <string name="invitation_sent_error">Ошибка отправки приглашения: %s</string>
+    <string name="invitation_processing">Отправка приглашения…</string>
+
+    <!-- Сообщения валидации -->
+    <string name="error_invalid_email">Введите корректный email</string>
+    <string name="error_select_role">Выберите роль участника</string>
+    <string name="error_role_not_found">Указана несуществующая роль</string>
+
+    <string name="add_participant_title">Добавить участника</string>
+    <string name="email_hint">Email участника</string>
+    <string name="role_hint">Роль участника</string>
+    <string name="send_invitation">Отправить приглашение</string>
 
     <!-- Сообщения -->
     <string name="password_change_success">Успех! Проверьте почту</string>
@@ -52,14 +73,41 @@
     <string name="project_spent">Потрачено: %1$.2f ₽</string>
     <string name="project_remaining">Осталось: %1$.2f ₽</string>
 
+
+    <string name="total_amount_format">Итого: %.2f</string>
+    <string name="no_category_data">Нет данных по категориям</string>
+    <string name="no_period_data">Нет данных по периодам</string>
+
     <!-- Транзакции -->
     <string name="no_transactions">Нет транзакций</string>
     <string name="empty_transactions_desc">Пусто</string>
     <string name="transaction_section_name">Транзакции</string>
     <string name="all">Все</string>
+    <string name="other">Другое</string>
+
+    <string name="transaction_date">Дата транзакции</string>
+    <string name="select_date">Выберите дату</string>
+    <string name="share_image_title">Поделиться изображением</string>
 
     <!-- Сообщения об ошибках -->
     <string name="error_loading_data">Ошибка загрузки данных</string>
+
+    <!-- Profile Section -->
+    <string name="profile_image">Изображение профиля</string>
+    <string name="username">Имя пользователя</string>
+    <string name="user_email">Электронная почта</string>
+
+    <!-- App Settings Section -->
+    <string name="app_settings">Настройки приложения</string>
+    <string name="app_language">Язык приложения</string>
+    <string name="select_language">Выберите язык</string>
+    <string name="notifications">Уведомления</string>
+    <string name="dark_theme">Тёмная тема</string>
+
+    <!-- Security Section -->
+    <string name="security">Безопасность</string>
+    <string name="change_password">Сменить пароль</string>
+    <string name="logout">Выйти</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
@@ -84,7 +132,6 @@
         <item>Игры</item>
         <item>Путешествия</item>
         <item>Прочее</item>
-        <item>Другое</item>
     </string-array>
 
     <!-- Список эмодзи для выбора и отображения -->
@@ -133,5 +180,10 @@
     <string-array name="languages">
         <item>Русский</item>
         <item>English</item>
+    </string-array>
+
+    <string-array name="language_codes">
+        <item>ru</item>
+        <item>en</item>
     </string-array>
 </resources>

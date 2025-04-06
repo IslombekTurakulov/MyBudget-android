@@ -90,7 +90,7 @@ class ProjectParticipantsFragment :
 
     private fun setupListeners() {
         binding.fabAddParticipant.setOnClickListener {
-            val dialog = AddParticipantDialogFragment()
+            val dialog = AddParticipantDialogFragment.newInstance(args.projectId)
             dialog.setOnParticipantAdded {
                 viewModel.loadParticipants(args.projectId) // Перезагружаем участников
             }

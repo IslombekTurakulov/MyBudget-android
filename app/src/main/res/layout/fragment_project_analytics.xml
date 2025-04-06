@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
 
-    <!-- Toolbar -->
+    <!-- AppBar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,86 +20,132 @@
             app:navigationIcon="?attr/homeAsUpIndicator" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- SwipeRefreshLayout -->
+    <!-- Основной контент -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Content -->
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="16dp"
-            android:paddingHorizontal="16dp">
+            android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Общая сумма -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="?attr/colorOutline">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Общая сумма"
+                            style="@style/TextAppearance.Material3.TitleSmall"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalAmount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textSize="24sp"
+                            style="@style/TextAppearance.Material3.HeadlineSmall"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Категории -->
-                <TextView
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Распределение по категории"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"
-                    style="@style/TextAppearance.Material3.TitleMedium" />
+                    android:layout_marginBottom="16dp"
+                    app:cardElevation="2dp">
 
-                <!-- Категории (PieChart) -->
-                <com.github.mikephil.charting.charts.PieChart
-                    android:id="@+id/categoryPieChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:layout_marginBottom="24dp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Распределение по категориям"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginEnd="16dp"
+                            style="@style/TextAppearance.Material3.TitleMedium"/>
+
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/categoryPieChart"
+                            android:layout_width="match_parent"
+                            android:layout_height="300dp"
+                            android:layout_margin="8dp"/>
+
+                        <TextView
+                            android:id="@+id/tvNoCategories"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Нет данных по категориям"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:visibility="gone"
+                            style="@style/TextAppearance.Material3.BodyMedium"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Периоды -->
-                <TextView
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Распределение по периодам"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"
-                    style="@style/TextAppearance.Material3.TitleMedium" />
+                    app:cardElevation="2dp">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
 
-                <!-- Периоды (BarChart) -->
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/periodBarChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:layout_marginBottom="24dp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Распределение по периодам"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginEnd="16dp"
+                            style="@style/TextAppearance.Material3.TitleMedium"/>
 
-                <!-- Сравнение затрат по задачам -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Распределение по затратам на задачи"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp"
-                    style="@style/TextAppearance.Material3.TitleMedium" />
+                        <com.github.mikephil.charting.charts.BarChart
+                            android:id="@+id/periodBarChart"
+                            android:layout_width="match_parent"
+                            android:layout_height="300dp"
+                            android:layout_margin="8dp"/>
 
-                <!-- Сравнение затрат по задачам -->
-                <com.github.mikephil.charting.charts.BarChart
-                    android:id="@+id/taskComparisonChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:layout_marginBottom="24dp" />
-
-                <!-- Состояние пустого списка -->
-                <TextView
-                    android:id="@+id/tvEmptyState"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    android:text="Нет данных для отображения"
-                    android:textSize="16sp"
-                    android:textColor="?attr/colorOnSurface" />
+                        <TextView
+                            android:id="@+id/tvNoPeriods"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Нет данных по периодам"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:visibility="gone"
+                            style="@style/TextAppearance.Material3.BodyMedium"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- ProgressBar -->

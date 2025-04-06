@@ -17,8 +17,8 @@ interface ParticipantsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertParticipant(participant: ParticipantEntity)
 
-    @Query("DELETE FROM participants WHERE id = :participantId")
-    suspend fun deleteParticipant(participantId: String)
+    @Query("DELETE FROM participants WHERE id = :participantId and projectId = :projectId")
+    suspend fun deleteParticipant(projectId: String, participantId: String)
 
     @Transaction
     suspend fun replaceParticipantsForProject(

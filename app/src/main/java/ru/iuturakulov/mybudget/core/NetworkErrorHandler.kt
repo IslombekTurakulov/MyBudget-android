@@ -20,7 +20,7 @@ object NetworkErrorHandler {
                 }
             }
 
-            else -> "Произошла ошибка: ${throwable.localizedMessage}."
+            else -> "${throwable.localizedMessage}."
         }
     }
 }

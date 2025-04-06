@@ -19,7 +19,7 @@ import ru.iuturakulov.mybudget.data.local.entities.UserSettingsEntity
         ParticipantEntity::class,
         UserSettingsEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

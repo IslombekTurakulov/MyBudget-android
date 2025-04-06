@@ -12,7 +12,7 @@ enum class ProjectStatus(val type: String) {
 
     fun canTransitionTo(newStatus: ProjectStatus): Boolean {
         val allowedTransitions = mapOf(
-            ACTIVE to listOf(DELETED, ARCHIVED),
+            ACTIVE to listOf(ACTIVE, DELETED, ARCHIVED),
             ALL to listOf(ACTIVE, DELETED, ARCHIVED),
             DELETED to emptyList(),
             ARCHIVED to emptyList()

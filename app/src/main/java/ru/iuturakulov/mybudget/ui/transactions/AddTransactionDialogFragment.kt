@@ -3,17 +3,22 @@ package ru.iuturakulov.mybudget.ui.transactions
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
+import android.graphics.drawable.ColorDrawable
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Parcelable
 import android.provider.MediaStore
 import android.util.Base64
@@ -22,11 +27,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.chrisbanes.photoview.PhotoView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -38,6 +56,13 @@ import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @AndroidEntryPoint
 class AddTransactionDialogFragment : DialogFragment() {
@@ -50,6 +75,9 @@ class AddTransactionDialogFragment : DialogFragment() {
     private var onTransactionAdded: ((TemporaryTransaction) -> Unit)? = null
     private var onTransactionUpdated: ((TemporaryTransaction) -> Unit)? = null
     private var onTransactionDeleted: (() -> Unit)? = null
+
+    private var currentDateMillis: Long = MaterialDatePicker.todayInUtcMilliseconds()
+    private lateinit var dateFormatter: SimpleDateFormat
 
     // Список для загруженных изображений
     private val selectedImages = mutableListOf<Bitmap>()
@@ -103,6 +131,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         args = arguments?.getParcelable(ARG_TRANSACTION)
+        dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
         setupReceiptImagesRecyclerView() // Инициализация RecyclerView для изображений
         setupViews()
     }
@@ -145,7 +174,8 @@ class AddTransactionDialogFragment : DialogFragment() {
                     btnCancel.setOnClickListener { dismiss() }
                     setupTransactionIcon()
                 }
-                setupCategorySpinner()
+                setupDatePicker(transaction?.date)
+                setupCategorySpinner(transaction?.category)
                 setupEmojiPicker()
                 setupTransactionTypeToggle()
                 btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
@@ -164,15 +194,15 @@ class AddTransactionDialogFragment : DialogFragment() {
                 else -> TransactionEntity.TransactionType.INCOME
             }
             val category =
-                if (binding.spinnerCategory.text.toString().equals("Другое", ignoreCase = true))
-                    binding.etCustomCategory.text.toString() else binding.spinnerCategory.text.toString()
+                if (binding.spinnerCategory.text?.trim().toString().equals("Другое", ignoreCase = true))
+                    binding.etCustomCategory.text?.trim().toString() else binding.spinnerCategory.text.trim().toString()
             val temporaryTransaction = TemporaryTransaction(
                 id = transaction?.id ?: "${argument.projectId}-${System.currentTimeMillis()}",
-                name = binding.etTransactionName.text.toString(),
-                amount = binding.etTransactionAmount.text.toString().toDouble(),
+                name = binding.etTransactionName.text.toString().trim(),
+                amount = binding.etTransactionAmount.text.toString().trim().toDoubleOrNull() ?: 0.0,
                 category = category,
                 categoryIcon = binding.ivTransactionCategoryIcon.text?.toString().orEmpty(),
-                date = transaction?.date ?: System.currentTimeMillis(),
+                date = getSelectedDateMillis(),
                 projectId = argument.projectId,
                 userId = transaction?.userId.orEmpty(),
                 userName = transaction?.userName.orEmpty(),
@@ -228,11 +258,11 @@ class AddTransactionDialogFragment : DialogFragment() {
         binding.ivTransactionCategoryIcon.text = emojis.shuffled().first()
     }
 
-    private fun setupCategorySpinner() {
+    private fun setupCategorySpinner(currentCategory: String?) {
         // TODO: перейти на новую фильтрацию
         val categories = resources.getStringArray(R.array.transaction_categories).filter {
             it != "Все"
-        }
+        }.plus(currentCategory).filterNotNull().distinct()
         val adapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
         binding.spinnerCategory.setAdapter(adapter)
@@ -333,12 +363,264 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun setupReceiptImagesRecyclerView() {
-        receiptImageAdapter = ReceiptImageAdapter(selectedImages) { position ->
-            selectedImages.removeAt(position)
-            receiptImageAdapter.notifyItemRemoved(position)
-        }
+        receiptImageAdapter = ReceiptImageAdapter(
+            selectedImages,
+            onDelete = { position ->
+                // Удаление изображения
+                selectedImages.removeAt(position)
+                receiptImageAdapter.notifyItemRemoved(position)
+            },
+            onImageClick = { position ->
+                // Просмотр изображения
+                showFullscreenImage(receiptImageAdapter.getImageAt(position))
+            }
+        )
         binding.rvReceiptImages.layoutManager = GridLayoutManager(requireContext(), 3)
         binding.rvReceiptImages.adapter = receiptImageAdapter
+    }
+
+    private fun showFullscreenImage(bitmap: Bitmap?) {
+        if (bitmap == null) return
+
+        val dialog = MaterialAlertDialogBuilder(requireContext(), R.style.FullscreenImageDialog)
+            .setView(R.layout.dialog_fullscreen_image)
+            .setBackgroundInsetStart(0)
+            .setBackgroundInsetEnd(0)
+            .create()
+
+
+        dialog.apply {
+            window?.apply {
+                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                statusBarColor = Color.TRANSPARENT
+            }
+
+            setOnShowListener {
+                val imageView = findViewById<PhotoView>(R.id.fullscreenImageView)
+                val btnClose = findViewById<ExtendedFloatingActionButton>(R.id.btnCloseFullscreen)
+                val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+
+                imageView?.setImageBitmap(bitmap)
+
+                btnClose?.setOnClickListener { dismiss() }
+
+                toolbar?.setNavigationOnClickListener { dismiss() }
+                toolbar?.title = "Просмотр чека"
+
+                toolbar?.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.action_share -> {
+                            shareImage(bitmap)
+                            true
+                        }
+                        R.id.action_save -> {
+                            saveImageToGallery(bitmap)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    // Объявляем лаунчеры для запроса разрешений
+    private val storagePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Повторяем действие после получения разрешения
+            when (pendingAction) {
+                PendingAction.SHARE -> shareImageInternal(pendingBitmap!!)
+                PendingAction.SAVE -> saveImageToGalleryInternal(pendingBitmap!!)
+                null -> {
+                    // no-op
+                }
+            }
+        } else {
+            showMaterialSnackbar("Для этого действия необходимо разрешение на доступ к хранилищу")
+        }
+    }
+
+    // Enum для отслеживания ожидающего действия
+    private enum class PendingAction { SHARE, SAVE }
+    private var pendingAction: PendingAction? = null
+    private var pendingBitmap: Bitmap? = null
+
+    private fun shareImage(bitmap: Bitmap) {
+        if (checkStoragePermission()) {
+            shareImageInternal(bitmap)
+        } else {
+            pendingAction = PendingAction.SHARE
+            pendingBitmap = bitmap
+            requestStoragePermission()
+        }
+    }
+
+    private fun saveImageToGallery(bitmap: Bitmap) {
+        if (checkStoragePermission()) {
+            saveImageToGalleryInternal(bitmap)
+        } else {
+            pendingAction = PendingAction.SAVE
+            pendingBitmap = bitmap
+            requestStoragePermission()
+        }
+    }
+
+    private fun checkStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Для Android 10+ разрешение не требуется
+            true
+        } else {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requestStoragePermission() {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            showPermissionExplanationDialog()
+        } else {
+            storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+    }
+
+    private fun showPermissionExplanationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Требуется разрешение")
+            .setMessage("Для сохранения и отправки изображений необходимо разрешение на доступ к хранилищу")
+            .setPositiveButton("Разрешить") { _, _ ->
+                storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    // Оригинальные методы переименованы в Internal
+    private fun shareImageInternal(bitmap: Bitmap) {
+        try {
+            val cachePath = File(requireContext().externalCacheDir, "shared_image_${System.currentTimeMillis()}.jpg")
+            FileOutputStream(cachePath).use { stream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+            }
+
+            val imageUri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                cachePath
+            )
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/jpeg"
+                putExtra(Intent.EXTRA_STREAM, imageUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            startActivity(
+                Intent.createChooser(
+                    shareIntent,
+                    getString(R.string.share_image_title)
+                ).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+            )
+
+        } catch (e: Exception) {
+            showMaterialSnackbar(
+                message = "Ошибка при отправке изображения: ${e.localizedMessage}",
+                actionText = "Повторить",
+                action = { shareImage(bitmap) }
+            )
+        }
+    }
+
+    private fun saveImageToGalleryInternal(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            saveImageToGalleryApi29Plus(bitmap)
+        } else {
+            saveImageToGalleryLegacy(bitmap)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun saveImageToGalleryApi29Plus(bitmap: Bitmap) {
+        val resolver = requireContext().contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "receipt_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MyBudget")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        try {
+            val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            uri?.let {
+                resolver.openOutputStream(it).use { stream ->
+                    if (bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream ?: return)) {
+                        contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+                        resolver.update(uri, contentValues, null, null)
+                        showMaterialSnackbar("Изображение сохранено в галерею")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            showMaterialSnackbar(
+                message = "Ошибка сохранения: ${e.localizedMessage}",
+                actionText = "Повторить",
+                action = { saveImageToGallery(bitmap) }
+            )
+        }
+    }
+
+    private fun saveImageToGalleryLegacy(bitmap: Bitmap) {
+        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val appDir = File(imagesDir, "MyBudget")
+        if (!appDir.exists()) appDir.mkdirs()
+
+        val fileName = "receipt_${System.currentTimeMillis()}.jpg"
+        val file = File(appDir, fileName)
+
+        try {
+            FileOutputStream(file).use { stream ->
+                if (bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream)) {
+                    MediaScannerConnection.scanFile(
+                        requireContext(),
+                        arrayOf(file.absolutePath),
+                        arrayOf("image/jpeg"),
+                        null
+                    )
+                    showMaterialSnackbar("Изображение сохранено в галерею")
+                }
+            }
+        } catch (e: Exception) {
+            showMaterialSnackbar(
+                message = "Ошибка сохранения: ${e.localizedMessage}",
+                actionText = "Повторить",
+                action = { saveImageToGallery(bitmap) }
+            )
+        }
+    }
+
+    private fun showMaterialSnackbar(
+        message: String,
+        actionText: String? = null,
+        action: (() -> Unit)? = null
+    ) {
+        val rootView = this.requireActivity().window?.decorView?.findViewById<ViewGroup>(android.R.id.content)
+        rootView?.let {
+            Snackbar.make(it, message, Snackbar.LENGTH_LONG)
+                .setAnimationMode(Snackbar.ANIMATION_MODE_FADE)
+                .apply {
+                    if (actionText != null && action != null) {
+                        setAction(actionText) { action.invoke() }
+                    }
+                }
+                .show()
+        }
     }
 
     private fun getBitmapFromUri(uri: Uri): Bitmap? {
@@ -439,7 +721,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     // Валидация введенных данных
     private fun validateInput(): Boolean {
-        val name = binding.etTransactionName.text?.toString()
+        val name = binding.etTransactionName.text?.toString()?.trim()
         val amountStr = binding.etTransactionAmount.text?.toString()
         val customCategory = binding.etCustomCategory?.text?.toString() ?: ""
         if (name.isNullOrBlank()) {
@@ -487,30 +769,47 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-    // Внутренний адаптер для RecyclerView с изображениями чеков
-    inner class ReceiptImageAdapter(
-        private val images: List<Bitmap>,
-        private val onDelete: (Int) -> Unit
-    ) : RecyclerView.Adapter<ReceiptImageAdapter.ImageViewHolder>() {
+    private fun setupDatePicker(serverDateMillis: Long?) {
+        // Установка даты из бэкенда или текущей даты
+        serverDateMillis?.let {
+            currentDateMillis = it
+            updateDateDisplay()
+        } ?: setDateToToday()
 
-        inner class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val imageView = itemView.findViewById<android.widget.ImageView>(R.id.ivReceiptImage)
-            val btnDelete = itemView.findViewById<android.widget.ImageButton>(R.id.btnDeleteImage)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_receipt_image, parent, false)
-            return ImageViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-            holder.imageView.setImageBitmap(images[position])
-            holder.btnDelete.setOnClickListener { onDelete(position) }
-        }
-
-        override fun getItemCount(): Int = images.size
+        binding.etTransactionDate.setOnClickListener { showMaterialDatePicker() }
+        binding.dateInputLayout.setEndIconOnClickListener { showMaterialDatePicker() }
     }
+
+    private fun showMaterialDatePicker() {
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Выберите дату")
+            .setSelection(currentDateMillis)
+            .setTheme(R.style.ThemeOverlay_Material3_DatePicker)
+            .build()
+
+        datePicker.addOnPositiveButtonClickListener { selectedDate ->
+            currentDateMillis = selectedDate
+            updateDateDisplay()
+        }
+
+        datePicker.show(parentFragmentManager, "DATE_PICKER_TAG")
+    }
+
+    private fun updateDateDisplay() {
+        val date = Date(currentDateMillis)
+        binding.etTransactionDate.setText(dateFormatter.format(date))
+    }
+
+    private fun setDateToToday() {
+        currentDateMillis = MaterialDatePicker.todayInUtcMilliseconds()
+        updateDateDisplay()
+    }
+
+    fun getSelectedDateMillis(): Long {
+        return currentDateMillis
+    }
+
+
 
     companion object {
         private const val REQUEST_IMAGE_CAPTURE = 1

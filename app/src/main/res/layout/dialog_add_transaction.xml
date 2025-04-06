@@ -59,19 +59,25 @@
 
     <!-- Дата транзакции -->
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dateInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Дата транзакции"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginTop="8dp">
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        android:layout_marginTop="16dp"
+        android:hint="@string/transaction_date"
+        app:endIconMode="dropdown_menu"
+        app:endIconDrawable="@drawable/ic_calendar">
 
-        <com.google.android.material.textfield.TextInputEditText
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/etTransactionDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:focusable="false"
+            android:minHeight="60dp"
+            android:paddingTop="14dp"
+            android:paddingStart="12dp"
             android:clickable="true"
-            android:inputType="date" />
+            android:inputType="none" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Выбор типа транзакции -->

@@ -33,27 +33,31 @@ class SettingsRepository @Inject constructor(
         name = name,
         email = email,
         language = language,
-        notificationsEnabled = notificationsEnabled
+        notificationsEnabled = notificationsEnabled,
+        darkThemeEnabled = darkThemeEnabled
     )
 
     private fun UserSettings.toDto() = UserSettingsDto(
         name = name,
         email = email,
         language = language,
-        notificationsEnabled = notificationsEnabled
+        notificationsEnabled = notificationsEnabled,
+        darkThemeEnabled = darkThemeEnabled,
     )
 
     private fun UserSettingsEntity.toDomain() = UserSettings(
         name = name,
         email = email,
         language = language,
-        notificationsEnabled = notificationsEnabled
+        notificationsEnabled = notificationsEnabled,
+        darkThemeEnabled = darkThemeEnabled,
     )
 
     private fun UserSettings.toEntity() = UserSettingsEntity(
         email = email,
         name = name,
         language = language,
-        notificationsEnabled = notificationsEnabled
+        notificationsEnabled = notificationsEnabled,
+        darkThemeEnabled = darkThemeEnabled,
     )
 }

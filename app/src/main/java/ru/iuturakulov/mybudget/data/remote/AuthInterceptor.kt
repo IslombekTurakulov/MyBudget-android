@@ -48,7 +48,7 @@ class AuthInterceptor(
     }
 
     private suspend fun refreshToken(): String? {
-        val refreshToken = tokenStorage.getRefreshToken() ?: return null
+        val refreshToken = tokenStorage.getAccessToken() ?: return null
 
         return try {
             val response = withContext(Dispatchers.IO) {

@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.datastore.core.android)
+    implementation(libs.androidx.material3.android)
     ksp(libs.hilt.android.compiler)
 
 //    implementation(libs.hilt.lifecycle.viewmodel)
@@ -105,6 +106,9 @@ dependencies {
     // push-notifications
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
     implementation("com.google.firebase:firebase-analytics")
+
+    // image extension
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
     // Testing
     testImplementation(libs.junit)

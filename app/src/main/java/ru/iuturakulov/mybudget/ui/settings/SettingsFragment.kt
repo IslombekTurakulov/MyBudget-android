@@ -1,8 +1,10 @@
 package ru.iuturakulov.mybudget.ui.settings
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -15,6 +17,7 @@ import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.databinding.FragmentSettingsBinding
 import ru.iuturakulov.mybudget.domain.models.UserSettings
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import java.util.Locale
 
 @AndroidEntryPoint
 class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment_settings) {
@@ -30,7 +33,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
             viewModel.toggleDarkTheme(isChecked)
         }
 
-        binding.changeUsernameCard.setOnClickListener {
+        binding.profileCard.setOnClickListener {
             showChangeUsernameDialog()
         }
 
@@ -47,6 +50,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     override fun setupObservers() {
         lifecycleScope.launchWhenStarted {
             viewModel.userSettings.collect { settings ->
+                binding.profileCard.isGone = settings == null
                 settings?.let { updateUI(it) }
             }
         }
@@ -62,44 +66,76 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
     private fun setupLanguageSelector() {
         val languages = resources.getStringArray(R.array.languages)
-        val adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, languages)
-        binding.spinnerLanguage.adapter = adapter
-        binding.spinnerLanguage.setSelection(0, false)
-        binding.spinnerLanguage.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    viewModel.saveUserSettings(
-                        settings = UserSettings(
-                            name = binding.tvUserName.text.toString(),
-                            email = binding.tvUserEmail.text.toString(),
-                            language = parent.getItemAtPosition(position) as? String ?: "ru",
-                            notificationsEnabled = binding.switchNotifications.isChecked
-                        )
-                    )
-                }
+        val currentLanguage = viewModel.userSettings.value?.language ?: "ru"
 
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                    // no-op
-                }
+        // Устанавливаем текущий язык
+        updateSelectedLanguage(currentLanguage)
+
+        binding.tvSelectedLanguage.setOnClickListener {
+            showLanguageSelectionDialog(languages)
+        }
+    }
+
+    private fun updateSelectedLanguage(languageCode: String) {
+        val languages = resources.getStringArray(R.array.languages)
+        val languageCodes = resources.getStringArray(R.array.language_codes)
+
+        val index = languageCodes.indexOf(languageCode)
+        val displayLanguage = if (index >= 0) languages[index] else languages[0]
+        binding.tvSelectedLanguage.text = displayLanguage
+    }
+
+    private fun showLanguageSelectionDialog(languages: Array<String>) {
+        val languageCodes = resources.getStringArray(R.array.language_codes)
+        val currentLanguage = viewModel.userSettings.value?.language ?: "en"
+        val currentIndex = languageCodes.indexOf(currentLanguage).coerceAtLeast(0)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.select_language)
+            .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
+                val selectedLanguageCode = languageCodes[which]
+                viewModel.saveUserSettings(
+                    settings = UserSettings(
+                        name = binding.tvUserName.text.toString(),
+                        email = binding.tvUserEmail.text.toString(),
+                        language = selectedLanguageCode,
+                        notificationsEnabled = binding.switchNotifications.isChecked,
+                        darkThemeEnabled = binding.switchDarkTheme.isChecked
+                    )
+                )
+                updateSelectedLanguage(selectedLanguageCode)
+                dialog.dismiss()
+
+                // Здесь можно добавить смену языка приложения
+                setAppLocale(requireContext(), selectedLanguageCode)
             }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    @SuppressLint("NewApi")
+    private fun setAppLocale(context: Context, languageCode: String) {
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+
+        val resources = context.resources
+        val configuration = resources.configuration
+        configuration.setLocale(locale)
+        configuration.setLayoutDirection(locale)
+
+        resources.updateConfiguration(configuration, resources.displayMetrics)
+
+        requireActivity().recreate()
     }
 
     private fun updateUI(settings: UserSettings) {
         binding.tvUserName.text = settings.name
         binding.tvUserEmail.text = settings.email
         binding.switchNotifications.isChecked = settings.notificationsEnabled
+        binding.switchDarkTheme.isChecked = settings.darkThemeEnabled
 
-        val languages = resources.getStringArray(R.array.languages)
-        val index = languages.indexOf(settings.language)
-        binding.spinnerLanguage.setSelection(if (index >= 0) index else 0, true)
+        updateSelectedLanguage(settings.language)
     }
-
 
     private fun showChangePasswordDialog() {
         val action = SettingsFragmentDirections
@@ -144,8 +180,9 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                     settings = UserSettings(
                         name = name,
                         email = binding.tvUserEmail.text.toString(),
-                        language = binding.spinnerLanguage.selectedItem as? String ?: "ru",
-                        notificationsEnabled = binding.switchNotifications.isChecked
+                        language = binding.tvSelectedLanguage.text?.toString() ?: "ru",
+                        notificationsEnabled = binding.switchNotifications.isChecked,
+                        darkThemeEnabled = binding.switchDarkTheme.isChecked
                     )
                 )
             }

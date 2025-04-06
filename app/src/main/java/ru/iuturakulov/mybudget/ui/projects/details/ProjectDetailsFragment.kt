@@ -8,8 +8,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
@@ -82,10 +82,12 @@ class ProjectDetailsFragment :
                             showProjectDetails(projectWithTransactions)
                         }
                     }
+
                     is UiState.Error -> {
                         showContent()
                         showError(state.message)
                     }
+
                     is UiState.Idle -> Unit
                 }
             }
@@ -113,18 +115,22 @@ class ProjectDetailsFragment :
                         navigateToEditProject()
                         true
                     }
+
                     R.id.menuDelete -> {
                         confirmDeleteProject()
                         true
                     }
+
                     R.id.menuParticipants -> {
                         navigateToParticipants()
                         true
                     }
+
                     R.id.menuAnalytics -> {
                         navigateToAnalytics()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -195,8 +201,10 @@ class ProjectDetailsFragment :
         binding.apply {
             showContent()
             toolbar.subtitle = projectWithTransactions.project.name
-            tvProjectBudget.text = getString(R.string.project_budget, projectWithTransactions.project.budgetLimit)
-            tvProjectSpent.text = getString(R.string.project_spent, projectWithTransactions.project.amountSpent)
+            tvProjectBudget.text =
+                getString(R.string.project_budget, projectWithTransactions.project.budgetLimit)
+            tvProjectSpent.text =
+                getString(R.string.project_spent, projectWithTransactions.project.amountSpent)
             tvRemainingBudget.text = getString(
                 R.string.project_remaining,
                 projectWithTransactions.project.budgetLimit - projectWithTransactions.project.amountSpent
@@ -267,8 +275,13 @@ class ProjectDetailsFragment :
         dialog.setContentView(dialogBinding.root)
 
         // Получаем список категорий из ресурсов. Если нужно заменить "Все", можно использовать ресурс
-        val categories = resources.getStringArray(R.array.transaction_categories)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
+        val categories = (
+                resources.getStringArray(
+                    R.array.transaction_categories
+                ) + viewModel.transactions.value.mapNotNull { it.category.ifEmpty { null } }
+        ).distinct()
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         dialogBinding.spinnerCategory.setAdapter(adapter)
 
@@ -284,9 +297,16 @@ class ProjectDetailsFragment :
         dialogBinding.btnApplyFilters.setOnClickListener {
             val minAmount = dialogBinding.etMinAmount.text.toString().toDoubleOrNull()
             val maxAmount = dialogBinding.etMaxAmount.text.toString().toDoubleOrNull()
-            val selectedCategory = dialogBinding.spinnerCategory.selectedItem.toString().let { category ->
-                if (category == getString(R.string.all)) null else category
-            }
+            val selectedCategory =
+                dialogBinding.spinnerCategory.selectedItem.toString().let { category ->
+                    if (category == getString(R.string.all)) {
+                        null
+                    } else if (category == getString(R.string.other)) {
+                        null
+                    } else {
+                        category
+                    }
+                }
             val filter = TransactionFilter(
                 category = selectedCategory,
                 minAmount = minAmount,

@@ -3,7 +3,6 @@ package ru.iuturakulov.mybudget.domain.usecases.auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.iuturakulov.mybudget.auth.TokenStorage
-import ru.iuturakulov.mybudget.core.NetworkErrorHandler
 import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import ru.iuturakulov.mybudget.data.remote.auth.LoginRequest
 import timber.log.Timber
@@ -23,22 +22,16 @@ class LoginUseCase @Inject constructor(
      */
     suspend operator fun invoke(email: String, password: String): Boolean {
         return withContext(Dispatchers.IO) {
-            try {
-                val response = authService.login(LoginRequest(email, password))
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    val token = body?.token ?: return@withContext false
-                    tokenStorage.saveAccessTokenAsync(token) // Сохраняем токен
-                    true
-                } else {
-                    val errorResponse = response.errorBody()?.string()
-                    Timber.e("$errorResponse")
-                    false
-                }
-            } catch (e: Exception) {
-                val errorMessage = NetworkErrorHandler.getErrorMessage(e)
-                Timber.e("Ошибка сети: $errorMessage")
-                throw Exception(errorMessage)
+            val response = authService.login(LoginRequest(email, password))
+            if (response.isSuccessful) {
+                val body = response.body()
+                val token = body?.token ?: return@withContext false
+                tokenStorage.saveAccessTokenAsync(token) // Сохраняем токен
+                true
+            } else {
+                val errorResponse = response.errorBody()?.string()
+                Timber.e("$errorResponse")
+                throw Exception(errorResponse)
             }
         }
     }

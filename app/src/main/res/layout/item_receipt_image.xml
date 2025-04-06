@@ -1,24 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="120dp"
-    android:layout_height="120dp"
-    android:layout_margin="4dp">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp">
 
-    <!-- Изображение чека -->
     <ImageView
         android:id="@+id/ivReceiptImage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="130dp"
+        android:layout_height="160dp"
         android:scaleType="centerCrop"
-        android:contentDescription="Изображение чека" />
+        android:background="@drawable/ic_empty_box_state"/>
 
-    <!-- Кнопка для удаления изображения -->
     <ImageButton
         android:id="@+id/btnDeleteImage"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:layout_gravity="top|end"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_margin="4dp"
         android:src="@drawable/baseline_delete_forever_24"
-        android:contentDescription="Удалить изображение" />
+        android:background="?attr/selectableItemBackgroundBorderless"/>
+
 </FrameLayout>

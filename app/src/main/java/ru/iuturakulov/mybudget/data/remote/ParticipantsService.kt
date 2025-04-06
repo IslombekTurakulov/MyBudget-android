@@ -17,9 +17,9 @@ interface ParticipantsService {
     @POST("projects/participants")
     suspend fun addOrUpdateParticipant(@Body participant: ParticipantDto): Response<Unit>
 
-    @DELETE("projects/participants/{id}")
-    suspend fun deleteParticipant(@Path("id") participantId: String): Response<Unit>
+    @DELETE("projects/{projectId}/participants/{participantId}")
+    suspend fun deleteParticipant(@Path("projectId") projectId: String, @Path("participantId") participantId: String): Response<Unit>
 
-    @POST("projects/invitations")
-    suspend fun sendInvitation(@Body invitationRequest: InvitationRequest): Response<Unit>
+    @POST("projects/{projectId}/invite")
+    suspend fun sendInvitation(@Path("projectId") projectId: String, @Body invitationRequest: InvitationRequest): Response<Unit>
 }

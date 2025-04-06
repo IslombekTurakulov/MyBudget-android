@@ -120,19 +120,14 @@ class ProjectRepository @Inject constructor(
 //        }
 //    }
 
-    suspend fun getProjectByInviteCode(code: String): ProjectEntity {
+    suspend fun getProjectByInviteCode(code: String): Boolean {
         val response = projectService.getProjectByInviteCode(code)
         if (!response.isSuccessful) {
             throw Exception(
-                Gson().fromJson(
-                    response.errorBody()?.string(),
-                    ErrorResponse::class.java
-                ).error
+                response.errorBody()?.string()
             )
         }
-        val projectDto = response.body()
-        requireNotNull(projectDto)
-        return ProjectMapper.dtoToEntity(projectDto)
+        return true
     }
 
     suspend fun addProjectLocally(project: ProjectEntity) {

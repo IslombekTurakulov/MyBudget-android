@@ -39,7 +39,7 @@ interface ProjectService {
     ): Response<ProjectDto>
 
     @POST("projects/accept-invite/{inviteCode}")
-    suspend fun getProjectByInviteCode(@Path("inviteCode") code: String): Response<ProjectDto>
+    suspend fun getProjectByInviteCode(@Path("inviteCode") code: String): Response<Unit>
 
     // Удаление проекта
     @DELETE("projects/{projectId}")

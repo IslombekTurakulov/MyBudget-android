@@ -8,5 +8,6 @@ data class UserSettingsEntity(
     @PrimaryKey val email: String,
     val name: String,
     val language: String,
-    val notificationsEnabled: Boolean
+    val notificationsEnabled: Boolean,
+    val darkThemeEnabled: Boolean
 )

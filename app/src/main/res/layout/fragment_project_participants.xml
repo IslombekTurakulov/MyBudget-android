@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- AppBar с заголовком -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,13 +43,12 @@
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Плавающая кнопка добавления участника -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddParticipant"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:layout_gravity="bottom|end"
+        android:layout_gravity="bottom|end|center"
         android:icon="@drawable/baseline_add_24"
         android:text="Добавить участника" />
 
@@ -69,7 +67,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:visibility="visible"
+        android:visibility="gone"
         android:text="Участников пока нет :("
         style="@style/TextAppearance.Material3.BodyLarge"
         android:layout_marginTop="16dp" />

@@ -1,6 +1,5 @@
 package ru.iuturakulov.mybudget.ui.projects.participants
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -8,9 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogParticipantBinding
+import java.util.UUID
 
 @AndroidEntryPoint
 class ParticipantDialogFragment : DialogFragment() {
@@ -34,87 +37,138 @@ class ParticipantDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Получаем аргументы
         participant = arguments?.getParcelable(ARG_PARTICIPANT)
         projectId = arguments?.getString(ARG_PROJECT_ID)
 
+        // Настроить виды
         setupViews()
     }
 
     private fun setupViews() {
-        participant?.let { participant ->
-            binding.etParticipantName.setText(participant.name)
-            binding.etParticipantEmail.setText(participant.email)
-            binding.spinnerRole.setText(participant.role, false)
+        participant?.let {
+            binding.etParticipantName.setText(it.name)
+            binding.etParticipantEmail.setText(it.email)
+            binding.spinnerRole.setText(it.role, false)
         }
 
         setupRoleSpinner()
 
-        if (participant == null) {
-            binding.btnSave.setOnClickListener {
-                if (validateInput()) {
-                    val updatedParticipant = participant?.copy(
-                        name = binding.etParticipantName.text.toString(),
-                        email = binding.etParticipantEmail.text.toString(),
-                        role = binding.spinnerRole.text.toString()
-                    ) ?: projectId?.let { it1 ->
-                        ParticipantEntity(
-                            id = "", // Новый ID будет назначен на сервере
-                            projectId = it1,
-                            userId = "", // Здесь может быть ID текущего пользователя, если нужно
-                            name = binding.etParticipantName.text.toString(),
-                            email = binding.etParticipantEmail.text.toString(),
-                            role = binding.spinnerRole.text.toString()
-                        )
-                    }
-                    updatedParticipant?.let { onParticipantUpdated?.invoke(it) }
-                    dismiss()
-                }
+        // Установка слушателей кнопок
+        binding.btnSave.setOnClickListener {
+            if (validateInput()) {
+                saveParticipant()
             }
         }
 
-        if (participant != null) {
-            binding.btnDelete.setOnClickListener {
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Удалить участника")
-                    .setMessage("Вы уверены, что хотите удалить этого участника?")
-                    .setPositiveButton("Удалить") { _, _ ->
-                        onParticipantDeleted?.invoke()
-                        dismiss()
-                    }
-                    .setNegativeButton("Отмена", null)
-                    .show()
-            }
+        binding.btnDelete.setOnClickListener {
+            showDeleteConfirmationDialog()
         }
     }
 
     private fun setupRoleSpinner() {
-        val roles = listOf("Наблюдатель", "Редактор")
-        val adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, roles)
+        // Получаем список локализованных названий ролей
+        val rolesDisplayNames = ParticipantRole.values().map { it.getDisplayName(requireContext()) }
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            rolesDisplayNames
+        )
+
         binding.spinnerRole.setAdapter(adapter)
+
+        // Устанавливаем текущее значение
+        participant?.let {
+            val currentRole = ParticipantRole.values().find { role ->
+                role.name.equals(it.role, ignoreCase = true)
+            }
+            currentRole?.let { role ->
+                binding.spinnerRole.setText(role.getDisplayName(requireContext()), false)
+            }
+        } ?: run {
+            // Значение по умолчанию
+            binding.spinnerRole.setText(ParticipantRole.VIEWER.getDisplayName(requireContext()), false)
+        }
     }
 
     private fun validateInput(): Boolean {
+        clearErrors()
+
         val name = binding.etParticipantName.text.toString()
         val email = binding.etParticipantEmail.text.toString()
-        val role = binding.spinnerRole.text.toString()
+        var isValid = true
 
-        if (name.isBlank()) {
-            binding.etParticipantName.error = "Введите имя"
-            return false
+        if (email.isBlank() || !email.isValidEmail()) {
+            binding.etParticipantEmail.error = getString(R.string.error_invalid_email)
+            isValid = false
         }
 
-        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.etParticipantEmail.error = "Введите корректный email"
-            return false
+        if (getSelectedRole() == null) {
+            binding.spinnerRole.error = getString(R.string.error_select_valid_role)
+            isValid = false
         }
 
-        if (role.isBlank()) {
-            binding.spinnerRole.error = "Выберите роль"
-            return false
+        return isValid
+    }
+
+    private fun clearErrors() {
+        binding.etParticipantName.error = null
+        binding.etParticipantEmail.error = null
+        binding.spinnerRole.error = null
+    }
+
+    private fun saveParticipant() {
+        val role = getSelectedRole() ?: run {
+            binding.spinnerRole.error = getString(R.string.error_select_valid_role)
+            return
         }
 
-        return true
+        val name = binding.etParticipantName.text.toString()
+        val email = binding.etParticipantEmail.text.toString()
+
+        val updatedParticipant = participant?.copy(
+            name = name,
+            email = email,
+            role = role.name
+        ) ?: run {
+            requireNotNull(projectId) { "Project ID is required for new participant" }
+            ParticipantEntity(
+                id = UUID.randomUUID().toString(),
+                projectId = projectId!!,
+                userId = "",
+                name = name,
+                email = email,
+                role = role.name
+            )
+        }
+
+        onParticipantUpdated?.invoke(updatedParticipant)
+        dismiss()
+    }
+
+    private fun getSelectedRole(): ParticipantRole? {
+        return ParticipantRole.values().find {
+            it.getDisplayName(requireContext()) == binding.spinnerRole.text.toString()
+        }
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Удалить участника")
+            .setMessage("Вы уверены, что хотите удалить этого участника?")
+            .setPositiveButton("Удалить") { _, _ ->
+                onParticipantDeleted?.invoke()
+                dismiss()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     fun setOnParticipantUpdated(listener: (ParticipantEntity) -> Unit) {
@@ -125,27 +179,19 @@ class ParticipantDialogFragment : DialogFragment() {
         onParticipantDeleted = listener
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    fun String.isValidEmail() = Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
     companion object {
-        private const val ARG_PARTICIPANT = "arg_participant"
-        private const val ARG_PROJECT_ID = "arg_project_id"
+        private const val ARG_PARTICIPANT = "participant"
+        private const val ARG_PROJECT_ID = "project_id"
 
-        fun newInstance(
-            participant: ParticipantEntity?,
-            projectId: String
-        ): ParticipantDialogFragment {
-            val fragment = ParticipantDialogFragment()
-            val args = Bundle().apply {
-                putParcelable(ARG_PARTICIPANT, participant)
-                putString(ARG_PROJECT_ID, projectId)
+        fun newInstance(participant: ParticipantEntity?, projectId: String?): ParticipantDialogFragment {
+            return ParticipantDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putParcelable(ARG_PARTICIPANT, participant)
+                    putString(ARG_PROJECT_ID, projectId)
+                }
             }
-            fragment.arguments = args
-            return fragment
         }
     }
 }
-

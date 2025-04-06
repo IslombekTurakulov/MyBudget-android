@@ -39,11 +39,11 @@ class ParticipantsRepository @Inject constructor(
     /**
      * Удаление участника (локально и на сервере).
      */
-    suspend fun deleteParticipant(participantId: String) {
+    suspend fun deleteParticipant(projectId: String, participantId: String) {
         try {
-            val response = participantService.deleteParticipant(participantId)
+            val response = participantService.deleteParticipant(projectId, participantId)
             if (response.isSuccessful) {
-                participantDao.deleteParticipant(participantId)
+                participantDao.deleteParticipant(projectId, participantId)
             }
         } catch (e: Exception) {
             throw Exception("Ошибка удаления участника на сервере: ${e.localizedMessage}")
@@ -69,9 +69,12 @@ class ParticipantsRepository @Inject constructor(
      */
     suspend fun sendInvitation(projectId: String, email: String, role: String) {
         try {
-            participantService.sendInvitation(InvitationRequest(projectId, email, role))
+            val response = participantService.sendInvitation(projectId, InvitationRequest(projectId, email, role))
+            if (!response.isSuccessful) {
+                throw Exception()
+            }
         } catch (e: Exception) {
-            throw Exception("Ошибка отправки приглашения: ${e.localizedMessage}")
+            throw Exception(e.localizedMessage)
         }
     }
 }
