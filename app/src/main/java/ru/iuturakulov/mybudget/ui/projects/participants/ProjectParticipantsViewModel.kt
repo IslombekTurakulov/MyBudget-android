@@ -20,7 +20,6 @@ class ProjectParticipantsViewModel @Inject constructor(
     private val participantRepository: ParticipantsRepository
 ) : ViewModel() {
 
-    // region States
     private val _participants = MutableStateFlow<List<ParticipantEntity>>(emptyList())
     val participants: StateFlow<List<ParticipantEntity>> = _participants
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -35,9 +34,7 @@ class ProjectParticipantsViewModel @Inject constructor(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-    // endregion
 
-    // region Public methods
     /**
      * Загружает участников проекта с возможностью автоматического обновления через Flow
      * @param projectId ID проекта для загрузки участников
@@ -113,9 +110,7 @@ class ProjectParticipantsViewModel @Inject constructor(
             }
         }
     }
-    // endregion
 
-    // region Helpers
     private fun handleError(e: Exception, defaultMessage: String) {
         val message = when (e) {
             is IOException -> "Проблемы с сетью"
@@ -139,7 +134,6 @@ class ProjectParticipantsViewModel @Inject constructor(
             }
         }
     }
-    // endregion
 
     sealed class InvitationState<out T> {
         object Idle : InvitationState<Nothing>()

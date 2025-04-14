@@ -16,7 +16,6 @@ class ParticipantsRepository @Inject constructor(
         private const val SYNC_THRESHOLD_MINUTES = 15L
     }
 
-    // region Local operations
     /**
      * Получение участников только из локальной базы
      */
@@ -31,9 +30,6 @@ class ParticipantsRepository @Inject constructor(
         return observeLocalParticipants(projectId)
     }
 
-    // endregion
-
-    // region Sync operations
     /**
      * Синхронизация участников с сервером
      * @return Синхронизированный список участников
@@ -60,9 +56,6 @@ class ParticipantsRepository @Inject constructor(
             )
         }
     }
-    // endregion
-
-    // region CRUD operations
     /**
      * Сохранение участника с синхронизацией
      * @throws ParticipantOperationException при ошибках
@@ -109,9 +102,7 @@ class ParticipantsRepository @Inject constructor(
             )
         }
     }
-    // endregion
 
-    // region Invitations
     /**
      * Отправка приглашения
      * @throws InvitationException при ошибках
@@ -133,9 +124,7 @@ class ParticipantsRepository @Inject constructor(
             )
         }
     }
-    // endregion
 
-    // region Exceptions
     class ParticipantsSyncException(
         message: String,
         cause: Throwable? = null
@@ -150,6 +139,5 @@ class ParticipantsRepository @Inject constructor(
         message: String,
         cause: Throwable? = null
     ) : Exception(message, cause)
-    // endregion
 }
 

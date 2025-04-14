@@ -18,6 +18,6 @@ data class PeriodDistributionDto(
 
 data class ProjectComparisonDto(
     val projectName: String, // Название проекта
-    val totalAmount: Double    // Сумма расходов по проекту
+    val totalSpent: Double    // Сумма расходов по проекту
 )
 

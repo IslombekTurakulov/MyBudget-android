@@ -111,6 +111,18 @@ class ProjectDetailsFragment :
                     is UiState.Success -> {
                         showContent()
                         state.data?.let { projectWithTransactions ->
+
+                            // Проверка архивирован ли проект
+                            val isProjectArchived = projectWithTransactions.project?.status == ProjectStatus.ARCHIVED
+
+                            binding.toolbar.menu.findItem(
+                                R.id.menuArchiveProject
+                            ).isVisible = !isProjectArchived
+
+                            binding.toolbar.menu.findItem(
+                                R.id.menuUnarchiveProject
+                            ).isVisible = isProjectArchived
+
                             viewModel.getCurrentRole(projectWithTransactions.project.id)
                             project = projectWithTransactions
 
@@ -145,16 +157,6 @@ class ProjectDetailsFragment :
 
                     binding.fabAddTransaction.isGone = true
                 } else {
-                    // Проверка архивирован ли проект
-                    val isProjectArchived = project?.project?.status == ProjectStatus.ARCHIVED
-
-                    binding.toolbar.menu.findItem(
-                        R.id.menuArchiveProject
-                    ).isVisible = !isProjectArchived
-
-                    binding.toolbar.menu.findItem(
-                        R.id.menuUnarchiveProject
-                    ).isVisible = isProjectArchived
 
                     binding.toolbar.menu.findItem(
                         R.id.menuDelete

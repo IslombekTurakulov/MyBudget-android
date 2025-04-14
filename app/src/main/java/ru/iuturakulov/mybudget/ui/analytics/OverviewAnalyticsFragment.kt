@@ -249,7 +249,7 @@ class OverviewAnalyticsFragment :
 
             // Обновление BarChart для сравнения проектов
             val projectEntries = data.projectComparison.mapIndexed { index, project ->
-                BarEntry(index.toFloat(), project.totalAmount.toFloat())
+                BarEntry(index.toFloat(), project.totalSpent.toFloat())
             }
             if (projectEntries.isNotEmpty()) {
                 val projectDataSet = BarDataSet(projectEntries, "Проекты").apply {
