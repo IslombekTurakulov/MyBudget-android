@@ -10,74 +10,146 @@ import javax.inject.Inject
 
 class ParticipantsRepository @Inject constructor(
     private val participantDao: ParticipantsDao,
-    private val participantService: ParticipantsService
+    private val participantService: ParticipantsService,
 ) {
-
-    /**
-     * Получение участников проекта из локальной базы данных.
-     */
-    suspend fun getParticipantsForProject(projectId: String): Flow<List<ParticipantEntity>> {
-        syncParticipants(projectId).also {
-            return participantDao.getParticipantsForProject(projectId)
-        }
+    companion object {
+        private const val SYNC_THRESHOLD_MINUTES = 15L
     }
 
+    // region Local operations
     /**
-     * Сохранение участника (локально и на сервере).
+     * Получение участников только из локальной базы
+     */
+    fun observeLocalParticipants(projectId: String): Flow<List<ParticipantEntity>> =
+        participantDao.getParticipantsForProject(projectId)
+
+    /**
+     * Получение участников с автоматической синхронизацией (если нужно)
+     */
+    suspend fun getParticipantsWithSync(projectId: String): Flow<List<ParticipantEntity>> {
+        syncParticipants(projectId)
+        return observeLocalParticipants(projectId)
+    }
+
+    // endregion
+
+    // region Sync operations
+    /**
+     * Синхронизация участников с сервером
+     * @return Синхронизированный список участников
+     * @throws ParticipantsSyncException при ошибках синхронизации
+     */
+    suspend fun syncParticipants(projectId: String): List<ParticipantEntity> {
+
+        return try {
+            val response = participantService.getParticipantsForProject(projectId)
+
+            if (!response.isSuccessful) {
+                throw ParticipantsSyncException("Ошибка сервера: ${response.code()}")
+            }
+
+            val remoteParticipants = response.body().orEmpty()
+            val entities = remoteParticipants.map { ParticipantMapper.dtoToEntity(it) }
+
+            participantDao.replaceParticipantsForProject(projectId, entities)
+            entities
+        } catch (e: Exception) {
+            throw ParticipantsSyncException(
+                "Ошибка синхронизации: ${e.localizedMessage}",
+                e
+            )
+        }
+    }
+    // endregion
+
+    // region CRUD operations
+    /**
+     * Сохранение участника с синхронизацией
+     * @throws ParticipantOperationException при ошибках
      */
     suspend fun saveParticipant(participant: ParticipantEntity) {
         try {
-            val response = participantService.addOrUpdateParticipant(ParticipantMapper.entityToDto(participant))
-            if (response.isSuccessful) {
-                participantDao.insertParticipant(participant)
+
+            val response = participantService.addOrUpdateParticipant(
+                projectId = participant.projectId,
+                participant = ParticipantMapper.entityToDto(participant)
+            )
+
+            if (!response.isSuccessful) {
+                throw ParticipantOperationException("Ошибка сервера: ${response.code()}")
             }
+
+            participantDao.insertParticipant(participant)
         } catch (e: Exception) {
-            throw Exception("Ошибка сохранения участника на сервере: ${e.localizedMessage}")
+            throw ParticipantOperationException(
+                "Ошибка сохранения участника: ${e.localizedMessage}",
+                e
+            )
         }
     }
 
     /**
-     * Удаление участника (локально и на сервере).
+     * Удаление участника
+     * @throws ParticipantOperationException при ошибках
      */
     suspend fun deleteParticipant(projectId: String, participantId: String) {
         try {
+
             val response = participantService.deleteParticipant(projectId, participantId)
-            if (response.isSuccessful) {
-                participantDao.deleteParticipant(projectId, participantId)
+
+            if (!response.isSuccessful) {
+                throw ParticipantOperationException("Ошибка сервера: ${response.code()}")
             }
+
+            participantDao.deleteParticipant(projectId, participantId)
         } catch (e: Exception) {
-            throw Exception("Ошибка удаления участника на сервере: ${e.localizedMessage}")
+            throw ParticipantOperationException(
+                "Ошибка удаления участника: ${e.localizedMessage}",
+                e
+            )
         }
     }
+    // endregion
 
+    // region Invitations
     /**
-     * Синхронизация участников с сервером.
-     */
-    suspend fun syncParticipants(projectId: String): List<ParticipantEntity> {
-        try {
-            val remoteParticipants = participantService.getParticipantsForProject(projectId).body()
-            val entities = remoteParticipants?.map { ParticipantMapper.dtoToEntity(it) }.orEmpty()
-            participantDao.replaceParticipantsForProject(projectId, entities)
-            return entities
-        } catch (e: Exception) {
-            throw Exception("Ошибка синхронизации участников: ${e.localizedMessage}")
-        }
-    }
-
-    /**
-     * Отправка приглашения на сервер.
+     * Отправка приглашения
+     * @throws InvitationException при ошибках
      */
     suspend fun sendInvitation(projectId: String, email: String, role: String) {
         try {
-            val response = participantService.sendInvitation(projectId, InvitationRequest(projectId, email, role))
+            val response = participantService.sendInvitation(
+                projectId,
+                InvitationRequest(projectId, email, role)
+            )
+
             if (!response.isSuccessful) {
-                throw Exception()
+                throw InvitationException("Ошибка сервера: ${response.code()}")
             }
         } catch (e: Exception) {
-            throw Exception(e.localizedMessage)
+            throw InvitationException(
+                "Ошибка отправки приглашения: ${e.localizedMessage}",
+                e
+            )
         }
     }
+    // endregion
+
+    // region Exceptions
+    class ParticipantsSyncException(
+        message: String,
+        cause: Throwable? = null
+    ) : Exception(message, cause)
+
+    class ParticipantOperationException(
+        message: String,
+        cause: Throwable? = null
+    ) : Exception(message, cause)
+
+    class InvitationException(
+        message: String,
+        cause: Throwable? = null
+    ) : Exception(message, cause)
+    // endregion
 }
-
-
 

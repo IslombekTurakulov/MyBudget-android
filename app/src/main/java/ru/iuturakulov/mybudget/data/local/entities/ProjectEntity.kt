@@ -3,6 +3,7 @@ package ru.iuturakulov.mybudget.data.local.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 
 @Entity(tableName = "projects")
 data class ProjectEntity(
@@ -13,7 +14,7 @@ data class ProjectEntity(
     @ColumnInfo(name = "amount_spent") val amountSpent: Double,
     @ColumnInfo(name = "status") val status: ProjectStatus,
     @ColumnInfo(name = "created_date") val createdAt: Long,
-    @ColumnInfo(name = "last_modified") val lastModified: Long
+    @ColumnInfo(name = "last_modified") val lastModified: Long,
 )
 
 

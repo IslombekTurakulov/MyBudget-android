@@ -87,13 +87,14 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
     private fun showLanguageSelectionDialog(languages: Array<String>) {
         val languageCodes = resources.getStringArray(R.array.language_codes)
-        val currentLanguage = viewModel.userSettings.value?.language ?: "en"
+        val currentLanguage = viewModel.userSettings.value?.language ?: "ru"
         val currentIndex = languageCodes.indexOf(currentLanguage).coerceAtLeast(0)
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.select_language)
             .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
                 val selectedLanguageCode = languageCodes[which]
+                viewModel.saveCurrentLocale(selectedLanguageCode)
                 viewModel.saveUserSettings(
                     settings = UserSettings(
                         name = binding.tvUserName.text.toString(),
@@ -176,11 +177,16 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                     return@setPositiveButton
                 }
 
+                val languages = resources.getStringArray(R.array.languages)
+                val languageCodes = resources.getStringArray(R.array.language_codes)
+                val index = languages.indexOf(binding.tvSelectedLanguage.text?.toString())
+                val displayLanguage = if (index >= 0) languageCodes[index] else languageCodes[0]
+
                 viewModel.saveUserSettings(
                     settings = UserSettings(
                         name = name,
                         email = binding.tvUserEmail.text.toString(),
-                        language = binding.tvSelectedLanguage.text?.toString() ?: "ru",
+                        language = displayLanguage,
                         notificationsEnabled = binding.switchNotifications.isChecked,
                         darkThemeEnabled = binding.switchDarkTheme.isChecked
                     )

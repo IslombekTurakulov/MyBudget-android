@@ -17,6 +17,20 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/menuArchiveProject"
+        android:icon="@drawable/baseline_archive_24"
+        android:title="Архивировать"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menuUnarchiveProject"
+        android:icon="@drawable/baseline_unarchive_24"
+        android:title="Разархивировать"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menuParticipants"
         android:icon="@drawable/baseline_people_24"
         android:title="Участники"
@@ -27,4 +41,5 @@
         android:icon="@drawable/outline_analytics_24"
         android:title="Аналитика"
         app:showAsAction="never" />
+
 </menu>

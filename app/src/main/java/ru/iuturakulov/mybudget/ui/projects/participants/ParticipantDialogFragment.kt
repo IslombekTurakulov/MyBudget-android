@@ -46,11 +46,19 @@ class ParticipantDialogFragment : DialogFragment() {
         setupViews()
     }
 
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.setLayout(
+            (resources.displayMetrics.widthPixels * 0.90).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    }
+
     private fun setupViews() {
-        participant?.let {
-            binding.etParticipantName.setText(it.name)
-            binding.etParticipantEmail.setText(it.email)
-            binding.spinnerRole.setText(it.role, false)
+        participant?.let { entity ->
+            binding.etParticipantName.setText(entity.name)
+            binding.etParticipantEmail.setText(entity.email)
+            binding.spinnerRole.setText(entity.role, false)
         }
 
         setupRoleSpinner()
@@ -62,14 +70,20 @@ class ParticipantDialogFragment : DialogFragment() {
             }
         }
 
-        binding.btnDelete.setOnClickListener {
-            showDeleteConfirmationDialog()
+        binding.btnCancel.setOnClickListener {
+            dismiss()
         }
+
+//        binding.btnDelete.setOnClickListener {
+//            showDeleteConfirmationDialog()
+//        }
     }
 
     private fun setupRoleSpinner() {
         // Получаем список локализованных названий ролей
-        val rolesDisplayNames = ParticipantRole.values().map { it.getDisplayName(requireContext()) }
+        val rolesDisplayNames = ParticipantRole.entries.filter {
+            it.displayNameRes != R.string.role_admin
+        }.map { it.getDisplayName(requireContext()) }
 
         val adapter = ArrayAdapter(
             requireContext(),
@@ -149,8 +163,8 @@ class ParticipantDialogFragment : DialogFragment() {
     }
 
     private fun getSelectedRole(): ParticipantRole? {
-        return ParticipantRole.values().find {
-            it.getDisplayName(requireContext()) == binding.spinnerRole.text.toString()
+        return ParticipantRole.entries.find { participantRole ->
+            participantRole.getDisplayName(requireContext()) == binding.spinnerRole.text.toString()
         }
     }
 
@@ -179,7 +193,7 @@ class ParticipantDialogFragment : DialogFragment() {
         onParticipantDeleted = listener
     }
 
-    fun String.isValidEmail() = Patterns.EMAIL_ADDRESS.matcher(this).matches()
+    private fun String.isValidEmail() = Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
     companion object {
         private const val ARG_PARTICIPANT = "participant"

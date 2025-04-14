@@ -249,6 +249,11 @@
             android:name="projectId"
             app:argType="string"
             app:nullable="false" />
+
+        <argument
+            android:name="userRole"
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
 
 

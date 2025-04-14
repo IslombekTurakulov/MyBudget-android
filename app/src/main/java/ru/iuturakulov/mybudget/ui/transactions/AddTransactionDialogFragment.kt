@@ -19,6 +19,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Parcel
 import android.os.Parcelable
 import android.provider.MediaStore
 import android.util.Base64
@@ -33,6 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.chrisbanes.photoview.PhotoView
@@ -46,6 +48,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -53,12 +57,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -131,55 +140,183 @@ class AddTransactionDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         args = arguments?.getParcelable(ARG_TRANSACTION)
-        dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+        dateFormatter = SimpleDateFormat("dd MMMM yyyy HH:mm", Locale.getDefault())
         setupReceiptImagesRecyclerView() // Инициализация RecyclerView для изображений
-        setupViews()
+//        setupViews()
+        setupViewsBasedOnRole() // Метод для настройки в зависимости от роли
+        setupToolbar()
     }
 
-    private fun setupViews() {
-        args?.let { argument ->
-            transaction = argument.transaction
-            binding.apply {
-                if (transaction != null) {
-                    // Режим редактирования: заполняем поля
-                    etTransactionName.setText(transaction?.name)
-                    etTransactionAmount.setText(transaction?.amount.toString())
-                    spinnerCategory.setText(transaction?.category, false)
-                    updateCategoryIcon(transaction?.categoryIcon.orEmpty())
-                    selectedImages.addAll(
-                        transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList()
-                    )
-                    receiptImageAdapter.notifyDataSetChanged()
-                    removeTransactionLayout.visibility = View.VISIBLE
-                    addTransactionLayout.visibility = View.GONE
-                    btnSave.text = getString(R.string.save)
-                    toggleTransactionType.check(
-                        if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
-                        else R.id.btnExpense
-                    )
-                    btnEditTransaction.setOnClickListener {
-                        processSaveButton(
-                            onTransactionUpdated,
-                            argument
-                        )
-                    }
-                    btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
-                } else {
-                    // Режим добавления: скрываем кнопку удаления
-                    removeTransactionLayout.visibility = View.GONE
-                    addTransactionLayout.visibility = View.VISIBLE
-                    btnSave.text = getString(R.string.add)
-                    btnSave.setOnClickListener { processSaveButton(onTransactionAdded, argument) }
-                    toggleTransactionType.check(R.id.btnIncome)
-                    btnCancel.setOnClickListener { dismiss() }
-                    setupTransactionIcon()
-                }
-                setupDatePicker(transaction?.date)
-                setupCategorySpinner(transaction?.category)
-                setupEmojiPicker()
-                setupTransactionTypeToggle()
-                btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
+    private fun setupViewsBasedOnRole() {
+        args?.let { arguments ->
+            when (ParticipantRole.valueOf(arguments.currentRole)) {
+                ParticipantRole.OWNER -> setupEditMode(arguments)
+                ParticipantRole.EDITOR -> setupEditorMode(arguments)
+                ParticipantRole.VIEWER -> setupViewMode(arguments)
             }
+        }
+    }
+
+    private fun setupEditMode(arguments: AddTransactionArgs) {
+        // Полный доступ для владельцев и администраторов
+        binding.apply {
+            // Разблокируем все поля
+            etTransactionName.isEnabled = true
+            etTransactionAmount.isEnabled = true
+            spinnerCategory.isEnabled = true
+            ivTransactionCategoryIcon.isEnabled = true
+            toggleTransactionType.isEnabled = true
+            btnScanReceipt.isEnabled = true
+            btnSave.isEnabled = true
+            btnDeleteTransaction.isEnabled = arguments.transaction != null
+            btnEditTransaction.isEnabled = true
+        }
+
+        setupCommonViews(arguments)
+    }
+
+    private fun setupEditorMode(arguments: AddTransactionArgs) {
+        // Ограниченный доступ для редакторов
+        binding.apply {
+            // Разблокируем основные поля, но запрещаем удаление
+            etTransactionName.isEnabled = true
+            etTransactionAmount.isEnabled = true
+            spinnerCategory.isEnabled = true
+            ivTransactionCategoryIcon.isEnabled = true
+            toggleTransactionType.isEnabled = true
+            btnScanReceipt.isEnabled = true
+            btnSave.isEnabled = true
+            btnDeleteTransaction.isEnabled = true // Редакторы могут удалять
+            btnEditTransaction.isEnabled = true
+
+            // Показываем кнопку удаления
+            btnDeleteTransaction.visibility = View.VISIBLE
+        }
+
+        setupCommonViews(arguments)
+    }
+
+    private fun setupViewMode(arguments: AddTransactionArgs) {
+        // Только просмотр для зрителей
+        binding.apply {
+            // Блокируем все поля редактирования
+            etTransactionName.isEnabled = false
+            etTransactionAmount.isEnabled = false
+            spinnerCategory.isEnabled = false
+            ivTransactionCategoryIcon.isEnabled = false
+            toggleTransactionType.isEnabled = false
+            btnScanReceipt.isEnabled = false
+            btnSave.isEnabled = false
+            btnDeleteTransaction.isEnabled = false
+            btnEditTransaction.isEnabled = false
+
+            // Скрываем ненужные элементы
+            btnScanReceipt.visibility = View.GONE
+            btnSave.visibility = View.GONE
+            btnDeleteTransaction.visibility = View.GONE
+            btnEditTransaction.visibility = View.GONE
+            tilCustomCategory.visibility = View.GONE
+            dateInputLayout.endIconDrawable = null
+            dateInputLayout.setEndIconOnClickListener(null)
+            etTransactionDate.setOnClickListener(null)
+        }
+
+        setupCommonViews(arguments)
+    }
+
+    private fun setupCommonViews(arguments: AddTransactionArgs) {
+        transaction = arguments.transaction
+        binding.apply {
+            if (transaction != null) {
+                // Режим редактирования/просмотра существующей транзакции
+                etTransactionName.setText(transaction?.name)
+                etTransactionAmount.setText(transaction?.amount.toString())
+                spinnerCategory.setText(transaction?.category, false)
+                updateCategoryIcon(transaction?.categoryIcon.orEmpty())
+                selectedImages.addAll(
+                    transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList()
+                )
+                receiptImageAdapter.notifyDataSetChanged()
+                removeTransactionLayout.visibility = View.VISIBLE
+                addTransactionLayout.visibility = View.GONE
+                btnSave.text = getString(R.string.save)
+                toggleTransactionType.check(
+                    if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
+                    else R.id.btnExpense
+                )
+                btnEditTransaction.setOnClickListener {
+                    processSaveButton(onTransactionUpdated, arguments)
+                }
+                btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
+            } else {
+                // Режим добавления новой транзакции
+                removeTransactionLayout.visibility = View.GONE
+                addTransactionLayout.visibility = View.VISIBLE
+                btnSave.text = getString(R.string.add)
+                btnSave.setOnClickListener { processSaveButton(onTransactionAdded, arguments) }
+                toggleTransactionType.check(R.id.btnIncome)
+                btnCancel.setOnClickListener { dismiss() }
+                setupTransactionIcon()
+            }
+
+            setupDatePicker(transaction?.date)
+            setupCategorySpinner(transaction?.category)
+            setupEmojiPicker()
+            setupTransactionTypeToggle()
+            btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
+        }
+    }
+
+//    private fun setupViews() {
+//        args?.let { argument ->
+//            transaction = argument.transaction
+//            binding.apply {
+//                if (transaction != null) {
+//                    // Режим редактирования: заполняем поля
+//                    etTransactionName.setText(transaction?.name)
+//                    etTransactionAmount.setText(transaction?.amount.toString())
+//                    spinnerCategory.setText(transaction?.category, false)
+//                    updateCategoryIcon(transaction?.categoryIcon.orEmpty())
+//                    selectedImages.addAll(
+//                        transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList()
+//                    )
+//                    receiptImageAdapter.notifyDataSetChanged()
+//                    removeTransactionLayout.visibility = View.VISIBLE
+//                    addTransactionLayout.visibility = View.GONE
+//                    btnSave.text = getString(R.string.save)
+//                    toggleTransactionType.check(
+//                        if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
+//                        else R.id.btnExpense
+//                    )
+//                    btnEditTransaction.setOnClickListener {
+//                        processSaveButton(
+//                            onTransactionUpdated,
+//                            argument
+//                        )
+//                    }
+//                    btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
+//                } else {
+//                    // Режим добавления: скрываем кнопку удаления
+//                    removeTransactionLayout.visibility = View.GONE
+//                    addTransactionLayout.visibility = View.VISIBLE
+//                    btnSave.text = getString(R.string.add)
+//                    btnSave.setOnClickListener { processSaveButton(onTransactionAdded, argument) }
+//                    toggleTransactionType.check(R.id.btnIncome)
+//                    btnCancel.setOnClickListener { dismiss() }
+//                    setupTransactionIcon()
+//                }
+//                setupDatePicker(transaction?.date)
+//                setupCategorySpinner(transaction?.category)
+//                setupEmojiPicker()
+//                setupTransactionTypeToggle()
+//                btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
+//            }
+//        }
+//    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener {
+            dismiss()
         }
     }
 
@@ -776,23 +913,84 @@ class AddTransactionDialogFragment : DialogFragment() {
             updateDateDisplay()
         } ?: setDateToToday()
 
-        binding.etTransactionDate.setOnClickListener { showMaterialDatePicker() }
-        binding.dateInputLayout.setEndIconOnClickListener { showMaterialDatePicker() }
+        binding.etTransactionDate.setOnClickListener { showMaterialDateTimePicker() }
+        binding.dateInputLayout.setEndIconOnClickListener { showMaterialDateTimePicker() }
     }
 
-    private fun showMaterialDatePicker() {
+    private fun showMaterialDateTimePicker() {
+        val todayMillis = MaterialDatePicker.todayInUtcMilliseconds()
+        val currentDateTime = LocalDateTime.ofInstant(
+            Instant.ofEpochMilli(currentDateMillis),
+            ZoneId.systemDefault()
+        )
+        val now = LocalDateTime.now()
+
+        // Ограничиваем выбор даты до текущего дня
+        val constraintsBuilder = CalendarConstraints.Builder()
+            .setEnd(todayMillis) // Максимальная дата - сегодня
+            .setValidator(object : CalendarConstraints.DateValidator {
+                override fun isValid(date: Long): Boolean {
+                    return date <= todayMillis
+                }
+
+                override fun describeContents(): Int = 0
+                override fun writeToParcel(dest: Parcel, flags: Int) {}
+            })
+
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Выберите дату")
-            .setSelection(currentDateMillis)
+            .setSelection(minOf(currentDateMillis, todayMillis)) // Не позволяем выбрать дату больше сегодняшней
+            .setCalendarConstraints(constraintsBuilder.build())
             .setTheme(R.style.ThemeOverlay_Material3_DatePicker)
             .build()
 
         datePicker.addOnPositiveButtonClickListener { selectedDate ->
-            currentDateMillis = selectedDate
-            updateDateDisplay()
+            val isToday = selectedDate == todayMillis
+
+            val timePicker = MaterialTimePicker.Builder()
+                .setTitleText("Выберите время")
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(currentDateTime.hour)
+                .setMinute(currentDateTime.minute)
+                .setTheme(R.style.ThemeOverlay_Material3_TimePicker)
+                .build()
+
+            timePicker.addOnPositiveButtonClickListener {
+                val selectedHour = timePicker.hour
+                val selectedMinute = timePicker.minute
+
+                // Если выбрана сегодняшняя дата, проверяем чтобы время не было будущим
+                if (isToday) {
+                    val selectedTime = now.withHour(selectedHour).withMinute(selectedMinute)
+                    if (selectedTime.isAfter(now)) {
+                        // Если выбрано будущее время для сегодняшнего дня - показываем ошибку
+                        showTimeErrorSnackbar()
+                        return@addOnPositiveButtonClickListener
+                    }
+                }
+
+                val selectedDateTime = LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(selectedDate),
+                    ZoneId.systemDefault()
+                ).withHour(selectedHour).withMinute(selectedMinute)
+
+                currentDateMillis = selectedDateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
+                updateDateDisplay()
+            }
+
+            timePicker.show(parentFragmentManager, "TIME_PICKER_TAG")
         }
 
         datePicker.show(parentFragmentManager, "DATE_PICKER_TAG")
+    }
+
+    private fun showTimeErrorSnackbar() {
+        Snackbar.make(
+            binding.root,
+            "Нельзя выбрать время в будущем",
+            Snackbar.LENGTH_LONG
+        ).setAction("OK") { /* Закрыть снэкбар */ }
+            .show()
     }
 
     private fun updateDateDisplay() {
@@ -818,16 +1016,25 @@ class AddTransactionDialogFragment : DialogFragment() {
         @kotlinx.parcelize.Parcelize
         data class AddTransactionArgs(
             val projectId: String,
-            var transaction: TemporaryTransaction? = null
+            var transaction: TemporaryTransaction? = null,
+            var currentRole: String
         ) : Parcelable
 
         fun newInstance(
             projectId: String,
+            currentRole: String,
             transaction: TemporaryTransaction? = null
         ): AddTransactionDialogFragment {
             val fragment = AddTransactionDialogFragment()
             val args = Bundle().apply {
-                putParcelable(ARG_TRANSACTION, AddTransactionArgs(projectId, transaction))
+                putParcelable(
+                    ARG_TRANSACTION,
+                    AddTransactionArgs(
+                        projectId = projectId,
+                        transaction = transaction,
+                        currentRole = currentRole
+                    )
+                )
             }
             fragment.arguments = args
             return fragment

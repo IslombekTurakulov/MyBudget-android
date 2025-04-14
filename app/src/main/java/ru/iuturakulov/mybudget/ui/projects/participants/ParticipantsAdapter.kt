@@ -9,10 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.ItemProjectParticipantsBinding
+import timber.log.Timber
 
 class ParticipantsAdapter(
     private val onEditClick: (ParticipantEntity) -> Unit,
-    private val onDeleteClick: (ParticipantEntity) -> Unit
+    private val onDeleteClick: (ParticipantEntity) -> Unit,
+    private val currentUserParticipantRole: ParticipantRole,
 ) : ListAdapter<ParticipantEntity, ParticipantsAdapter.ParticipantViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParticipantViewHolder {
@@ -35,6 +37,12 @@ class ParticipantsAdapter(
             binding.apply {
                 tvParticipantName.text = participant.name
                 tvParticipantRole.text = participant.role
+                if (currentUserParticipantRole.name == ParticipantRole.OWNER.name) {
+                    llButtons.visibility = View.VISIBLE
+                } else {
+                    llButtons.visibility = View.GONE
+                }
+
                 if (participant.role == ParticipantRole.OWNER.name) {
                     btnEditParticipant.visibility = View.GONE
                     btnDeleteParticipant.visibility = View.GONE

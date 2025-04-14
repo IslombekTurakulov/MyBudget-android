@@ -40,7 +40,7 @@ class LoginViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 // Если произошла ошибка
-                _loginState.value = LoginState.Error("Ошибка: ${e.localizedMessage}")
+                _loginState.value = LoginState.Error("${e.localizedMessage}")
             }
         }
     }

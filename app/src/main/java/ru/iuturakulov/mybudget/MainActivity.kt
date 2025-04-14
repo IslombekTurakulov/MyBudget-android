@@ -11,13 +11,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import ru.iuturakulov.mybudget.core.worker.ProjectSyncWorker
 import ru.iuturakulov.mybudget.databinding.ActivityMainBinding
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -32,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 //        val workRequest = PeriodicWorkRequestBuilder<ProjectSyncWorker>(
-//            5, TimeUnit.MINUTES
+//            1, TimeUnit.MINUTES
 //        ).build()
 
         observeNetworkChanges()

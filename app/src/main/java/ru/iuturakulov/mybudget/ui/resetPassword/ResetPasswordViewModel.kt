@@ -32,7 +32,7 @@ class ResetPasswordViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 val errorMessage = NetworkErrorHandler.getErrorMessage(e)
-                _resetPasswordState.value = ResetPasswordState.Error("Ошибка: $errorMessage")
+                _resetPasswordState.value = ResetPasswordState.Error(errorMessage)
             }
         }
     }

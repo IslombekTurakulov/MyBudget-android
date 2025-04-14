@@ -1,88 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="32dp">
 
-        <!-- Поле ввода имени участника -->
+        <!-- Имя участника -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Имя участника"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+            android:hint="@string/participant_name"
+            app:startIconDrawable="@drawable/baseline_people_24"
+            app:helperText="@string/required_field"
+            app:helperTextEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etParticipantName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:enabled="false"
+                android:importantForAutofill="no"
+                android:inputType="textPersonName"
+                tools:text="Алексей Петров" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Поле ввода email -->
+        <!-- Email участника -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email участника"
-            android:layout_marginTop="12dp"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+            android:layout_marginTop="16dp"
+            android:hint="@string/email"
+            app:startIconDrawable="@drawable/baseline_alternate_email_24"
+            app:helperText="@string/required_field"
+            app:helperTextEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etParticipantEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress" />
+                android:enabled="false"
+                android:importantForAutofill="no"
+                android:inputType="textEmailAddress"
+                tools:text="alexey@example.com" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Выбор роли участника -->
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Роль участника"
-            android:layout_marginTop="12dp"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+            android:layout_marginTop="16dp"
+            android:hint="@string/role"
+            app:startIconDrawable="@drawable/baseline_manage_accounts_24"
+            app:helperText="@string/select_role"
+            app:helperTextEnabled="true">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/spinnerRole"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:minHeight="48dp"
+                tools:text="Разработчик" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Кнопки -->
+        <!-- Кнопки действий -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
             android:orientation="horizontal"
             android:gravity="end"
-            android:layout_marginTop="24dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSave"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Сохранить"
-                style="@style/Widget.Material3.Button.ElevatedButton" />
-
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Удалить"
-                style="@style/Widget.Material3.Button.ElevatedButton" />
+            android:divider="@drawable/divider_vertical"
+            android:showDividers="middle">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Отмена"
-                android:layout_marginStart="16dp"
-                style="@style/Widget.Material3.Button.TextButton" />
+                android:text="@string/cancel"
+                android:minWidth="64dp" />
+
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/btnDelete"-->
+<!--                style="@style/Widget.Material3.Button.TonalButton"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="@string/delete"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:minWidth="64dp"-->
+<!--                app:icon="@drawable/baseline_delete_forever_24"-->
+<!--                app:iconGravity="textStart" />-->
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/save"
+                android:layout_marginStart="8dp"
+                android:minWidth="64dp"
+                app:icon="@drawable/baseline_save_24"
+                app:iconGravity="textStart" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

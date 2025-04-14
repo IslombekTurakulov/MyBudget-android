@@ -43,6 +43,9 @@ class ProjectRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO) // Перенос выполнения в IO-поток
 
+    suspend fun getCurrentRole(projectId: String): String? {
+        return projectService.getCurrentRole(projectId).body()?.role
+    }
 
     // Добавление нового проекта
     suspend fun addProject(project: ProjectEntity) {

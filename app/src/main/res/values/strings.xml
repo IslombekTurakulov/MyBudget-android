@@ -60,6 +60,7 @@
     <string name="save">Сохранить</string>
     <string name="add">Добавить</string>
     <string name="delete_transaction">Удалить транзакцию</string>
+    <string name="add_transaction">Добавить транзакцию</string>
     <string name="delete_transaction_confirmation">Вы уверены, что хотите удалить эту транзакцию?</string>
     <string name="delete">Удалить</string>
     <string name="cancel">Отмена</string>
@@ -108,6 +109,12 @@
     <string name="security">Безопасность</string>
     <string name="change_password">Сменить пароль</string>
     <string name="logout">Выйти</string>
+
+    <string name="participant_name">Имя участника</string>
+    <string name="email">Email участника</string>
+    <string name="role">Роль</string>
+    <string name="required_field">Обязательное поле</string>
+    <string name="select_role">Выберите роль</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n

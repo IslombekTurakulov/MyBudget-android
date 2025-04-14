@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
 import ru.iuturakulov.mybudget.data.remote.dto.ProjectDto
 import ru.iuturakulov.mybudget.data.remote.dto.TransactionDto
 
@@ -66,4 +67,7 @@ interface ProjectService {
         @Path("id") projectId: String,
         @Path("transactionId") transactionId: String
     ): Response<Unit>
+
+    @GET("projects/{id}/currentRole")
+    suspend fun getCurrentRole(@Path("id") projectId: String): Response<ParticipantEntity>
 }

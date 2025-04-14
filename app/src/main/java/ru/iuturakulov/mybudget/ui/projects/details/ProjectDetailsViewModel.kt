@@ -1,11 +1,15 @@
 package ru.iuturakulov.mybudget.ui.projects.details
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.singleOrNull
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
@@ -24,6 +28,9 @@ class ProjectDetailsViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<UiState<ProjectWithTransactions>>(UiState.Loading)
     val uiState: StateFlow<UiState<ProjectWithTransactions>> = _uiState.asStateFlow()
+
+    private val _currentUserRole = MutableStateFlow<String?>(null)
+    val currentUserRole: StateFlow<String?> = _currentUserRole.asStateFlow()
 
     private val _filteredTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val filteredTransactions: StateFlow<List<TransactionEntity>> =
@@ -108,6 +115,16 @@ class ProjectDetailsViewModel @Inject constructor(
                 syncTransactions(projectId)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error("Ошибка удаления транзакции: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    fun getCurrentRole(projectId: String) {
+        viewModelScope.launch {
+            try {
+                _currentUserRole.value = projectRepository.getCurrentRole(projectId)
+            } catch (e: Exception) {
+                _currentUserRole.value = null
             }
         }
     }

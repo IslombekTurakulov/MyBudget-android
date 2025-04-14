@@ -12,7 +12,7 @@ import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus.Companion.getSt
 import ru.iuturakulov.mybudget.databinding.ItemProjectBinding
 
 class ProjectAdapter(
-    private val onProjectClicked: (ProjectEntity) -> Unit
+    private val onProjectClicked: (ProjectEntity) -> Unit,
 ) : ListAdapter<ProjectEntity, ProjectAdapter.ProjectViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProjectViewHolder {

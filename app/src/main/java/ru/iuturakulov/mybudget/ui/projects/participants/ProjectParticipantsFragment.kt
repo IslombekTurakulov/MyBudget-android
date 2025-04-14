@@ -11,8 +11,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.FragmentProjectParticipantsBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ProjectParticipantsFragment :
@@ -77,13 +79,17 @@ class ProjectParticipantsFragment :
     }
 
     private fun setupRecyclerView() {
+        Timber.i("USERROLE ${args.userRole}")
         adapter = ParticipantsAdapter(
             onEditClick = { participant ->
                 showEditParticipantDialog(participant)
             },
             onDeleteClick = { participant ->
                 confirmDeleteParticipant(participant)
-            }
+            },
+            currentUserParticipantRole = ParticipantRole.entries.find {
+                it.name == args.userRole
+            } ?: ParticipantRole.entries.toTypedArray()[0],
         )
         binding.rvParticipants.adapter = adapter
     }

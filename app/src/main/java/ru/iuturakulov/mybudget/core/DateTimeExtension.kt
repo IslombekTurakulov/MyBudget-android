@@ -9,7 +9,9 @@ import java.util.Locale
 object DateTimeExtension {
     fun Long.toIso8601Date(): String {
         val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
-        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())
+        // Устанавливаем локаль на русский
+        // Todo: private val encryptedSharedPreferences: SharedPreferences
+        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss", Locale("ru"))
         return dateTime.format(formatter)
     }
 }

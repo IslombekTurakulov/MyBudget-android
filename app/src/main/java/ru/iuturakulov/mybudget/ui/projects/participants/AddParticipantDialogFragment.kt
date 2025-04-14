@@ -40,7 +40,7 @@ class AddParticipantDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.90).toInt(),
+            (resources.displayMetrics.widthPixels * 0.95).toInt(),
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
     }
@@ -145,7 +145,7 @@ class AddParticipantDialogFragment : DialogFragment() {
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.invitationCodeState.collect { state ->
+            viewModel.invitationState.collect { state ->
                 when (state) {
                     is ProjectParticipantsViewModel.InvitationState.Loading ->
                         showLoadingState()

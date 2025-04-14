@@ -28,7 +28,7 @@ class RegisterViewModel @Inject constructor(
                     _registerState.value = RegisterState.Error("Ошибка регистрации")
                 }
             } catch (e: Exception) {
-                _registerState.value = RegisterState.Error("Ошибка: ${e.message}")
+                _registerState.value = RegisterState.Error("${e.message}")
             }
         }
     }

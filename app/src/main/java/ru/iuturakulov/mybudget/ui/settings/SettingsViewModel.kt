@@ -54,6 +54,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun saveCurrentLocale(locale: String) {
+        viewModelScope.launch {
+            encryptedSharedPreferences.edit().putString(
+                LOCALE,
+                locale
+            ).apply()
+        }
+    }
+
     fun logout() {
         viewModelScope.launch {
             tokenStorage.clearTokens()
@@ -63,5 +72,6 @@ class SettingsViewModel @Inject constructor(
 
     companion object {
         private const val DARK_THEME = "dark_theme"
+        private const val LOCALE = "locale"
     }
 }

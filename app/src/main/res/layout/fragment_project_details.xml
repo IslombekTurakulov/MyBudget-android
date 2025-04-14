@@ -34,7 +34,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="16dp">
 
             <!-- Карточка с описанием проекта -->
             <com.google.android.material.card.MaterialCardView
@@ -213,14 +215,23 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <!-- Плавающая кнопка добавления транзакции -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAddTransaction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
+        android:layout_margin="@dimen/fab_margin"
         android:layout_marginBottom="16dp"
-        android:outlineSpotShadowColor="@color/black"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/add_transaction"
+        android:elevation="8dp"
+        android:outlineAmbientShadowColor="@color/shadow_color"
+        android:outlineSpotShadowColor="@color/shadow_color"
+        android:text="@string/add_transaction"
+        android:visibility="visible"
+        app:hideMotionSpec="@anim/fab_hide_motion_spec"
         app:icon="@drawable/baseline_add_24"
-        android:text="Добавить транзакцию" />
+        android:layout_gravity="bottom|center"
+        app:rippleColor="@color/primary_dark_color"
+        app:showMotionSpec="@anim/fab_show_motion_spec" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
