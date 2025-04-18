@@ -1,6 +1,5 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -10,7 +9,6 @@ import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
-import ru.iuturakulov.mybudget.data.remote.ErrorResponse
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import ru.iuturakulov.mybudget.domain.mappers.ProjectMapper
 import javax.inject.Inject
@@ -86,11 +84,6 @@ class ProjectRepository @Inject constructor(
         } catch (e: Exception) {
             throw Exception("Ошибка обновления проекта: ${e.localizedMessage}")
         }
-    }
-
-    // Загрузка конкретного проекта
-    suspend fun getProjectById(projectId: Int): ProjectEntity {
-        return projectDao.getProjectById(projectId) ?: throw Exception("Проект не найден")
     }
 
     // Загрузка проекта с транзакциями

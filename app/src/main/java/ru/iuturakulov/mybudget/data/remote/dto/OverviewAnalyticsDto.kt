@@ -1,23 +1,28 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
 data class OverviewAnalyticsDto(
-    val categoryDistribution: List<CategoryDistributionDto>, // Распределение категорий
-    val periodDistribution: List<PeriodDistributionDto>,     // Распределение по периодам
-    val projectComparison: List<ProjectComparisonDto>        // Сравнение проектов
+    val totalAmount: Double,                                 // суммарная сумма по всем проектам
+    val categoryDistribution: List<OverviewCategoryStats>,   // донат по категориям
+    val periodDistribution: List<OverviewPeriodStats>,       // бары по месяцам
+    val projectComparison: List<ProjectComparisonStats>      // сравнение проектов
 )
 
-data class CategoryDistributionDto(
-    val category: String, // Название категории (например, "Еда")
-    val totalAmount: Double    // Сумма расходов в данной категории
+/** Статистика для одного сегмента донат‑диаграммы */
+data class OverviewCategoryStats(
+    val category: String,    // имя категории
+    val amount: Double,      // сумма в этой категории
+    val percentage: Double   // % от totalAmount (0..100)
 )
 
-data class PeriodDistributionDto(
-    val period: String,  // Название периода (например, "2025-03-20")
-    val totalAmount: Double   // Сумма расходов за данный период
+/** Статистика для одного шага в bar‑chart по периодам */
+data class OverviewPeriodStats(
+    val period: String,      // например "2025-04"
+    val amount: Double       // сумма за этот период
 )
 
-data class ProjectComparisonDto(
-    val projectName: String, // Название проекта
-    val totalSpent: Double    // Сумма расходов по проекту
+/** Статистика для одного проекта в сравнительном bar‑chart */
+data class ProjectComparisonStats(
+    val projectId: String,
+    val projectName: String,
+    val amount: Double       // сумма по этому проекту
 )
-

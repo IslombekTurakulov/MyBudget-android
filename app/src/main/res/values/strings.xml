@@ -75,7 +75,7 @@
     <string name="project_remaining">Осталось: %1$.2f ₽</string>
 
 
-    <string name="total_amount_format">Итого: %.2f</string>
+    <string name="total_amount_format">Всего потрачено: </string>
     <string name="no_category_data">Нет данных по категориям</string>
     <string name="no_period_data">Нет данных по периодам</string>
 

@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.NetworkErrorHandler
-import ru.iuturakulov.mybudget.data.remote.auth.AuthService
+import ru.iuturakulov.mybudget.data.remote.auth.ChangePasswordAuthService
 import ru.iuturakulov.mybudget.data.remote.auth.ChangePasswordRequest
 import javax.inject.Inject
 
 @HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
-    private val authService: AuthService
+    private val authService: ChangePasswordAuthService
 ) : ViewModel() {
 
     private val _changePasswordState = MutableLiveData<ChangePasswordState>()

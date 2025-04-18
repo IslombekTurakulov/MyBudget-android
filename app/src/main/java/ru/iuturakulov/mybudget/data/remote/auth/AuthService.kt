@@ -17,10 +17,15 @@ interface AuthService {
     // Восстановление пароля
     @POST("auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<Void>
+}
 
+interface ChangePasswordAuthService {
     // Смена пароля
     @POST("auth/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Void>
+}
+
+interface RefreshAuthService {
 
     @POST("auth/refresh-token")
     suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<String>

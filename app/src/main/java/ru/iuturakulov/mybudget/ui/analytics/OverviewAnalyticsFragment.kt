@@ -1,7 +1,10 @@
 package ru.iuturakulov.mybudget.ui.analytics
 
 import android.graphics.Color
+import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -19,15 +22,27 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.LargeValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
-import ru.iuturakulov.mybudget.data.remote.dto.CategoryDistributionDto
+import ru.iuturakulov.mybudget.data.remote.dto.AnalyticsFilter
+import ru.iuturakulov.mybudget.data.remote.dto.Granularity
 import ru.iuturakulov.mybudget.data.remote.dto.OverviewAnalyticsDto
-import ru.iuturakulov.mybudget.data.remote.dto.PeriodDistributionDto
+import ru.iuturakulov.mybudget.data.remote.dto.OverviewCategoryStats
+import ru.iuturakulov.mybudget.data.remote.dto.OverviewPeriodStats
+import ru.iuturakulov.mybudget.data.remote.dto.ProjectComparisonStats
 import ru.iuturakulov.mybudget.databinding.FragmentOverviewAnalyticsBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class OverviewAnalyticsFragment :
@@ -35,36 +50,53 @@ class OverviewAnalyticsFragment :
 
     private val viewModel: AnalyticsViewModel by viewModels()
 
-    override fun getViewBinding(view: View): FragmentOverviewAnalyticsBinding {
-        return FragmentOverviewAnalyticsBinding.bind(view)
-    }
+    override fun getViewBinding(view: View): FragmentOverviewAnalyticsBinding =
+        FragmentOverviewAnalyticsBinding.bind(view)
 
     override fun setupViews() {
+        setupToolbar()
         setupSwipeRefresh()
         setupCharts()
     }
 
     override fun setupObservers() {
+        observeFilters()
         observeOverviewAnalytics()
     }
 
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.loadOverviewAnalytics()
+            viewModel.fetchOverviewAnalytics()
+        }
+    }
+
+    private fun setupToolbar() {
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_filter -> {
+                    openFilterDialog()
+                    true
+                }
+
+                else -> {
+                    // no-op
+                    true
+                }
+            }
         }
     }
 
     private fun setupCharts() {
-        // Настройка PieChart для категорий
+        // PieChart для категорий
         binding.categoryPieChart.apply {
             description.isEnabled = false
             isRotationEnabled = true
             legend.isEnabled = false
             setNoDataText("Нет данных по категориям")
-            setNoDataTextColor(R.color.orange)
+            setNoDataTextColor(ContextCompat.getColor(context, R.color.chart_no_data_text))
         }
 
-        // Настройка BarChart для периодов
+        // BarChart для периодов
         binding.periodBarChart.apply {
             description.isEnabled = false
             setFitBars(true)
@@ -75,10 +107,10 @@ class OverviewAnalyticsFragment :
                 position = XAxis.XAxisPosition.BOTTOM
             }
             setNoDataText("Нет данных по периодам")
-            setNoDataTextColor(R.color.orange)
+            setNoDataTextColor(ContextCompat.getColor(context, R.color.chart_no_data_text))
         }
 
-        // Настройка BarChart для сравнения проектов
+        // BarChart для сравнения проектов
         binding.projectComparisonChart.apply {
             description.isEnabled = false
             setFitBars(true)
@@ -89,7 +121,15 @@ class OverviewAnalyticsFragment :
                 position = XAxis.XAxisPosition.BOTTOM
             }
             setNoDataText("Нет данных по проектам")
-            setNoDataTextColor(R.color.orange)
+            setNoDataTextColor(ContextCompat.getColor(context, R.color.chart_no_data_text))
+        }
+    }
+
+    private fun observeFilters() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.filter.collect { filter ->
+
+            }
         }
     }
 
@@ -97,23 +137,20 @@ class OverviewAnalyticsFragment :
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.overviewAnalytics.collect { state ->
                 when (state) {
-                    is UiState.Loading -> {
-                        showLoading()
-                    }
+                    is UiState.Loading -> showLoading()
                     is UiState.Success -> {
                         binding.swipeRefreshLayout.isRefreshing = false
-                        if (state.data != null) {
-                            showContent()
-                            updateCharts(state.data)
-                        } else {
-                            showFallback("Нет данных аналитики")
-                        }
+                        showContent()
+                        state.data?.let { updateCharts(it) }
+                            ?: showFallback("Нет данных аналитики")
                     }
+
                     is UiState.Error -> {
                         binding.swipeRefreshLayout.isRefreshing = false
                         showError(state.message)
                         showFallback("Ошибка загрузки данных")
                     }
+
                     else -> Unit
                 }
             }
@@ -127,163 +164,256 @@ class OverviewAnalyticsFragment :
 
     private fun showContent() {
         binding.progressBar.isVisible = false
-        binding.swipeRefreshLayout.isRefreshing = false
     }
 
     private fun showFallback(message: String) {
         binding.progressBar.isVisible = false
-        binding.swipeRefreshLayout.isRefreshing = false
-        // TODO: Можно добавить отдельные fallback-вью или просто уведомить пользователя
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     private fun showError(message: String) {
         binding.progressBar.isVisible = false
-        binding.swipeRefreshLayout.isRefreshing = false
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
-            .setAction("Повторить") {
-                viewModel.loadOverviewAnalytics()
-            }
+            .setAction("Повторить") { viewModel.fetchOverviewAnalytics() }
             .show()
     }
 
-    private fun updateCategoryChart(categories: List<CategoryDistributionDto>) {
-        binding.categoryPieChart.apply {
-            if (categories.isNotEmpty()) {
-                // Сортируем по убыванию суммы для лучшего отображения
-                val sortedCategories = categories.sortedByDescending { it.totalAmount }
-
-                val entries = sortedCategories.map {
-                    PieEntry(it.totalAmount.toFloat(), it.category)
-                }
-
-                val dataSet = PieDataSet(entries, "").apply {
-                    colors = getCategoryColors(categories.size)
-                    valueTextSize = 12f
-                    valueTextColor = Color.BLACK
-                    valueFormatter = PercentFormatter(binding.categoryPieChart)
-                    yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
-                    valueLinePart1Length = 0.4f
-                    valueLinePart2Length = 0.4f
-                }
-
-                this.data = PieData(dataSet).apply {
-                    setValueTextSize(12f)
-                }
-
-                description.isEnabled = false
-                legend.isEnabled = true
-                legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
-                legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
-                legend.orientation = Legend.LegendOrientation.HORIZONTAL
-                legend.textSize = 12f
-
-                setUsePercentValues(true)
-                setEntryLabelColor(Color.BLACK)
-                setEntryLabelTextSize(12f)
-                setDrawEntryLabels(false)
-                setHoleColor(Color.TRANSPARENT)
-                setTransparentCircleAlpha(0)
-                animateY(1000, Easing.EaseInOutQuad)
-                invalidate()
-            } else {
-                clear()
-                setNoDataText("Нет данных по категориям")
-                setNoDataTextColor(ContextCompat.getColor(context, R.color.chart_no_data_text))
-            }
-        }
-    }
-
-    private fun updatePeriodChart(periods: List<PeriodDistributionDto>) {
-        binding.periodBarChart.apply {
-            if (periods.isNotEmpty()) {
-                val entries = periods.mapIndexed { index, period ->
-                    BarEntry(index.toFloat(), period.totalAmount.toFloat())
-                }
-
-                val dataSet = BarDataSet(entries, "").apply {
-                    color = ContextCompat.getColor(context, R.color.chart_color_green)
-                    valueTextSize = 12f
-                    valueFormatter = LargeValueFormatter()
-                    setDrawValues(true)
-                }
-
-                this.data = BarData(dataSet).apply {
-                    barWidth = 0.5f
-                    setValueTextSize(12f)
-                }
-
-                xAxis.apply {
-                    valueFormatter = IndexAxisValueFormatter(periods.map { it.period })
-                    position = XAxis.XAxisPosition.BOTTOM
-                    granularity = 1f
-                    setDrawGridLines(false)
-                    textSize = 12f
-                }
-
-                axisLeft.apply {
-                    setDrawGridLines(true)
-                    granularity = if (periods.maxOf { it.totalAmount } > 10000) 2000f else 500f
-                    axisMinimum = 0f
-                    textSize = 12f
-                }
-
-                axisRight.isEnabled = false
-                description.isEnabled = false
-                legend.isEnabled = false
-                setFitBars(true)
-                animateY(1000, Easing.EaseInOutQuad)
-                invalidate()
-            } else {
-                clear()
-                setNoDataText("Нет данных по периодам")
-                setNoDataTextColor(ContextCompat.getColor(context, R.color.chart_no_data_text))
-            }
-        }
-    }
-
     private fun updateCharts(data: OverviewAnalyticsDto) {
-        try {
-            updatePeriodChart(data.periodDistribution)
-            updateCategoryChart(data.categoryDistribution)
+        // Период (минимальный и максимальный месяцы из данных)
+        val periods = data.periodDistribution.map { it.period }
+        val first = periods.firstOrNull().orEmpty()
+        val last = periods.lastOrNull().orEmpty()
+        binding.tvOverviewSubtitle.text =
+            "Аналитика за период: ${first.ifEmpty { "-" }} — ${last.ifEmpty { "-" }}"
 
-            // Обновление BarChart для сравнения проектов
-            val projectEntries = data.projectComparison.mapIndexed { index, project ->
-                BarEntry(index.toFloat(), project.totalSpent.toFloat())
+        // Общая сумма
+        val total = data.totalAmount.toLong()
+        binding.tvOverviewTotal.text =
+            "Всего потрачено: ${NumberFormat.getInstance().format(total)} ₽"
+
+        updateCategoryChart(data.categoryDistribution)
+        updatePeriodChart(data.periodDistribution)
+        updateProjectChart(data.projectComparison)
+    }
+
+
+    private fun updateCategoryChart(categories: List<OverviewCategoryStats>) {
+        binding.categoryPieChart.apply {
+            if (categories.isEmpty()) {
+                clear()
+                invalidate()
+                return
             }
-            if (projectEntries.isNotEmpty()) {
-                val projectDataSet = BarDataSet(projectEntries, "Проекты").apply {
-                    colors = ColorTemplate.LIBERTY_COLORS.toList()
-                    valueTextSize = 10f
-                }
-                binding.projectComparisonChart.apply {
-                    this.data = BarData(projectDataSet)
-                    xAxis.valueFormatter =
-                        IndexAxisValueFormatter(data.projectComparison.map { it.projectName })
-                    animateY(1000)
-                    invalidate()
-                }
-            } else {
-                binding.projectComparisonChart.clear()
+
+            val sorted = categories.sortedByDescending { it.amount }
+            val entries = sorted.map {
+                PieEntry(it.amount.toFloat(), it.category)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showError("Ошибка отображения данных")
+
+            val ds = PieDataSet(entries, "").apply {
+                colors = getCategoryColors(sorted.size)
+                valueFormatter = PercentFormatter(binding.categoryPieChart)
+                valueTextSize = 12f
+                valueTextColor = Color.BLACK
+                yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+                valueLinePart1Length = 0.4f
+                valueLinePart2Length = 0.4f
+            }
+
+            data = PieData(ds).apply {
+                setValueTextSize(12f)
+            }
+
+            setUsePercentValues(true)
+            setEntryLabelColor(Color.BLACK)
+            setDrawEntryLabels(false)
+            holeRadius = 40f
+            transparentCircleRadius = 45f
+
+            legend.apply {
+                isEnabled = true
+                verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+                horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+                orientation = Legend.LegendOrientation.HORIZONTAL
+                textSize = 12f
+            }
+
+            animateY(800, Easing.EaseInOutQuad)
+            invalidate()
         }
     }
 
-    private fun getCategoryColors(count: Int): List<Int> {
-        return when {
-            count <= 5 -> listOf(
-                ContextCompat.getColor(requireContext(), R.color.chart_color_primary),
-                ContextCompat.getColor(requireContext(), R.color.chart_color_green),
-                ContextCompat.getColor(requireContext(), R.color.chart_color_orange),
-                ContextCompat.getColor(requireContext(), R.color.chart_color_red),
-                ContextCompat.getColor(requireContext(), R.color.chart_color_purple),
-                ContextCompat.getColor(requireContext(), R.color.chart_color_secondary),
-                ContextCompat.getColor(requireContext(), R.color.chart_color_accent)
-            )
-            else -> ColorTemplate.MATERIAL_COLORS.toList()
+    private fun updatePeriodChart(periods: List<OverviewPeriodStats>) {
+        binding.periodBarChart.apply {
+            if (periods.isEmpty()) {
+                clear()
+                invalidate()
+                return
+            }
+
+            val entries = periods.mapIndexed { idx, p ->
+                BarEntry(idx.toFloat(), p.amount.toFloat())
+            }
+
+            val ds = BarDataSet(entries, "").apply {
+                color = ContextCompat.getColor(context, R.color.chart_color_green)
+                valueFormatter = LargeValueFormatter()
+                valueTextSize = 12f
+            }
+
+            data = BarData(ds).apply {
+                barWidth = 0.6f
+                setValueTextSize(12f)
+            }
+
+            xAxis.apply {
+                valueFormatter = IndexAxisValueFormatter(periods.map { it.period })
+                textSize = 12f
+            }
+
+            axisLeft.apply {
+                axisMinimum = 0f
+                granularity = 1f
+                textSize = 12f
+            }
+            axisRight.isEnabled = false
+
+            animateY(800, Easing.EaseInOutQuad)
+            invalidate()
         }
+    }
+
+    private fun updateProjectChart(projects: List<ProjectComparisonStats>) {
+        binding.projectComparisonChart.apply {
+            if (projects.isEmpty()) {
+                clear()
+                invalidate()
+                return
+            }
+
+            val entries = projects.mapIndexed { idx, p ->
+                BarEntry(idx.toFloat(), p.amount.toFloat())
+            }
+
+            val ds = BarDataSet(entries, "Проекты").apply {
+                colors = ColorTemplate.MATERIAL_COLORS.toList()
+                valueTextSize = 10f
+                valueFormatter = LargeValueFormatter()
+            }
+
+            data = BarData(ds)
+            xAxis.apply {
+                valueFormatter = IndexAxisValueFormatter(projects.map { it.projectName })
+                textSize = 12f
+            }
+
+            animateY(800, Easing.EaseInOutQuad)
+            invalidate()
+        }
+    }
+
+    // helper для цветов PieChart
+    private fun getCategoryColors(count: Int): List<Int> {
+        return if (count <= ColorTemplate.VORDIPLOM_COLORS.size) {
+            ColorTemplate.VORDIPLOM_COLORS.take(count).toList()
+        } else {
+            ColorTemplate.MATERIAL_COLORS.toList()
+        }
+    }
+
+    private fun openFilterDialog() {
+        val currentFilter = viewModel.filter.value
+        val state = viewModel.overviewAnalytics.value
+        if (state !is UiState.Success) return
+        val data = state.data
+
+        val dlgView = layoutInflater.inflate(R.layout.dialog_filter_analytics, null)
+        val btnFrom = dlgView.findViewById<MaterialButton>(R.id.btnFromDate)
+        val btnTo = dlgView.findViewById<MaterialButton>(R.id.btnToDate)
+        val chipGroup = dlgView.findViewById<ChipGroup>(R.id.chipGroupCats)
+        val acGran = dlgView.findViewById<AutoCompleteTextView>(R.id.acGranularity)
+
+        fun formatDate(ts: Long?) = ts?.let {
+            SimpleDateFormat("yyyy‑MM‑dd", Locale.getDefault()).format(Date(it))
+        } ?: "не выбрано"
+
+        var selFrom: Long? = currentFilter.fromDate
+        var selTo: Long? = currentFilter.toDate
+
+        btnFrom.text = "С: ${formatDate(selFrom)}"
+        btnFrom.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Начало периода")
+                .setSelection(selFrom ?: MaterialDatePicker.todayInUtcMilliseconds())
+                .build()
+            picker.addOnPositiveButtonClickListener { sel ->
+                selFrom = sel
+                btnFrom.text = "С: ${formatDate(selFrom)}"
+            }
+            picker.show(parentFragmentManager, "DATE_FROM")
+        }
+
+        btnTo.text = "По: ${formatDate(selTo)}"
+        btnTo.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Конец периода")
+                .setSelection(selTo ?: MaterialDatePicker.todayInUtcMilliseconds())
+                .build()
+            picker.addOnPositiveButtonClickListener { sel ->
+                selTo = sel
+                btnTo.text = "По: ${formatDate(selTo)}"
+            }
+            picker.show(parentFragmentManager, "DATE_TO")
+        }
+
+        chipGroup.removeAllViews()
+        val allCategories = data?.categoryDistribution?.map { it.category }.orEmpty()
+        val preselected = currentFilter.categories ?: allCategories
+        allCategories.forEach { category ->
+            val chip = Chip(
+                requireContext(),
+                null,
+                com.google.android.material.R.style.Widget_MaterialComponents_Chip_Filter
+            ).apply {
+                id = View.generateViewId()
+                text = category
+                isCheckable = true
+                isClickable = true
+                isFocusable = true
+                isChecked = preselected.contains(category)
+            }
+            chipGroup.addView(chip)
+        }
+
+        val granList = Granularity.values().toList()
+        acGran.setAdapter(ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            granList.map { it.name }
+        ))
+        acGran.setText(currentFilter.granularity.name, false)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Фильтры аналитики")
+            .setView(dlgView)
+            .setPositiveButton("Применить") { _, _ ->
+                val selectedCats = chipGroup.checkedChipIds.map { id ->
+                    dlgView.findViewById<Chip>(id).text.toString()
+                }
+                val categories = if (selectedCats.size == allCategories.size) null else selectedCats
+                val gran = Granularity.valueOf(acGran.text.toString())
+
+                viewModel.applyFilter(
+                    AnalyticsFilter(
+                        fromDate = selFrom,
+                        toDate = selTo,
+                        categories = categories,
+                        granularity = gran
+                    )
+                )
+                viewModel.fetchOverviewAnalytics()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 }

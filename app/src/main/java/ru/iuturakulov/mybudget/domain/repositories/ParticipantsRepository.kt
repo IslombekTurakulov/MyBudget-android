@@ -36,7 +36,6 @@ class ParticipantsRepository @Inject constructor(
      * @throws ParticipantsSyncException при ошибках синхронизации
      */
     suspend fun syncParticipants(projectId: String): List<ParticipantEntity> {
-
         return try {
             val response = participantService.getParticipantsForProject(projectId)
 

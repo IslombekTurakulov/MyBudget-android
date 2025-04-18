@@ -16,6 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Общая аналитика"
+            app:menu="@menu/project_analytics_menu"
             app:titleCentered="true" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -34,12 +35,28 @@
             android:fillViewport="true">
 
             <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:divider="?android:attr/dividerHorizontal"
-                android:showDividers="middle"
-                android:dividerPadding="8dp">
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp">
+
+                <!-- НОВОЕ: заголовок с периодом и общей суммой -->
+                <TextView
+                    android:id="@+id/tvOverviewSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Material3.BodyMedium"
+                    android:text="Аналитика по всем проектам" />
+
+                <TextView
+                    android:id="@+id/tvOverviewTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Material3.TitleLarge"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp"
+                    android:text="Всего потрачено: 0 ₽" />
 
                 <!-- Блок: Распределение по категориям -->
                 <com.google.android.material.card.MaterialCardView

@@ -10,9 +10,6 @@ import kotlinx.coroutines.flow.Flow
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 
-/**
- * Работа с локальной БД
- */
 @Dao
 interface ProjectDao {
 

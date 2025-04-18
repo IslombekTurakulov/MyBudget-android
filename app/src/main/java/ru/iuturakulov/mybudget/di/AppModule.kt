@@ -53,4 +53,7 @@ object AppModule {
 
     @Provides
     fun provideUserSettingsDao(database: AppDatabase) = database.userSettingsDao()
+
+    @Provides
+    fun provideNotificationsDao(database: AppDatabase) = database.notificationsDao()
 }
