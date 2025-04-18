@@ -41,7 +41,6 @@
                 android:paddingHorizontal="16dp"
                 android:paddingTop="16dp">
 
-                <!-- НОВОЕ: заголовок с периодом и общей суммой -->
                 <TextView
                     android:id="@+id/tvOverviewSubtitle"
                     android:layout_width="match_parent"

@@ -2,12 +2,12 @@ package ru.iuturakulov.mybudget.data.remote.dto
 
 data class OverviewAnalyticsDto(
     val totalAmount: Double,                                 // суммарная сумма по всем проектам
-    val categoryDistribution: List<OverviewCategoryStats>,   // донат по категориям
-    val periodDistribution: List<OverviewPeriodStats>,       // бары по месяцам
-    val projectComparison: List<ProjectComparisonStats>      // сравнение проектов
+    val categoryDistribution: List<OverviewCategoryStats>,
+    val periodDistribution: List<OverviewPeriodStats>,
+    val projectComparison: List<ProjectComparisonStats>
 )
 
-/** Статистика для одного сегмента донат‑диаграммы */
+/** Статистика для одного сегмента диаграммы */
 data class OverviewCategoryStats(
     val category: String,    // имя категории
     val amount: Double,      // сумма в этой категории
