@@ -1,8 +1,10 @@
 package ru.iuturakulov.mybudget.di
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.iuturakulov.mybudget.data.local.daos.NotificationsDao
 import ru.iuturakulov.mybudget.data.local.daos.ParticipantsDao
@@ -48,9 +50,10 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideAnalyticsRepository(
-        analyticsService: AnalyticsService
+        analyticsService: AnalyticsService,
+        @ApplicationContext context: Context,
     ): AnalyticsRepository {
-        return AnalyticsRepository(analyticsService)
+        return AnalyticsRepository(analyticsService, context)
     }
 
     @Provides

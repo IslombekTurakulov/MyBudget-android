@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import ru.iuturakulov.mybudget.auth.AuthEventBus
 import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.data.remote.AnalyticsService
 import ru.iuturakulov.mybudget.data.remote.AuthInterceptor
@@ -18,7 +19,7 @@ import ru.iuturakulov.mybudget.data.remote.NotificationsService
 import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import ru.iuturakulov.mybudget.data.remote.SettingsService
-import ru.iuturakulov.mybudget.data.remote.TokenAuthenticator
+import ru.iuturakulov.mybudget.auth.TokenAuthenticator
 import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import ru.iuturakulov.mybudget.data.remote.auth.ChangePasswordAuthService
 import ru.iuturakulov.mybudget.data.remote.auth.RefreshAuthService
@@ -36,6 +37,12 @@ object NetworkModule {
     @Singleton
     fun provideTokenStorage(sharedPreferences: SharedPreferences): TokenStorage {
         return TokenStorage(sharedPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthEventBus(): AuthEventBus {
+        return AuthEventBus()
     }
 
     @Provides
@@ -174,7 +181,6 @@ object NetworkModule {
                 .addHeader("X-Request-ID", requestId)
                 .addHeader("X-Correlation-ID", correlationId)
 
-                // Производительность
                 .addHeader("Connection", "keep-alive")
                 .addHeader("Keep-Alive", "timeout=30, max=1000")
 
@@ -185,14 +191,12 @@ object NetworkModule {
                 )
                 .build()
 
-            Timber.i(
-                """
-                    Sending request:
-                    URL: ${newRequest.url}
-                    Headers: ${newRequest.headers}
-                    Call ID: $requestId
-                """.trimIndent()
-            )
+            Timber.i("""
+                Sending request:
+                URL: ${newRequest.url}
+                Headers: ${newRequest.headers}
+                Call ID: $requestId
+            """.trimIndent())
 
             chain.proceed(newRequest)
         }

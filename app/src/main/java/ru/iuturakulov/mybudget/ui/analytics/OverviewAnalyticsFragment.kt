@@ -1,14 +1,19 @@
 package ru.iuturakulov.mybudget.ui.analytics
 
+import android.content.Intent
 import android.graphics.Color
 import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -29,8 +34,10 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
+import ru.iuturakulov.mybudget.data.remote.dto.AnalyticsExportFormat
 import ru.iuturakulov.mybudget.data.remote.dto.AnalyticsFilter
 import ru.iuturakulov.mybudget.data.remote.dto.Granularity
 import ru.iuturakulov.mybudget.data.remote.dto.OverviewAnalyticsDto
@@ -39,6 +46,7 @@ import ru.iuturakulov.mybudget.data.remote.dto.OverviewPeriodStats
 import ru.iuturakulov.mybudget.data.remote.dto.ProjectComparisonStats
 import ru.iuturakulov.mybudget.databinding.FragmentOverviewAnalyticsBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import java.io.File
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -49,6 +57,8 @@ class OverviewAnalyticsFragment :
     BaseFragment<FragmentOverviewAnalyticsBinding>(R.layout.fragment_overview_analytics) {
 
     private val viewModel: AnalyticsViewModel by viewModels()
+
+    private var progressDialog: AlertDialog? = null
 
     override fun getViewBinding(view: View): FragmentOverviewAnalyticsBinding =
         FragmentOverviewAnalyticsBinding.bind(view)
@@ -62,6 +72,7 @@ class OverviewAnalyticsFragment :
     override fun setupObservers() {
         observeFilters()
         observeOverviewAnalytics()
+        collectExportState()
     }
 
     private fun setupSwipeRefresh() {
@@ -75,6 +86,11 @@ class OverviewAnalyticsFragment :
             when (menuItem.itemId) {
                 R.id.action_filter -> {
                     openFilterDialog()
+                    true
+                }
+
+                R.id.action_export_analytics -> {
+                    showExportFormatChooser()
                     true
                 }
 
@@ -321,6 +337,76 @@ class OverviewAnalyticsFragment :
         }
     }
 
+    private fun showExportFormatChooser() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.export_choose_format))
+            .setItems(arrayOf("CSV", "PDF")) { _, which ->
+                val format =
+                    if (which == 0) AnalyticsExportFormat.CSV else AnalyticsExportFormat.PDF
+                viewModel.exportAnalytics(format)
+            }
+            .show()
+    }
+
+    private fun collectExportState() =
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.exportState.collect { state ->
+                    when (state) {
+                        is UiState.Loading   -> showProgress()
+                        is UiState.Success   -> {
+                            hideProgress()
+                            state.data?.let { promptShare(it) }
+                        }
+                        is UiState.Error     -> {
+                            hideProgress()
+                            Snackbar
+                                .make(binding.root, state.message, Snackbar.LENGTH_LONG)
+                                .show()
+                        }
+                        else                 -> Unit
+                    }
+                }
+            }
+        }
+
+    private fun promptShare(file: File) {
+        val uri = FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            file
+        )
+
+        val mime = when (file.extension.lowercase()) {
+            "csv" -> "text/csv"
+            "pdf" -> "application/pdf"
+            else  -> "*/*"
+        }
+
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = mime
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        startActivity(
+            Intent.createChooser(sendIntent, "Поделиться отчётом")
+        )
+    }
+
+    private fun showProgress() {
+        if (progressDialog == null) {
+            progressDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Экспорт")
+                .setMessage("Формируем файл…")
+                .setCancelable(false)
+                .create()
+        }
+        progressDialog?.show()
+    }
+
+    private fun hideProgress() = progressDialog?.dismiss()
+
     private fun openFilterDialog() {
         val currentFilter = viewModel.filter.value
         val state = viewModel.overviewAnalytics.value
@@ -386,7 +472,8 @@ class OverviewAnalyticsFragment :
         }
 
         val granList = Granularity.values().toList()
-        acGran.setAdapter(ArrayAdapter(
+        acGran.setAdapter(
+            ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_dropdown_item,
             granList.map { it.name }

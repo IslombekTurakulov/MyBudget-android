@@ -24,9 +24,11 @@ class LoginUseCase @Inject constructor(
         return withContext(Dispatchers.IO) {
             val response = authService.login(LoginRequest(email, password))
             if (response.isSuccessful) {
-                val body = response.body()
-                val token = body?.token ?: return@withContext false
-                tokenStorage.saveAccessTokenAsync(token) // Сохраняем токен
+                val body = response.body() ?: return@withContext false
+                val accessToken = body.accessToken
+                val refreshToken = body.refreshToken
+                tokenStorage.saveAccessTokenAsync(accessToken)
+                tokenStorage.saveRefreshTokenAsync(refreshToken)
                 true
             } else {
                 val errorResponse = response.errorBody()?.string()

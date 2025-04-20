@@ -28,5 +28,5 @@ interface ChangePasswordAuthService {
 interface RefreshAuthService {
 
     @POST("auth/refresh-token")
-    suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<String>
+    suspend fun refreshToken(@Body request: RefreshTokenRequest): Response<TokensResponse>
 }

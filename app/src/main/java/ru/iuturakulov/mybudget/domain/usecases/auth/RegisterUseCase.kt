@@ -24,9 +24,11 @@ class RegisterUseCase @Inject constructor(
                     // После успешной регистрации пытаемся авторизоваться
                     val loginResponse = authService.login(LoginRequest(email, password))
                     if (loginResponse.isSuccessful) {
-                        val body = loginResponse.body()
-                        val token = body?.token ?: return@withContext false
-                        tokenStorage.saveAccessTokenAsync(token) // Сохраняем токен
+                        val body = loginResponse.body() ?: return@withContext false
+                        val accessToken = body.accessToken
+                        val refreshToken = body.refreshToken
+                        tokenStorage.saveAccessTokenAsync(accessToken)
+                        tokenStorage.saveRefreshTokenAsync(refreshToken)
                         return@withContext true
                     }
                 }

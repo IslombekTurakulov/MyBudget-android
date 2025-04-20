@@ -4,53 +4,61 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="4dp"
+    android:layout_margin="16dp"
     app:cardCornerRadius="8dp"
-    android:padding="16dp">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:layout_width="match_parent"
+        <TextView
+            style="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Фильтр по статусу проекта"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
+            android:layout_marginBottom="12dp" />
 
         <RadioGroup
             android:id="@+id/radioGroupStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checkedButton="@id/radioAll">
-
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/radioActive"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Активен" />
-
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/radioDeleted"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Удален" />
-
-            <com.google.android.material.radiobutton.MaterialRadioButton
-                android:id="@+id/radioArchived"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Архивирован" />
+            android:orientation="vertical">
 
             <com.google.android.material.radiobutton.MaterialRadioButton
                 android:id="@+id/radioAll"
-                android:layout_width="wrap_content"
+                style="?attr/radioButtonStyle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Все" />
+                android:text="Все"
+                android:checked="true"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/radioActive"
+                style="?attr/radioButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Активен"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/radioArchived"
+                style="?attr/radioButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Архивирован"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/radioDeleted"
+                style="?attr/radioButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Удален" />
         </RadioGroup>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -6,7 +6,9 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -79,6 +81,11 @@ class ProjectListFragment :
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.syncProjects()
+    }
+
     override fun setupObservers() {
         lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { state ->
@@ -94,6 +101,9 @@ class ProjectListFragment :
                         binding.tvEmptyPlaceholder.isVisible = state.data?.isEmpty() == true
                         binding.recyclerViewProjects.isVisible = state.data?.isEmpty() == false
                         binding.btnRetry.isVisible = false
+
+                        adapter.submitList(state.data)
+                        adapter.notifyDataSetChanged()
                     }
 
                     is UiState.Error -> {
@@ -110,8 +120,7 @@ class ProjectListFragment :
         lifecycleScope.launchWhenStarted {
             viewModel.filteredProjects.collect { projects ->
                 adapter.submitList(projects)
-                binding.tvEmptyPlaceholder.isVisible =
-                    projects.isEmpty() && binding.searchEditText.text?.isNotEmpty() == true
+                binding.tvEmptyPlaceholder.isVisible = projects.isEmpty()
             }
         }
 
@@ -137,37 +146,45 @@ class ProjectListFragment :
     }
 
     private fun showFilterDialog() {
-        val bottomSheet = BottomSheetDialog(requireContext())
-        val dialogBinding = DialogFilterBinding.inflate(layoutInflater)
-        bottomSheet.setContentView(dialogBinding.root)
+        val bottomSheet = BottomSheetDialog(
+            requireContext(),
+        )
+        val binding = DialogFilterBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(binding.root)
+        bottomSheet.setCancelable(true)
+        bottomSheet.behavior.isFitToContents = true
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.filterStatus.collect { status ->
-                dialogBinding.radioGroupStatus.check(
-                    when (status) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.filterStatus.collect { status ->
+                    val id = when (status) {
                         ProjectStatus.ACTIVE -> R.id.radioActive
                         ProjectStatus.DELETED -> R.id.radioDeleted
                         ProjectStatus.ARCHIVED -> R.id.radioArchived
                         else -> R.id.radioAll
                     }
-                )
+                    // Проверяем, что радио-кнопка ещё не отмечена
+                    if (binding.radioGroupStatus.checkedRadioButtonId != id) {
+                        binding.radioGroupStatus.check(id)
+                    }
+                }
             }
         }
 
-        dialogBinding.radioGroupStatus.setOnCheckedChangeListener { _, checkedId ->
-            val filter = when (checkedId) {
+        binding.radioGroupStatus.setOnCheckedChangeListener { _, checkedId ->
+            val newStatus = when (checkedId) {
                 R.id.radioActive -> ProjectStatus.ACTIVE
                 R.id.radioDeleted -> ProjectStatus.DELETED
                 R.id.radioArchived -> ProjectStatus.ARCHIVED
                 else -> ProjectStatus.ALL
             }
-            dialogBinding.radioGroupStatus.check(checkedId)
-            viewModel.setFilterStatus(filter)
+            viewModel.setFilterStatus(newStatus)
             bottomSheet.dismiss()
         }
 
         bottomSheet.show()
     }
+
 
     private fun setupToolbar() {
         binding.toolbar.apply {

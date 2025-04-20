@@ -4,5 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TokenData(
-    val token: String
+    val accessToken: String,
+    val refreshToken: String,
 )

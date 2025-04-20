@@ -42,8 +42,15 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
         }
 
         binding.btnLogout.setOnClickListener {
-            viewModel.logout()
-            findNavController().navigate(R.id.action_settings_to_login)
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Выход из аккаунта")
+                .setMessage("Вы уверены, что хотите выйти из аккаунта?")
+                .setPositiveButton("Выйти") { _, _ ->
+                    viewModel.logout()
+                    findNavController().navigate(R.id.action_settings_to_login)
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
         }
     }
 
@@ -130,8 +137,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     }
 
     private fun updateUI(settings: UserSettings) {
-        binding.tvUserName.text = settings.name
-        binding.tvUserEmail.text = settings.email
+        binding.tvUserName.setText(settings.name)
+        binding.tvUserEmail.setText(settings.email)
         binding.switchNotifications.isChecked = settings.notificationsEnabled
         binding.switchDarkTheme.isChecked = settings.darkThemeEnabled
 

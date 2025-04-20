@@ -63,7 +63,7 @@ class ProjectListViewModel @Inject constructor(
         loadProjects()
     }
 
-    private fun loadProjects() {
+    fun loadProjects() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {

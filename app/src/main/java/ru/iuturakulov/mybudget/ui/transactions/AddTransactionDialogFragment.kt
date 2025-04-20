@@ -399,6 +399,10 @@ class AddTransactionDialogFragment : DialogFragment() {
         // TODO: перейти на новую фильтрацию
         val categories = resources.getStringArray(R.array.transaction_categories).filter {
             it != "Все"
+        }.apply {
+            if (currentCategory != null) {
+                this.filter { it != "Другое" }
+            }
         }.plus(currentCategory).filterNotNull().distinct()
         val adapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)

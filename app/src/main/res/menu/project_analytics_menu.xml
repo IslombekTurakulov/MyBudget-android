@@ -5,4 +5,10 @@
         android:icon="@drawable/baseline_filter_list_24"
         android:title="Фильтр"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_export_analytics"
+        android:icon="@drawable/baseline_share_24"
+        android:title="Экспорт аналитики"
+        app:showAsAction="ifRoom" />
 </menu>

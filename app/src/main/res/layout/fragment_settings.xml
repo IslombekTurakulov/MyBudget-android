@@ -1,206 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="?attr/colorSurface"
+    android:padding="@dimen/spacing_16">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/profileCard"
+            style="?attr/materialCardViewStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
+            android:layout_marginBottom="@dimen/spacing_16"
+            app:cardCornerRadius="@dimen/corner_radius"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="@dimen/divider_thickness">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:baselineAligned="false"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:gravity="center_vertical"
+                android:padding="@dimen/spacing_16">
 
 <!--                <com.google.android.material.imageview.ShapeableImageView-->
 <!--                    android:layout_width="56dp"-->
 <!--                    android:layout_height="56dp"-->
-<!--                    android:src="@drawable/ic_account_circle"-->
-<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.Circle"-->
-<!--                    app:tint="?attr/colorPrimary"-->
+<!--                    android:src="@drawable/baseline_account_tree_24"-->
+<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"-->
+<!--                    android:tint="?attr/colorPrimary"-->
 <!--                    android:contentDescription="@string/profile_image" />-->
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
+                    android:layout_marginStart="@dimen/spacing_16"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvUserName"
+                        style="?attr/textAppearanceHeadlineSmall"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/username"
-                        android:textAppearance="?attr/textAppearanceHeadlineSmall"
-                        tools:text="Glorbo" />
+                        tools:text="Islam" />
 
-                    <TextView
+                    <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/tvUserEmail"
+                        style="?attr/textAppearanceBodyMedium"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/user_email"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:layout_marginTop="@dimen/spacing_4"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:text="user@gmail.com" />
+                        android:text="@string/user_email"
+                        tools:text="spszakachbaby@yandex.ru" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+
         <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
+            android:layout_marginBottom="@dimen/spacing_16"
+            app:cardCornerRadius="@dimen/corner_radius"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="@dimen/divider_thickness">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
+                    style="?attr/textAppearanceTitleMedium"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/app_settings"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingTop="@dimen/spacing_16"
+                    android:text="@string/app_settings" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    app:color="?attr/colorOutline" />
+                    android:layout_height="@dimen/divider_thickness"
+                    android:layout_marginVertical="@dimen/spacing_8"
+                    app:dividerColor="?attr/colorOutline" />
 
-                <LinearLayout
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvSelectedLanguage"
+                    style="?attr/textAppearanceBodyLarge"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginVertical="8dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/app_language"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvSelectedLanguage"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:drawableEnd="@drawable/baseline_expand_more_24"
-                        android:minHeight="48dp"
-                        android:gravity="center_vertical"
-                        android:text="@string/select_language"
-                        android:textAppearance="?attr/textAppearanceBodyLarge"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        tools:text="English" />
-                </LinearLayout>
+                    android:layout_height="48dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingEnd="@dimen/spacing_16"
+                    android:background="?attr/selectableItemBackground"
+                    android:drawableEnd="@drawable/baseline_expand_more_24"
+                    android:text="@string/select_language"
+                    tools:text="Русский" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchNotifications"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
-                    android:checked="true"
-                    android:paddingVertical="12dp"
-                    android:text="@string/notifications"
-                    android:textAppearance="?attr/textAppearanceBodyLarge" />
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingTop="@dimen/spacing_8"
+                    android:paddingBottom="@dimen/spacing_8"
+                    android:text="@string/notifications" />
 
-                <!-- Dark Theme Switch -->
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchDarkTheme"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
-                    android:paddingVertical="12dp"
-                    android:text="@string/dark_theme"
-                    android:textAppearance="?attr/textAppearanceBodyLarge" />
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingTop="@dimen/spacing_8"
+                    android:paddingBottom="@dimen/spacing_16"
+                    android:text="@string/dark_theme" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Security Section -->
+
         <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
+            app:cardCornerRadius="@dimen/corner_radius"
             app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp">
+            app:strokeWidth="@dimen/divider_thickness">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
+                    style="?attr/textAppearanceTitleMedium"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/security"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingTop="@dimen/spacing_16"
+                    android:text="@string/security" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    app:color="?attr/colorOutline" />
+                    android:layout_height="@dimen/divider_thickness"
+                    android:layout_marginVertical="@dimen/spacing_8"
+                    app:dividerColor="?attr/colorOutline" />
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginVertical="8dp"
-                    android:orientation="horizontal"
-                    android:gravity="end"
-                    android:paddingBottom="16dp">
+                    android:padding="@dimen/spacing_16">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnChangePassword"
-                        android:layout_width="wrap_content"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
                         android:text="@string/change_password"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
+                        app:layout_constraintEnd_toStartOf="@+id/btnLogout"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_percent="0.5" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnLogout"
-                        android:layout_width="wrap_content"
+                        style="?attr/materialButtonToggleGroupStyle"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:text="@string/logout"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        app:backgroundTint="?attr/colorErrorContainer"
-                        android:textColor="?attr/colorOnErrorContainer" />
-                </LinearLayout>
+                        app:layout_constraintStart_toEndOf="@id/btnChangePassword"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_percent="0.45" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
