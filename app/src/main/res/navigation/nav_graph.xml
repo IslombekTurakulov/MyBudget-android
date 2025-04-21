@@ -116,12 +116,39 @@
             app:popExitAnim="@anim/fade_out" />
 
         <action
+            android:id="@+id/action_projects_to_notifications"
+            app:destination="@id/notificationsFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+
+        <action
             android:id="@+id/action_project_to_accept_invite"
             app:destination="@+id/projectInviteFragment"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="ru.iuturakulov.mybudget.ui.notifications.NotificationsFragment"
+        android:label="Notifications"
+        tools:layout="@layout/fragment_notifications">
+
+        <action
+            android:id="@+id/action_notifications_projects_to_details"
+            app:destination="@id/projectDetailsFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out">
+            <argument
+                android:name="projectId"
+                app:argType="string" />
+        </action>
     </fragment>
 
     <!-- Создание проекта -->
@@ -149,10 +176,6 @@
         <action
             android:id="@+id/action_transactions_to_add"
             app:destination="@id/addTransactionFragment" />
-
-        <action
-            android:id="@+id/action_transactions_to_details"
-            app:destination="@id/transactionDetailsFragment" />
 
         <action
             android:id="@+id/action_project_to_edit"
@@ -188,12 +211,6 @@
         android:name="ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment"
         android:label="Add Transaction"
         tools:layout="@layout/dialog_add_transaction"></dialog>
-
-    <dialog
-        android:id="@+id/transactionDetailsFragment"
-        android:name="ru.iuturakulov.mybudget.ui.transactions.TransactionDetailsDialogFragment"
-        android:label="Transaction Details"
-        tools:layout="@layout/dialog_transaction_details"></dialog>
 
     <fragment
         android:id="@+id/projectAnalyticsFragment"

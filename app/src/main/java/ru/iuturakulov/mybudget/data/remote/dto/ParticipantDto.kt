@@ -10,7 +10,7 @@ data class ParticipantDto(
     val userId: String,  // Уникальный идентификатор пользователя
     val name: String,    // Имя участника
     val email: String,   // Email участника
-    val role: String     // Роль участника
+    val role: ParticipantRole     // Роль участника
 )
 
 

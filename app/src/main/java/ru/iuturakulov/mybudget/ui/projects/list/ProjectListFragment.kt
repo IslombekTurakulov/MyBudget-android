@@ -195,6 +195,11 @@ class ProjectListFragment :
                         true
                     }
 
+                    R.id.menuNotifications -> {
+                        findNavController().navigate(R.id.action_projects_to_notifications)
+                        true
+                    }
+
                     else -> false
                 }
             }

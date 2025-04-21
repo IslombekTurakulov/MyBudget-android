@@ -15,10 +15,3 @@ data class NotificationEntity(
     val createdAt: Long,
     val read: Boolean
 )
-
-fun NotificationEntity.toUi() = NotificationsViewModel.NotificationUi(
-    id, title, body,
-    LocalDateTime.ofEpochSecond(createdAt / 1_000, 0, ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")),
-    read
-)

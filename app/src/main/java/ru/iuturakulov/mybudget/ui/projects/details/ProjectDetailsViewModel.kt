@@ -15,6 +15,7 @@ import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.domain.models.TransactionFilter
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository
 import ru.iuturakulov.mybudget.domain.repositories.TransactionRepository
@@ -29,8 +30,8 @@ class ProjectDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState<ProjectWithTransactions>>(UiState.Loading)
     val uiState: StateFlow<UiState<ProjectWithTransactions>> = _uiState.asStateFlow()
 
-    private val _currentUserRole = MutableStateFlow<String?>(null)
-    val currentUserRole: StateFlow<String?> = _currentUserRole.asStateFlow()
+    private val _currentUserRole = MutableStateFlow<ParticipantRole?>(ParticipantRole.VIEWER)
+    val currentUserRole: StateFlow<ParticipantRole?> = _currentUserRole.asStateFlow()
 
     private val _filteredTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val filteredTransactions: StateFlow<List<TransactionEntity>> =

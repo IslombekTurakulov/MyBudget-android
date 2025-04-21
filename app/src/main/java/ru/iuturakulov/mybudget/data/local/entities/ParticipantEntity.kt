@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 
 @Parcelize
 @Entity(tableName = "participants")
@@ -13,5 +14,5 @@ data class ParticipantEntity(
     val userId: String,      // Уникальный идентификатор пользователя
     val name: String,        // Имя участника
     val email: String,       // Email участника
-    val role: String         // Роль участника
+    val role: ParticipantRole         // Роль участника
 ) : Parcelable

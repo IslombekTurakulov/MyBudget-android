@@ -6,12 +6,27 @@ import ru.iuturakulov.mybudget.data.local.entities.NotificationEntity
 @Serializable
 data class NotificationDto(
     val id: String,
-    val title: String,
-    val body: String,
+    val userId: String,
+    val projectId: String?,
+    val message: String,
     val createdAt: Long,
-    val read: Boolean = false
+    val isRead: Boolean = false,
+    val type: NotificationType,
+    val payload: NotificationPayload? = null
 )
 
-fun NotificationDto.toEntity() = NotificationEntity(
-    id = id, title = title, body = body, createdAt = createdAt, read = read
-)
+enum class NotificationType {
+    PROJECT_INVITE,
+    ROLE_CHANGE,
+    TRANSACTION_ADDED,
+    TRANSACTION_REMOVED,
+    PROJECT_EDITED,
+    PROJECT_REMOVED,
+    SYSTEM_ALERT
+}
+
+sealed interface NotificationPayload {
+    data class Project(val projectId: String) : NotificationPayload
+    data class Transaction(val projectId: String, val transactionId: String) : NotificationPayload
+}
+

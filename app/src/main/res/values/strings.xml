@@ -26,7 +26,7 @@
 
     <!-- Сообщения о статусе приглашения -->
     <string name="invitation_sent_success">Приглашение успешно отправлено</string>
-    <string name="invitation_sent_error">Ошибка отправки приглашения: %s</string>
+    <string name="invitation_sent_error">%s</string>
     <string name="invitation_processing">Отправка приглашения…</string>
 
     <!-- Сообщения валидации -->
@@ -115,6 +115,8 @@
     <string name="role">Роль</string>
     <string name="required_field">Обязательное поле</string>
     <string name="select_role">Выберите роль</string>
+
+    <string name="notifications_empty">Уведомлений нет</string>
 
     <!-- Экспорт   -->
     <string name="export_choose_format">Выберите формат для экспорта</string>

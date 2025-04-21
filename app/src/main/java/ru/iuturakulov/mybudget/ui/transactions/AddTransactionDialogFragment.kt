@@ -170,6 +170,8 @@ class AddTransactionDialogFragment : DialogFragment() {
             btnSave.isEnabled = true
             btnDeleteTransaction.isEnabled = arguments.transaction != null
             btnEditTransaction.isEnabled = true
+            etTransactionName.isEnabled = true
+            etTransactionDate.isEnabled = true
         }
 
         setupCommonViews(arguments)
@@ -188,7 +190,8 @@ class AddTransactionDialogFragment : DialogFragment() {
             btnSave.isEnabled = true
             btnDeleteTransaction.isEnabled = true // Редакторы могут удалять
             btnEditTransaction.isEnabled = true
-
+            etTransactionName.isEnabled = true
+            etTransactionDate.isEnabled = true
             // Показываем кнопку удаления
             btnDeleteTransaction.visibility = View.VISIBLE
         }
@@ -210,6 +213,9 @@ class AddTransactionDialogFragment : DialogFragment() {
             btnDeleteTransaction.isEnabled = false
             btnEditTransaction.isEnabled = false
 
+            etTransactionName.isEnabled = false
+            etTransactionDate.isEnabled = false
+
             // Скрываем ненужные элементы
             btnScanReceipt.visibility = View.GONE
             btnSave.visibility = View.GONE
@@ -228,6 +234,7 @@ class AddTransactionDialogFragment : DialogFragment() {
         transaction = arguments.transaction
         binding.apply {
             if (transaction != null) {
+                toolbar.subtitle = ""
                 // Режим редактирования/просмотра существующей транзакции
                 etTransactionName.setText(transaction?.name)
                 etTransactionAmount.setText(transaction?.amount.toString())

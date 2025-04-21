@@ -25,7 +25,7 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
             }
 
             binding.toolbar.setNavigationOnClickListener {
-                findNavController().navigateUp() // Возврат назад
+                findNavController().navigateUp()
             }
 
             btnRegister.setOnClickListener {

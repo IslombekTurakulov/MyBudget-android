@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import androidx.core.view.isGone
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -69,6 +70,10 @@ class ProjectDetailsFragment :
         binding.rvTransactions.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
+                if (viewModel.currentUserRole.value == ParticipantRole.VIEWER) {
+                    return
+                }
+
                 if (dy > 0 && binding.fabAddTransaction.isShown) {
                     // Скролл вниз - скрываем добавление транзакции
                     binding.fabAddTransaction.hide()
@@ -111,19 +116,19 @@ class ProjectDetailsFragment :
                     is UiState.Success -> {
                         showContent()
                         state.data?.let { projectWithTransactions ->
-
                             // Проверка архивирован ли проект
-                            val isProjectArchived = projectWithTransactions.project?.status == ProjectStatus.ARCHIVED
+                            val isProjectArchived = projectWithTransactions.project.status == ProjectStatus.ARCHIVED
 
-                            binding.toolbar.menu.findItem(
-                                R.id.menuArchiveProject
-                            ).isVisible = !isProjectArchived
+                            if (viewModel.currentUserRole.value == ParticipantRole.OWNER) {
+                                binding.toolbar.menu.findItem(
+                                    R.id.menuArchiveProject
+                                ).isVisible = !isProjectArchived
 
-                            binding.toolbar.menu.findItem(
-                                R.id.menuUnarchiveProject
-                            ).isVisible = isProjectArchived
+                                binding.toolbar.menu.findItem(
+                                    R.id.menuUnarchiveProject
+                                ).isVisible = isProjectArchived
+                            }
 
-                            viewModel.getCurrentRole(projectWithTransactions.project.id)
                             project = projectWithTransactions
 
                             showProjectDetails(projectWithTransactions)
@@ -142,28 +147,7 @@ class ProjectDetailsFragment :
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.currentUserRole.collect { role ->
-                if (role != ParticipantRole.OWNER.name) {
-                    binding.toolbar.menu.findItem(
-                        R.id.menuArchiveProject
-                    ).isVisible = false
-
-                    binding.toolbar.menu.findItem(
-                        R.id.menuUnarchiveProject
-                    ).isVisible = false
-
-                    binding.toolbar.menu.findItem(
-                        R.id.menuDelete
-                    ).isVisible = false
-
-                    binding.fabAddTransaction.isGone = true
-                } else {
-
-                    binding.toolbar.menu.findItem(
-                        R.id.menuDelete
-                    ).isVisible = true
-
-                    binding.fabAddTransaction.isGone = false
-                }
+                processUserRole(role)
             }
         }
 
@@ -174,12 +158,37 @@ class ProjectDetailsFragment :
         }
     }
 
+    private fun processUserRole(role: ParticipantRole?) {
+        if (role == ParticipantRole.VIEWER) {
+            binding.toolbar.menu.setGroupVisible(
+                R.id.group_editor, false
+            )
+
+            binding.fabAddTransaction.isGone = true
+        } else if (role == ParticipantRole.EDITOR) {
+            binding.toolbar.menu.setGroupVisible(
+                R.id.group_editor, false
+            )
+
+            binding.fabAddTransaction.isGone = false
+        } else {
+            binding.toolbar.menu.setGroupVisible(
+                R.id.group_editor, true
+            )
+
+            binding.fabAddTransaction.isGone = false
+        }
+    }
+
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            binding.fabAddTransaction.hide()
+                binding.fabAddTransaction.hide()
             // Обновление данных
+            viewModel.getCurrentRole(args.projectId)
             viewModel.syncProjectDetails(args.projectId)
-            binding.fabAddTransaction.show()
+            if (viewModel.currentUserRole.value != ParticipantRole.VIEWER) {
+                binding.fabAddTransaction.show()
+            }
             // Сброс состояния будет выполнен после обновления данных в наблюдателе
         }
     }
@@ -200,18 +209,28 @@ class ProjectDetailsFragment :
                     }
 
                     R.id.menuArchiveProject -> {
-                        project?.project?.copy(status = ProjectStatus.ARCHIVED)?.let { projectEntity ->
-                            viewModel.updateProject(project = projectEntity)
-                            Snackbar.make(binding.root, "Проект заархивирован", Snackbar.LENGTH_LONG).show()
-                        }
+                        project?.project?.copy(status = ProjectStatus.ARCHIVED)
+                            ?.let { projectEntity ->
+                                viewModel.updateProject(project = projectEntity)
+                                Snackbar.make(
+                                    binding.root,
+                                    "Проект заархивирован",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
+                            }
                         true
                     }
 
                     R.id.menuUnarchiveProject -> {
-                        project?.project?.copy(status = ProjectStatus.ACTIVE)?.let { projectEntity ->
-                            viewModel.updateProject(project = projectEntity)
-                            Snackbar.make(binding.root, "Проект разаархивирован", Snackbar.LENGTH_LONG).show()
-                        }
+                        project?.project?.copy(status = ProjectStatus.ACTIVE)
+                            ?.let { projectEntity ->
+                                viewModel.updateProject(project = projectEntity)
+                                Snackbar.make(
+                                    binding.root,
+                                    "Проект разаархивирован",
+                                    Snackbar.LENGTH_LONG
+                                ).show()
+                            }
                         true
                     }
 
@@ -282,7 +301,7 @@ class ProjectDetailsFragment :
             viewModel.currentUserRole.collect { role ->
                 val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(
                     projectId = args.projectId,
-                    userRole = role ?: ParticipantRole.VIEWER.name
+                    userRole = role?.name ?: ParticipantRole.VIEWER.name
                 )
                 findNavController().navigate(action)
             }
@@ -382,7 +401,7 @@ class ProjectDetailsFragment :
             viewModel.currentUserRole.collect { role ->
                 val dialog = AddTransactionDialogFragment.newInstance(
                     projectId = args.projectId,
-                    currentRole = role ?: ParticipantRole.VIEWER.name,
+                    currentRole = role?.name ?: ParticipantRole.VIEWER.name,
                     transaction = transaction.toTemporaryModel()
                 )
                 dialog.setOnTransactionUpdated { updatedTransaction ->
@@ -406,7 +425,7 @@ class ProjectDetailsFragment :
                 resources.getStringArray(
                     R.array.transaction_categories
                 ) + viewModel.transactions.value.mapNotNull { it.category.ifEmpty { null } }
-        ).distinct()
+                ).distinct()
         val adapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

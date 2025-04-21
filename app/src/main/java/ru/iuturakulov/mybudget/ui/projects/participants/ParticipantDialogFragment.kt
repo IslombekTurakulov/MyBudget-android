@@ -58,7 +58,7 @@ class ParticipantDialogFragment : DialogFragment() {
         participant?.let { entity ->
             binding.etParticipantName.setText(entity.name)
             binding.etParticipantEmail.setText(entity.email)
-            binding.spinnerRole.setText(entity.role, false)
+            binding.spinnerRole.setText(entity.role.name, false)
         }
 
         setupRoleSpinner()
@@ -96,7 +96,7 @@ class ParticipantDialogFragment : DialogFragment() {
         // Устанавливаем текущее значение
         participant?.let {
             val currentRole = ParticipantRole.values().find { role ->
-                role.name.equals(it.role, ignoreCase = true)
+                role.name.equals(it.role.name, ignoreCase = true)
             }
             currentRole?.let { role ->
                 binding.spinnerRole.setText(role.getDisplayName(requireContext()), false)
@@ -145,7 +145,7 @@ class ParticipantDialogFragment : DialogFragment() {
         val updatedParticipant = participant?.copy(
             name = name,
             email = email,
-            role = role.name
+            role = role
         ) ?: run {
             requireNotNull(projectId) { "Project ID is required for new participant" }
             ParticipantEntity(
@@ -154,7 +154,7 @@ class ParticipantDialogFragment : DialogFragment() {
                 userId = "",
                 name = name,
                 email = email,
-                role = role.name
+                role = role
             )
         }
 

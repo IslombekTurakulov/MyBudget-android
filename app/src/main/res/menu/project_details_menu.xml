@@ -1,34 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Кнопка редактирования -->
-    <item
-        android:id="@+id/menuEdit"
-        android:icon="@drawable/baseline_edit_note_24"
-        android:title="Редактировать"
-        app:showAsAction="ifRoom" />
+    <group android:id="@+id/group_editor" >
+        <!-- Кнопка редактирования -->
+        <item
+            android:id="@+id/menuEdit"
+            android:icon="@drawable/baseline_edit_note_24"
+            android:title="Редактировать"
+            app:showAsAction="ifRoom" />
 
-    <!-- Кнопка удаления -->
-    <item
-        android:id="@+id/menuDelete"
-        android:icon="@drawable/baseline_delete_forever_24"
-        android:title="Удалить"
-        app:showAsAction="ifRoom" />
+        <!-- Кнопка удаления -->
+        <item
+            android:id="@+id/menuDelete"
+            android:icon="@drawable/baseline_delete_forever_24"
+            android:title="Удалить"
+            app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/menuArchiveProject"
-        android:icon="@drawable/baseline_archive_24"
-        android:title="Архивировать"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/menuArchiveProject"
+            android:icon="@drawable/baseline_archive_24"
+            android:title="Архивировать"
+            android:visible="false"
+            app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/menuUnarchiveProject"
-        android:icon="@drawable/baseline_unarchive_24"
-        android:title="Разархивировать"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/menuUnarchiveProject"
+            android:icon="@drawable/baseline_unarchive_24"
+            android:title="Разархивировать"
+            android:visible="false"
+            app:showAsAction="ifRoom" />
+    </group>
 
     <item
         android:id="@+id/menuParticipants"

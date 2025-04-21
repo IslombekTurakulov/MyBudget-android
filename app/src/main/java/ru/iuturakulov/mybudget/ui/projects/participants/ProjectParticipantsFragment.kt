@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.ui.projects.participants
 
 import android.app.AlertDialog
 import android.view.View
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -80,6 +81,10 @@ class ProjectParticipantsFragment :
 
     private fun setupRecyclerView() {
         Timber.i("USERROLE ${args.userRole}")
+        val participantRole = ParticipantRole.entries.find {
+            it.name == args.userRole
+        } ?: ParticipantRole.entries.toTypedArray()[0]
+
         adapter = ParticipantsAdapter(
             onEditClick = { participant ->
                 showEditParticipantDialog(participant)
@@ -87,11 +92,10 @@ class ProjectParticipantsFragment :
             onDeleteClick = { participant ->
                 confirmDeleteParticipant(participant)
             },
-            currentUserParticipantRole = ParticipantRole.entries.find {
-                it.name == args.userRole
-            } ?: ParticipantRole.entries.toTypedArray()[0],
+            currentUserParticipantRole = participantRole,
         )
         binding.rvParticipants.adapter = adapter
+        binding.fabAddParticipant.isGone = participantRole != ParticipantRole.OWNER
     }
 
     private fun setupListeners() {
@@ -120,14 +124,6 @@ class ProjectParticipantsFragment :
         binding.progressBar.isVisible = false
         binding.tvEmptyParticipants.isVisible = true
         binding.tvEmptyParticipants.text = "$message"
-    }
-
-    private fun showAddParticipantDialog() {
-        val dialog = ParticipantDialogFragment.newInstance(null, args.projectId)
-        dialog.setOnParticipantUpdated { newParticipant ->
-            viewModel.saveParticipant(newParticipant)
-        }
-        dialog.show(childFragmentManager, "AddParticipantDialog")
     }
 
     private fun showEditParticipantDialog(participant: ParticipantEntity) {

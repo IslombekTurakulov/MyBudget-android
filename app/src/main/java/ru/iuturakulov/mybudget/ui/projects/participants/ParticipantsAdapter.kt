@@ -36,14 +36,14 @@ class ParticipantsAdapter(
         fun bind(participant: ParticipantEntity) {
             binding.apply {
                 tvParticipantName.text = participant.name
-                tvParticipantRole.text = participant.role
+                tvParticipantRole.text = participant.role.name
                 if (currentUserParticipantRole.name == ParticipantRole.OWNER.name) {
                     llButtons.visibility = View.VISIBLE
                 } else {
                     llButtons.visibility = View.GONE
                 }
 
-                if (participant.role == ParticipantRole.OWNER.name) {
+                if (participant.role == ParticipantRole.OWNER) {
                     btnEditParticipant.visibility = View.GONE
                     btnDeleteParticipant.visibility = View.GONE
                 } else {

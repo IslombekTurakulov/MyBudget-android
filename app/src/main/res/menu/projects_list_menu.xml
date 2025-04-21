@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menuNotifications"
+        android:icon="@drawable/baseline_all_inbox_24"
+        android:title="Уведомления"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menuInviteCode"
         android:icon="@drawable/baseline_account_tree_24"
         android:title="Присоединиться к проекту"

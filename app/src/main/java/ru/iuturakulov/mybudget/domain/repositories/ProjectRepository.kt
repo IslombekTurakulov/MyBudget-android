@@ -10,6 +10,7 @@ import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
 import ru.iuturakulov.mybudget.data.remote.ProjectService
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.domain.mappers.ProjectMapper
 import javax.inject.Inject
 
@@ -41,7 +42,7 @@ class ProjectRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO) // Перенос выполнения в IO-поток
 
-    suspend fun getCurrentRole(projectId: String): String? {
+    suspend fun getCurrentRole(projectId: String): ParticipantRole? {
         return projectService.getCurrentRole(projectId).body()?.role
     }
 

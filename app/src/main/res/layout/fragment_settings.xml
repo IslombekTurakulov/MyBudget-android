@@ -119,14 +119,14 @@
                     android:paddingBottom="@dimen/spacing_8"
                     android:text="@string/notifications" />
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchDarkTheme"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="@dimen/spacing_16"
-                    android:paddingTop="@dimen/spacing_8"
-                    android:paddingBottom="@dimen/spacing_16"
-                    android:text="@string/dark_theme" />
+<!--                <com.google.android.material.switchmaterial.SwitchMaterial-->
+<!--                    android:id="@+id/switchDarkTheme"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:paddingStart="@dimen/spacing_16"-->
+<!--                    android:paddingTop="@dimen/spacing_8"-->
+<!--                    android:paddingBottom="@dimen/spacing_16"-->
+<!--                    android:text="@string/dark_theme" />-->
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

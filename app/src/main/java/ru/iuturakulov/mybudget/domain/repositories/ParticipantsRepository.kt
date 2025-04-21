@@ -118,7 +118,7 @@ class ParticipantsRepository @Inject constructor(
             }
         } catch (e: Exception) {
             throw InvitationException(
-                "Ошибка отправки приглашения: ${e.localizedMessage}",
+                "${e.localizedMessage}",
                 e
             )
         }

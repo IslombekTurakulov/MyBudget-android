@@ -3,52 +3,65 @@ package ru.iuturakulov.mybudget.ui.notifications
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import ru.iuturakulov.mybudget.core.UiState
+import ru.iuturakulov.mybudget.data.remote.dto.NotificationDto
 import ru.iuturakulov.mybudget.domain.repositories.NotificationsRepository
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
-    private val repository: NotificationsRepository
+    private val repo: NotificationsRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<NotificationsUiState>(NotificationsUiState.Loading)
-    val state: StateFlow<NotificationsUiState> = _state.asStateFlow()
+    private val _state = MutableStateFlow<UiState<List<NotificationDto>>>(UiState.Idle)
+    val state: StateFlow<UiState<List<NotificationDto>>> = _state.asStateFlow()
 
-    init { refresh() }
+    init {
+        refresh()
+    }
 
     fun refresh() = viewModelScope.launch {
-//        _state.value = NotificationsUiState.Loading
-//        repository.fetchNotifications()
-//            .map { list ->
-//                if (list.isEmpty()) NotificationsUiState.Empty()
-//                else NotificationsUiState.Success(list.map { it.toUi() })
-//            }
-//            .catch { _state.value = NotificationsUiState.Error(it.message.orEmpty()) }
-//            .collect { _state.value = it }
+        _state.value = UiState.Loading
+        try {
+            val list = repo.getNotifications()
+            _state.value = UiState.Success(list)
+        } catch (e: IOException) {
+            _state.value = UiState.Error("Проблемы с сетью")
+        } catch (e: Exception) {
+            _state.value = UiState.Error(e.localizedMessage ?: "Ошибка")
+        }
     }
 
-    /** помечаем уведомление прочитанным */
-    fun markAsRead(id: String) = viewModelScope.launch {
-        // repository.markAsRead(id)
+    fun markRead(id: String) = viewModelScope.launch {
+        val current = (_state.value as? UiState.Success)?.data.orEmpty()
+        // локально ставим прочитано
+        val updated = current.map { if (it.id == id) it.copy(isRead = true) else it }
+        _state.value = UiState.Success(updated)
+
+        try {
+            repo.markRead(id)
+        } catch (e: Exception) {
+            // при ошибке откатываем назад
+            _state.value = UiState.Success(current)
+            // здесь можно залогировать или показать тост
+        }
     }
 
-    sealed interface NotificationsUiState {
-        object Loading : NotificationsUiState
-        data class Success(val data: List<NotificationUi>) : NotificationsUiState
-        data class Empty(val message: String = "У вас пока нет уведомлений") : NotificationsUiState
-        data class Error(val message: String) : NotificationsUiState
-    }
+    fun remove(id: String) = viewModelScope.launch {
+        val current = (_state.value as? UiState.Success)?.data.orEmpty()
+        // локально убираем уведомление
+        val updated = current.filterNot { it.id == id }
+        _state.value = UiState.Success(updated)
 
-    data class NotificationUi(
-        val id: String,
-        val title: String,
-        val body: String,
-        val date: String,
-        val read: Boolean
-    )
+        try {
+            repo.removeNotification(id)
+        } catch (e: Exception) {
+            // при ошибке можно вернуть назад
+            _state.value = UiState.Success(current)
+            // и уведомить пользователя об ошибке
+        }
+    }
 }
-
