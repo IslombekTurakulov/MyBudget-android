@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.serialization")
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs.kotlin")
+    id("com.google.firebase.crashlytics")
 }
 
 
@@ -105,6 +106,7 @@ dependencies {
 
     // push-notifications
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-crashlytics")
     implementation("com.google.firebase:firebase-analytics")
 
     // image extension
