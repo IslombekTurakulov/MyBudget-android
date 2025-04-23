@@ -77,13 +77,17 @@ class ProjectRepository @Inject constructor(
             val updatedDto = projectService.updateProject(
                 project.id,
                 ProjectMapper.entityToDto(project)
-            ) // Обновление на сервере
-            val body = updatedDto.body()
-            requireNotNull(body)
+            )
+            // Обновление на сервере
+            if (!updatedDto.isSuccessful) {
+                throw IllegalArgumentException(updatedDto.errorBody()?.string())
+            }
+            val body = updatedDto.body() ?: throw Exception()
+
             val updatedEntity = ProjectMapper.dtoToEntity(body)
             projectDao.updateProject(updatedEntity) // Синхронизируем локально
         } catch (e: Exception) {
-            throw Exception("Ошибка обновления проекта: ${e.localizedMessage}")
+            throw Exception("${e.localizedMessage}")
         }
     }
 
@@ -91,6 +95,7 @@ class ProjectRepository @Inject constructor(
     suspend fun getProjectWithTransactions(projectId: String): ProjectWithTransactions {
         val projectDto = projectService.fetchProjectDetails(projectId).body()
         val transactionDtos = projectService.fetchTransactions(projectId).body()
+        val currentRole = projectService.getCurrentRole(projectId).body()?.role
 
         requireNotNull(projectDto)
         requireNotNull(transactionDtos)
@@ -101,7 +106,7 @@ class ProjectRepository @Inject constructor(
         projectDao.insertProject(projectEntity)
         transactionDao.insertTransactions(transactionEntities)
 
-        return ProjectWithTransactions(projectEntity, transactionEntities)
+        return ProjectWithTransactions(projectEntity, transactionEntities, currentRole)
     }
 
 //    // Фильтрация транзакций для проекта

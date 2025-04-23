@@ -29,9 +29,9 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     override fun setupViews() {
         setupLanguageSelector()
 
-        binding.switchDarkTheme.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.toggleDarkTheme(isChecked)
-        }
+//        binding.switchDarkTheme.setOnCheckedChangeListener { _, isChecked ->
+//            viewModel.toggleDarkTheme(isChecked)
+//        }
 
         binding.profileCard.setOnClickListener {
             showChangeUsernameDialog()
@@ -108,7 +108,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                         email = binding.tvUserEmail.text.toString(),
                         language = selectedLanguageCode,
                         notificationsEnabled = binding.switchNotifications.isChecked,
-                        darkThemeEnabled = binding.switchDarkTheme.isChecked
+                        darkThemeEnabled = false, // binding.switchDarkTheme.isChecked
                     )
                 )
                 updateSelectedLanguage(selectedLanguageCode)
@@ -140,7 +140,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
         binding.tvUserName.setText(settings.name)
         binding.tvUserEmail.setText(settings.email)
         binding.switchNotifications.isChecked = settings.notificationsEnabled
-        binding.switchDarkTheme.isChecked = settings.darkThemeEnabled
+//        binding.switchDarkTheme.isChecked = settings.darkThemeEnabled
 
         updateSelectedLanguage(settings.language)
     }
@@ -195,7 +195,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                         email = binding.tvUserEmail.text.toString(),
                         language = displayLanguage,
                         notificationsEnabled = binding.switchNotifications.isChecked,
-                        darkThemeEnabled = binding.switchDarkTheme.isChecked
+                        darkThemeEnabled = false // binding.switchDarkTheme.isChecked
                     )
                 )
             }

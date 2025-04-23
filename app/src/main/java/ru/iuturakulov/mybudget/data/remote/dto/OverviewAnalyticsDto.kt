@@ -1,7 +1,7 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
 data class OverviewAnalyticsDto(
-    val totalAmount: Double,                                 // суммарная сумма по всем проектам
+    val totalAmount: Double,
     val categoryDistribution: List<OverviewCategoryStats>,
     val periodDistribution: List<OverviewPeriodStats>,
     val projectComparison: List<ProjectComparisonStats>
@@ -16,7 +16,7 @@ data class OverviewCategoryStats(
 
 /** Статистика для одного шага в bar‑chart по периодам */
 data class OverviewPeriodStats(
-    val period: String,      // например "2025-04"
+    val period: String,
     val amount: Double       // сумма за этот период
 )
 

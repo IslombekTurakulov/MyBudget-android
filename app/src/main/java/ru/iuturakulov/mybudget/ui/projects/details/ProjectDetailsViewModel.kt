@@ -30,8 +30,8 @@ class ProjectDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState<ProjectWithTransactions>>(UiState.Loading)
     val uiState: StateFlow<UiState<ProjectWithTransactions>> = _uiState.asStateFlow()
 
-    private val _currentUserRole = MutableStateFlow<ParticipantRole?>(ParticipantRole.VIEWER)
-    val currentUserRole: StateFlow<ParticipantRole?> = _currentUserRole.asStateFlow()
+    private val _updateState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val updateState: StateFlow<UiState<Unit>> = _updateState.asStateFlow()
 
     private val _filteredTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val filteredTransactions: StateFlow<List<TransactionEntity>> =
@@ -116,16 +116,6 @@ class ProjectDetailsViewModel @Inject constructor(
                 syncTransactions(projectId)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error("Ошибка удаления транзакции: ${e.localizedMessage}")
-            }
-        }
-    }
-
-    fun getCurrentRole(projectId: String) {
-        viewModelScope.launch {
-            try {
-                _currentUserRole.value = projectRepository.getCurrentRole(projectId)
-            } catch (e: Exception) {
-                _currentUserRole.value = null
             }
         }
     }
@@ -219,7 +209,20 @@ class ProjectDetailsViewModel @Inject constructor(
                 projectRepository.updateProject(project)
                 loadProjectDetails(project.id)
             } catch (e: Exception) {
-                _uiState.value = UiState.Error("Ошибка обновления проекта: ${e.localizedMessage}")
+                _uiState.value = UiState.Error("${e.localizedMessage}")
+            }
+        }
+    }
+
+    fun editProject(project: ProjectEntity) {
+        viewModelScope.launch {
+            _updateState.value = UiState.Loading
+            try {
+                projectRepository.updateProject(project)
+                loadProjectDetails(project.id)
+                _updateState.value = UiState.Success(Unit)
+            } catch (e: Exception) {
+                _updateState.value = UiState.Error(e.localizedMessage ?: "Ошибка обновления проекта")
             }
         }
     }

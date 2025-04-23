@@ -1,12 +1,18 @@
 package ru.iuturakulov.mybudget.ui.analytics
 
+import android.app.Activity
+import android.content.ClipData
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.SharedElementCallback
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
@@ -47,6 +53,7 @@ import ru.iuturakulov.mybudget.data.remote.dto.ProjectComparisonStats
 import ru.iuturakulov.mybudget.databinding.FragmentOverviewAnalyticsBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
 import java.io.File
+import java.io.IOException
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -59,6 +66,7 @@ class OverviewAnalyticsFragment :
     private val viewModel: AnalyticsViewModel by viewModels()
 
     private var progressDialog: AlertDialog? = null
+    private var tempFile: File? = null
 
     override fun getViewBinding(view: View): FragmentOverviewAnalyticsBinding =
         FragmentOverviewAnalyticsBinding.bind(view)
@@ -353,45 +361,125 @@ class OverviewAnalyticsFragment :
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.exportState.collect { state ->
                     when (state) {
-                        is UiState.Loading   -> showProgress()
-                        is UiState.Success   -> {
+                        is UiState.Loading -> showProgress()
+                        is UiState.Success -> {
                             hideProgress()
-                            state.data?.let { promptShare(it) }
+                            state.data?.let { promptSaveOrShare(it) }
                         }
-                        is UiState.Error     -> {
+
+                        is UiState.Error -> {
                             hideProgress()
                             Snackbar
                                 .make(binding.root, state.message, Snackbar.LENGTH_LONG)
                                 .show()
                         }
-                        else                 -> Unit
+
+                        else -> Unit
                     }
                 }
             }
         }
 
-    private fun promptShare(file: File) {
-        val uri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            file
-        )
+    private val saveDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { safeSaveToUri(it) }
+    }
+
+    private fun promptSaveOrShare(file: File) {
+        tempFile = file
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Что вы хотите сделать с отчётом?")
+            .setItems(arrayOf("Сохранить как…", "Поделиться")) { _, which ->
+                when (which) {
+                    0 -> promptSaveAs(file.name)
+                    1 -> doShare(file)
+                }
+            }
+            .show()
+    }
+
+    private fun promptSaveAs(defaultFileName: String) {
+        saveDocumentLauncher.launch(defaultFileName)
+    }
+
+    private fun safeSaveToUri(uri: Uri) {
+        val file = tempFile
+        if (file == null || !file.exists() || !file.canRead()) {
+            Toast.makeText(requireContext(), "Файл недоступен для сохранения", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
+        try {
+            requireContext().contentResolver.openOutputStream(uri)?.use { out ->
+                file.inputStream().use { input ->
+                    input.copyTo(out)
+                }
+            }
+            Toast.makeText(requireContext(), "Файл сохранён", Toast.LENGTH_SHORT).show()
+        } catch (e: IOException) {
+            Toast.makeText(
+                requireContext(),
+                "Ошибка при сохранении: ${e.localizedMessage}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun doShare(file: File) {
+        if (!file.exists() || !file.canRead()) {
+            Toast.makeText(requireContext(), "Файл недоступен для шаринга", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
+        val uri = try {
+            FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                file
+            )
+        } catch (e: IllegalArgumentException) {
+            Toast.makeText(
+                requireContext(),
+                "Невозможно получить URI для файла",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
 
         val mime = when (file.extension.lowercase()) {
             "csv" -> "text/csv"
             "pdf" -> "application/pdf"
-            else  -> "*/*"
+            else -> "*/*"
         }
 
-        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        val send = Intent(Intent.ACTION_SEND).apply {
             type = mime
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        startActivity(
-            Intent.createChooser(sendIntent, "Поделиться отчётом")
-        )
+        val chooser = Intent.createChooser(send, "Поделиться отчётом").apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            clipData = ClipData.newUri(
+                requireContext().contentResolver,
+                "Отчёт",
+                uri
+            )
+        }
+
+        if (chooser.resolveActivity(requireContext().packageManager) != null) {
+            startActivity(chooser)
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Нет приложения для шаринга PDF",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     private fun showProgress() {
@@ -471,13 +559,13 @@ class OverviewAnalyticsFragment :
             chipGroup.addView(chip)
         }
 
-        val granList = Granularity.values().toList()
+        val granList = Granularity.entries
         acGran.setAdapter(
             ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            granList.map { it.name }
-        ))
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                granList.map { it.name }
+            ))
         acGran.setText(currentFilter.granularity.name, false)
 
         MaterialAlertDialogBuilder(requireContext())
@@ -488,7 +576,7 @@ class OverviewAnalyticsFragment :
                     dlgView.findViewById<Chip>(id).text.toString()
                 }
                 val categories = if (selectedCats.size == allCategories.size) null else selectedCats
-                val gran = Granularity.valueOf(acGran.text.toString())
+                val gran = Granularity.fromFilter(acGran.text.toString()) ?: Granularity.MONTH
 
                 viewModel.applyFilter(
                     AnalyticsFilter(
@@ -502,5 +590,9 @@ class OverviewAnalyticsFragment :
             }
             .setNegativeButton("Отмена", null)
             .show()
+    }
+
+    companion object {
+        private const val REQUEST_SAVE = 1002
     }
 }

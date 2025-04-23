@@ -2,13 +2,14 @@
 <menu  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Кнопка редактирования -->
+    <item
+        android:id="@+id/menuEdit"
+        android:icon="@drawable/baseline_edit_note_24"
+        android:title="Редактировать"
+        app:showAsAction="ifRoom" />
+
     <group android:id="@+id/group_editor" >
-        <!-- Кнопка редактирования -->
-        <item
-            android:id="@+id/menuEdit"
-            android:icon="@drawable/baseline_edit_note_24"
-            android:title="Редактировать"
-            app:showAsAction="ifRoom" />
 
         <!-- Кнопка удаления -->
         <item
@@ -22,14 +23,14 @@
             android:icon="@drawable/baseline_archive_24"
             android:title="Архивировать"
             android:visible="false"
-            app:showAsAction="ifRoom" />
+            app:showAsAction="never" />
 
         <item
             android:id="@+id/menuUnarchiveProject"
             android:icon="@drawable/baseline_unarchive_24"
             android:title="Разархивировать"
             android:visible="false"
-            app:showAsAction="ifRoom" />
+            app:showAsAction="never" />
     </group>
 
     <item

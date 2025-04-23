@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast.LENGTH_LONG
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -53,54 +55,65 @@ class EditProjectDialogFragment : DialogFragment() {
     }
 
     private fun setupViews() {
+        // подписка на данные проекта
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.uiState.collect { state ->
                 when (state) {
-                    is UiState.Loading -> {}
                     is UiState.Success -> {
-                        val project = state.data?.project
-                        project?.let { projectEntity ->
-                            binding.etProjectName.setText(projectEntity.name)
-                            binding.etProjectDescription.setText(projectEntity.description)
-                            binding.etBudgetLimit.setText(projectEntity.budgetLimit.toString())
-                        }
-
-                        binding.btnSave.setOnClickListener {
-                            if (!isInputValid()) return@setOnClickListener
-
-                            val updatedProject = project?.copy(
-                                name = binding.etProjectName.text.toString(),
-                                description = binding.etProjectDescription.text.toString(),
-                                budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull() ?: 0.0
-                            )
-
-                            updatedProject?.let {
-                                // Отключаем кнопку, чтобы предотвратить повторные нажатия
-                                binding.btnSave.isEnabled = false
-
-                                viewModel.updateProject(it)
-
-                                // Включаем кнопку через 1 секунду
-                                lifecycleScope.launch {
-                                    delay(1000L) // Задержка 1 секунда
-                                    binding.btnSave.isEnabled = true
-                                }
-
-                                dismiss()
-                            }
+                        state.data?.project?.let { project ->
+                            binding.etProjectName.setText(project.name)
+                            binding.etProjectDescription.setText(project.description)
+                            binding.etBudgetLimit.setText(project.budgetLimit.toString())
                         }
                     }
-
-                    is UiState.Error -> {}
-                    is UiState.Idle -> {}
+                    is UiState.Error -> Snackbar.make(binding.root, state.message, LENGTH_LONG).show()
+                    else -> { /* Loading/Idle */ }
                 }
             }
         }
 
-        binding.btnCancel.setOnClickListener {
-            dismiss()
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.updateState.collect { state ->
+                when (state) {
+                    is UiState.Loading -> {
+                        binding.btnSave.isEnabled = false
+                    }
+                    is UiState.Success -> {
+                        dismiss()
+                    }
+                    is UiState.Error -> {
+                        binding.btnSave.isEnabled = true
+                        // binding.progressBar.visibility
+                        val rootView = requireParentFragment().requireActivity().window?.decorView?.findViewById<ViewGroup>(android.R.id.content)
+                        rootView?.let {
+                            Snackbar.make(it, state.message, Snackbar.LENGTH_LONG)
+                                .setAnimationMode(Snackbar.ANIMATION_MODE_FADE)
+                                .show()
+                        }
+                    }
+                    else -> Unit
+                }
+            }
         }
+
+        binding.btnSave.setOnClickListener {
+            if (!isInputValid()) return@setOnClickListener
+
+            val updated = viewModel.uiState.value
+                .takeIf { it is UiState.Success }
+                ?.let { (it as UiState.Success).data?.project }
+                ?.copy(
+                    name = binding.etProjectName.text.toString(),
+                    description = binding.etProjectDescription.text.toString(),
+                    budgetLimit = binding.etBudgetLimit.text.toString().toDoubleOrNull() ?: 0.0
+                ) ?: return@setOnClickListener
+
+            viewModel.editProject(updated)
+        }
+
+        binding.btnCancel.setOnClickListener { dismiss() }
     }
+
 
     private fun isInputValid(): Boolean {
         if (binding.etProjectName.text.isNullOrBlank()) {

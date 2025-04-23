@@ -6,7 +6,7 @@ package ru.iuturakulov.mybudget.data.remote.dto
 data class ProjectAnalyticsDto(
     val projectId: String,
     val projectName: String,
-    val totalAmount: Double,                    // сумма в рамках этого проекта
+    val totalAmount: Double,
     val categoryDistribution: List<CategoryStats>,
     val periodDistribution: List<PeriodStats>
 )
@@ -20,6 +20,6 @@ data class CategoryStats(
 
 /** Статистика по периодам (месяцам) в рамках одного проекта */
 data class PeriodStats(
-    val period: String,        // например "2025-07"
+    val period: String,
     val totalAmount: Double    // сумма
 )

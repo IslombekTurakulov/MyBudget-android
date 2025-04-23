@@ -114,6 +114,7 @@
                     android:id="@+id/switchNotifications"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    style="?attr/textAppearanceBodyLarge"
                     android:paddingStart="@dimen/spacing_16"
                     android:paddingTop="@dimen/spacing_8"
                     android:paddingBottom="@dimen/spacing_8"

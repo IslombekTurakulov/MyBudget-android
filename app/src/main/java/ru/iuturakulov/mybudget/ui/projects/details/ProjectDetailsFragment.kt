@@ -70,7 +70,8 @@ class ProjectDetailsFragment :
         binding.rvTransactions.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if (viewModel.currentUserRole.value == ParticipantRole.VIEWER) {
+                val currentRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
+                if (currentRole == ParticipantRole.VIEWER) {
                     return
                 }
 
@@ -117,9 +118,10 @@ class ProjectDetailsFragment :
                         showContent()
                         state.data?.let { projectWithTransactions ->
                             // Проверка архивирован ли проект
-                            val isProjectArchived = projectWithTransactions.project.status == ProjectStatus.ARCHIVED
+                            val isProjectArchived =
+                                projectWithTransactions.project.status == ProjectStatus.ARCHIVED
 
-                            if (viewModel.currentUserRole.value == ParticipantRole.OWNER) {
+                            if (projectWithTransactions.currentRole == ParticipantRole.OWNER) {
                                 binding.toolbar.menu.findItem(
                                     R.id.menuArchiveProject
                                 ).isVisible = !isProjectArchived
@@ -128,7 +130,7 @@ class ProjectDetailsFragment :
                                     R.id.menuUnarchiveProject
                                 ).isVisible = isProjectArchived
                             }
-
+                            processUserRole(projectWithTransactions.currentRole)
                             project = projectWithTransactions
 
                             showProjectDetails(projectWithTransactions)
@@ -146,12 +148,6 @@ class ProjectDetailsFragment :
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.currentUserRole.collect { role ->
-                processUserRole(role)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.filteredTransactions.collect { transactions ->
                 updateTransactions(transactions)
             }
@@ -160,18 +156,21 @@ class ProjectDetailsFragment :
 
     private fun processUserRole(role: ParticipantRole?) {
         if (role == ParticipantRole.VIEWER) {
+            binding.toolbar.menu.findItem(R.id.menuEdit).setVisible(false)
             binding.toolbar.menu.setGroupVisible(
                 R.id.group_editor, false
             )
 
             binding.fabAddTransaction.isGone = true
         } else if (role == ParticipantRole.EDITOR) {
+            binding.toolbar.menu.findItem(R.id.menuEdit).setVisible(true)
             binding.toolbar.menu.setGroupVisible(
                 R.id.group_editor, false
             )
 
             binding.fabAddTransaction.isGone = false
         } else {
+            binding.toolbar.menu.findItem(R.id.menuEdit).setVisible(true)
             binding.toolbar.menu.setGroupVisible(
                 R.id.group_editor, true
             )
@@ -182,11 +181,11 @@ class ProjectDetailsFragment :
 
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-                binding.fabAddTransaction.hide()
+            val currentRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
+            binding.fabAddTransaction.hide()
             // Обновление данных
-            viewModel.getCurrentRole(args.projectId)
             viewModel.syncProjectDetails(args.projectId)
-            if (viewModel.currentUserRole.value != ParticipantRole.VIEWER) {
+            if (currentRole != ParticipantRole.VIEWER) {
                 binding.fabAddTransaction.show()
             }
             // Сброс состояния будет выполнен после обновления данных в наблюдателе
@@ -297,15 +296,12 @@ class ProjectDetailsFragment :
     }
 
     private fun navigateToParticipants() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.currentUserRole.collect { role ->
-                val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(
-                    projectId = args.projectId,
-                    userRole = role?.name ?: ParticipantRole.VIEWER.name
-                )
-                findNavController().navigate(action)
-            }
-        }
+        val currentRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
+        val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(
+            projectId = args.projectId,
+            userRole = currentRole?.name ?: ParticipantRole.VIEWER.name
+        )
+        findNavController().navigate(action)
     }
 
     private fun navigateToAnalytics() {
@@ -397,22 +393,19 @@ class ProjectDetailsFragment :
     }
 
     private fun showTransactionDetailsDialog(transaction: TransactionEntity) {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.currentUserRole.collect { role ->
-                val dialog = AddTransactionDialogFragment.newInstance(
-                    projectId = args.projectId,
-                    currentRole = role?.name ?: ParticipantRole.VIEWER.name,
-                    transaction = transaction.toTemporaryModel()
-                )
-                dialog.setOnTransactionUpdated { updatedTransaction ->
-                    viewModel.updateTransaction(args.projectId, updatedTransaction.toEntity())
-                }
-                dialog.setOnTransactionDeleted {
-                    viewModel.deleteTransaction(args.projectId, transaction.id)
-                }
-                dialog.show(childFragmentManager, "TransactionDetailsDialog")
-            }
+        val currentUserRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
+        val dialog = AddTransactionDialogFragment.newInstance(
+            projectId = args.projectId,
+            currentRole = currentUserRole?.name ?: ParticipantRole.VIEWER.name,
+            transaction = transaction.toTemporaryModel()
+        )
+        dialog.setOnTransactionUpdated { updatedTransaction ->
+            viewModel.updateTransaction(args.projectId, updatedTransaction.toEntity())
         }
+        dialog.setOnTransactionDeleted {
+            viewModel.deleteTransaction(args.projectId, transaction.id)
+        }
+        dialog.show(childFragmentManager, "TransactionDetailsDialog")
     }
 
     private fun showFilterDialog() {

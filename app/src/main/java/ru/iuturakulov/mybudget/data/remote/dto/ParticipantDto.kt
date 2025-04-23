@@ -5,12 +5,12 @@ import androidx.annotation.StringRes
 import ru.iuturakulov.mybudget.R
 
 data class ParticipantDto(
-    val id: String,         // ID участника на сервере
+    val id: String,
     val projectId: String,
-    val userId: String,  // Уникальный идентификатор пользователя
-    val name: String,    // Имя участника
-    val email: String,   // Email участника
-    val role: ParticipantRole     // Роль участника
+    val userId: String,
+    val name: String,
+    val email: String,
+    val role: ParticipantRole
 )
 
 

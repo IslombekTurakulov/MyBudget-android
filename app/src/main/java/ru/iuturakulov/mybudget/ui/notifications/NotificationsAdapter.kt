@@ -39,7 +39,7 @@ class NotificationsAdapter(
         payloads: MutableList<Any>
     ) {
         val item = getItem(position)
-        holder.bind(item, animateReadChange = payloads.isNotEmpty())
+        holder.bind(item, animateReadChange = payloads.contains(PAYLOAD_READ))
     }
 
     inner class NotificationViewHolder(
@@ -50,29 +50,44 @@ class NotificationsAdapter(
             val dt = Instant.ofEpochMilli(item.createdAt)
                 .atZone(ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.getDefault()))
-
             tvDate.text = dt
             tvTitle.text = item.message
 
-//            ivIcon.setImageResource(
-//                when (item.type) {
-//                    NotificationType.PROJECT_INVITE -> R.drawable.ic_invite
-//                    NotificationType.ROLE_CHANGE -> R.drawable.ic_role_change
-//                    NotificationType.TRANSACTION_ADDED -> R.drawable.ic_tx_added
-//                    NotificationType.TRANSACTION_REMOVED -> R.drawable.ic_tx_removed
-//                    NotificationType.PROJECT_EDITED -> R.drawable.ic_project_edit
-//                    NotificationType.PROJECT_REMOVED -> R.drawable.ic_project_remove
-//                    NotificationType.SYSTEM_ALERT -> R.drawable.ic_system
-//                }
-//            )
+            // Иконка по типу уведомления
+            ivIcon.setImageResource(
+                when (item.type) {
+                    NotificationType.PROJECT_INVITE   -> R.drawable.ic_invite
+                    NotificationType.ROLE_CHANGE      -> R.drawable.ic_role_change
+                    NotificationType.TRANSACTION_ADDED   -> R.drawable.ic_tx_added
+                    NotificationType.TRANSACTION_UPDATED -> R.drawable.ic_tx_updated
+                    NotificationType.TRANSACTION_REMOVED -> R.drawable.ic_tx_removed
+                    NotificationType.PROJECT_EDITED   -> R.drawable.ic_project_edit
+                    NotificationType.PROJECT_REMOVED  -> R.drawable.ic_project_remove
+                    NotificationType.SYSTEM_ALERT     -> R.drawable.ic_system
+                    NotificationType.BUDGET_THRESHOLD -> R.drawable.ic_project_budget_limit
+                }
+            )
 
+//            tvProject.text = item.projectName
+            val before = item.beforeSpent
+            val after  = item.afterSpent
+            val limit  = item.limit
+            // tvBudgetLine.text = budgetLine(before, after, limit)
+            // рассчитываем процент для индикатора (0..100)
+//            val pct = if (limit == 0.0) 0 else ((after / limit) * 100).toInt().coerceIn(0, 100)
+//            progressIndicator.setProgressCompat(pct, true)
+
+            // Индикатор непрочитанного с анимацией при смене isRead
 //            unreadIndicator.isVisible = !item.isRead
 //            if (animateReadChange) {
-//                val alphaTo = if (item.isRead) 0f else 1f
+//                val targetAlpha = if (item.isRead) 0f else 1f
 //                unreadIndicator.animate()
-//                    .alpha(alphaTo)
+//                    .alpha(targetAlpha)
 //                    .setDuration(200)
 //                    .start()
+//            } else {
+//                // если не анимируем, сразу ставим нужную прозрачность
+//                unreadIndicator.alpha = if (item.isRead) 0f else 1f
 //            }
 
             root.setOnClickListener { onClick(item) }
@@ -92,5 +107,13 @@ class NotificationsAdapter(
                 return if (o.isRead != n.isRead) PAYLOAD_READ else null
             }
         }
+    }
+
+    // Ваша функция budgetLine в scope адаптера для краткости
+    private fun budgetLine(b: Double, a: Double, limit: Double): String {
+        val pb = if (limit == 0.0) 0.0 else b / limit * 100
+        val pa = if (limit == 0.0) 0.0 else a / limit * 100
+        return "%,.2f ₽ (%.1f %%) → %,.2f ₽ (%.1f %%)"
+            .format(b, pb, a, pa)
     }
 }

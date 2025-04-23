@@ -15,5 +15,13 @@ enum class Granularity {
     DAY,
     WEEK,
     MONTH,
-    YEAR
+    YEAR;
+
+    companion object {
+        fun fromFilter(granularity: String): Granularity? {
+            return entries.firstOrNull { enum ->
+                enum.name.equals(granularity, ignoreCase = true)
+            }
+        }
+    }
 }
