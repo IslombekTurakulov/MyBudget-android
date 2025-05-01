@@ -65,6 +65,7 @@ import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
 import ru.iuturakulov.mybudget.ui.transactions.emoji.EmojiPickerBottomSheet
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -515,18 +516,27 @@ class AddTransactionDialogFragment : DialogFragment() {
         receiptImageAdapter = ReceiptImageAdapter(
             selectedImages,
             onDelete = { position ->
-                // Удаление изображения
-                selectedImages.removeAt(position)
-                receiptImageAdapter.notifyItemRemoved(position)
+                if (position in selectedImages.indices) {
+                    selectedImages.removeAt(position)
+                    receiptImageAdapter.notifyItemRemoved(position)
+                    receiptImageAdapter.notifyItemRangeChanged(position, selectedImages.size - position)
+                } else {
+                    Timber.w("Попытка удалить по несуществующей позиции: $position")
+                }
             },
             onImageClick = { position ->
-                // Просмотр изображения
-                showFullscreenImage(receiptImageAdapter.getImageAt(position))
+                if (position in 0 until receiptImageAdapter.itemCount) {
+                    val image = receiptImageAdapter.getImageAt(position)
+                    showFullscreenImage(image)
+                } else {
+                    Timber.w("Клик по несуществующей позиции: $position")
+                }
             }
         )
         binding.rvReceiptImages.layoutManager = GridLayoutManager(requireContext(), 3)
         binding.rvReceiptImages.adapter = receiptImageAdapter
     }
+
 
     private fun showFullscreenImage(bitmap: Bitmap?) {
         if (bitmap == null) return
