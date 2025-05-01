@@ -1,11 +1,22 @@
 package ru.iuturakulov.mybudget.ui.transactions
 
+import android.content.Context
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textview.MaterialTextView
+import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.DateTimeExtension.toIso8601Date
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.databinding.ItemTransactionBinding
@@ -66,8 +77,55 @@ class TransactionAdapter(
                     )
                 )
                 ivTransactionCategoryIcon.text = transaction.categoryIcon
+                itemTransactionContainer.setOnClickListener { onTransactionClicked(transaction) }
 
-                root.setOnClickListener { onTransactionClicked(transaction) }
+                llReceipts.removeAllViews()
+                val receipts = transaction.images
+                if (receipts.isNotEmpty()) {
+                    llReceipts.isVisible = true
+
+                    val maxShow = 3
+                    receipts.take(maxShow).forEachIndexed { idx, base64 ->
+                        val bytes = Base64.decode(base64, Base64.DEFAULT)
+                        val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                        val iv = ImageView(root.context).apply {
+                            setImageBitmap(bmp)
+                            scaleType = ImageView.ScaleType.CENTER_CROP
+                            clipToOutline = true
+                            outlineProvider = ViewOutlineProvider.BACKGROUND
+                            layoutParams = LinearLayout.LayoutParams(
+                                root.context.dpToPx(48),
+                                root.context.dpToPx(48)
+                            ).apply {
+                                if (idx > 0) leftMargin = root.context.dpToPx(4)
+                            }
+                        }
+                        llReceipts.addView(iv)
+                    }
+
+                    if (receipts.size > maxShow) {
+                        val more = receipts.size - maxShow
+                        val tv = MaterialTextView(root.context).apply {
+                            text = "+$more"
+                            gravity = Gravity.CENTER
+                            setTextAppearance(com.google.android.material.R.style.TextAppearance_MaterialComponents_Headline4)
+                            background = ContextCompat.getDrawable(
+                                root.context,
+                                R.drawable.baseline_circle_24
+                            )
+                            layoutParams = LinearLayout.LayoutParams(
+                                root.context.dpToPx(48),
+                                root.context.dpToPx(48)
+                            ).apply {
+                                leftMargin = root.context.dpToPx(4)
+                            }
+                        }
+                        llReceipts.addView(tv)
+                    }
+                } else {
+                    llReceipts.isGone = true
+                }
             }
         }
 
@@ -93,6 +151,10 @@ class TransactionAdapter(
             oldItem: TransactionEntity,
             newItem: TransactionEntity
         ): Boolean = oldItem == newItem
+    }
+
+    companion object {
+        fun Context.dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
     }
 }
 

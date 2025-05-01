@@ -10,5 +10,10 @@ data class ProjectDto(
     val amountSpent: Double,
     val status: ProjectStatus,
     val createdAt: Long,
-    val lastModified: Long
+    val lastModified: Long,
+    val category: String?,
+    val categoryIcon: String?,
+    val ownerId: String,
+    val ownerName: String,
+    val ownerEmail: String
 )

@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="64dp"
-    android:layout_height="64dp"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:padding="8dp"
-    android:layout_gravity="center">
-
-    <TextView
-        android:id="@+id/tvEmoji"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:textSize="24sp"
-        tools:text="🍕" />
-</FrameLayout>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvEmoji"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:textSize="24sp"
+    android:padding="@dimen/spacing_8"
+    tools:text="🍕"
+    xmlns:tools="http://schemas.android.com/tools"/>

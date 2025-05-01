@@ -4,6 +4,7 @@ import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.mappers.TransactionMapper
 import ru.iuturakulov.mybudget.data.remote.ProjectService
+import ru.iuturakulov.mybudget.data.remote.dto.TransactionDto
 import javax.inject.Inject
 
 class TransactionRepository @Inject constructor(
@@ -73,6 +74,18 @@ class TransactionRepository @Inject constructor(
             transactionDao.insertTransactions(entities)
         } catch (e: Exception) {
             throw Exception("Ошибка синхронизации транзакций: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun getTransactionById(projectId: String, transactionId: String): TransactionEntity {
+        try {
+            val remoteTransaction = projectService.getTransactionById(projectId, transactionId).body()
+
+            requireNotNull(remoteTransaction)
+
+            return TransactionMapper.dtoToEntity(remoteTransaction)
+        }  catch (e: Exception) {
+            throw Exception(e.localizedMessage)
         }
     }
 }

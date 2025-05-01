@@ -3,8 +3,10 @@ package ru.iuturakulov.mybudget.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
+import androidx.room.migration.Migration
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,6 +19,16 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE projects ADD COLUMN category TEXT")
+            db.execSQL("ALTER TABLE projects ADD COLUMN category_icon TEXT")
+            db.execSQL("ALTER TABLE projects ADD COLUMN owner_id TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE projects ADD COLUMN owner_name TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE projects ADD COLUMN owner_email TEXT NOT NULL DEFAULT ''")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -24,7 +36,7 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "mybudget.db"
-        ).fallbackToDestructiveMigration().build()
+        ).addMigrations(MIGRATION_1_2).fallbackToDestructiveMigration().build()
     }
 
     @Provides

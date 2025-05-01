@@ -2,7 +2,9 @@ package ru.iuturakulov.mybudget.data.remote.dto
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 
 data class ParticipantDto(
     val id: String,
@@ -36,4 +38,12 @@ enum class ParticipantRole(@StringRes val displayNameRes: Int) {
     fun getDisplayName(context: Context): String {
         return context.getString(displayNameRes)
     }
+
+    fun getStatusColor(context: Context): Int = ContextCompat.getColor(
+        context, when (this) {
+            VIEWER -> R.color.role_viewer
+            EDITOR -> R.color.role_editor
+            OWNER -> R.color.role_owner
+        }
+    )
 }

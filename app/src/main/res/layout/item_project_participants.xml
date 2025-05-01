@@ -1,60 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Имя участника -->
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvParticipantName"
-            android:layout_width="match_parent"
+            style="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Имя участника"
-            android:textStyle="bold"
-            android:textSize="16sp" />
+            android:text="@string/sample_participant_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnEditParticipant"
+            android:layout_marginEnd="8dp"/>
 
-        <!-- Роль участника -->
-        <TextView
-            android:id="@+id/tvParticipantRole"
-            android:layout_width="match_parent"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvParticipantEmail"
+            style="@style/TextAppearance.Material3.BodySmall"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Роль: Член команды"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp" />
+            android:hint="@string/sample_participant_email"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:maxLines="1"
+            app:layout_constraintStart_toStartOf="@id/tvParticipantName"
+            app:layout_constraintTop_toBottomOf="@id/tvParticipantName"
+            app:layout_constraintEnd_toStartOf="@id/btnEditParticipant"
+            android:layout_marginTop="4dp"/>
 
-        <!-- Кнопки редактирования и удаления -->
-        <LinearLayout
-            android:id="@+id/llButtons"
-            android:layout_width="match_parent"
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipParticipantRole"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
+            android:text="@string/role_member"
+            app:layout_constraintStart_toStartOf="@id/tvParticipantName"
+            app:layout_constraintTop_toBottomOf="@id/tvParticipantEmail"
+            android:layout_marginTop="8dp"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEditParticipant"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Редактировать"
-                style="@style/Widget.Material3.Button.TextButton" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEditParticipant"
+            style="@style/Widget.Material3.Button.TextButton.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_edit_24"
+            android:text="@string/edit"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDeleteParticipant"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Удалить"
-                android:textColor="?attr/colorError"
-                style="@style/Widget.Material3.Button.TextButton" />
-        </LinearLayout>
-    </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteParticipant"
+            style="@style/Widget.Material3.Button.TextButton.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_delete_24"
+            app:iconTint="?attr/colorError"
+            android:textColor="?attr/colorError"
+            android:text="@string/delete"
+            app:layout_constraintTop_toBottomOf="@id/btnEditParticipant"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

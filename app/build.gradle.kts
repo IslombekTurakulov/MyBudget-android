@@ -112,6 +112,10 @@ dependencies {
     // image extension
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
+    implementation("com.leinardi.android:speed-dial:3.3.0")
+    implementation("com.airbnb.android:lottie:6.0.0")
+
+    implementation(libs.emoji.google)
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

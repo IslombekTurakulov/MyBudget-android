@@ -18,7 +18,7 @@
             style="@style/Widget.Material3.TextInputLayout.FilledBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/participant_name"
+            android:hint="@string/sample_user"
             app:startIconDrawable="@drawable/baseline_people_24"
             app:helperText="@string/required_field"
             app:helperTextEnabled="true">
@@ -30,7 +30,7 @@
                 android:enabled="false"
                 android:importantForAutofill="no"
                 android:inputType="textPersonName"
-                tools:text="Алексей Петров" />
+                tools:text="Бомбардило Крокодило" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Email участника -->
@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="@string/email"
+            android:hint="@string/user_email"
             app:startIconDrawable="@drawable/baseline_alternate_email_24"
             app:helperText="@string/required_field"
             app:helperTextEnabled="true">
@@ -51,7 +51,7 @@
                 android:enabled="false"
                 android:importantForAutofill="no"
                 android:inputType="textEmailAddress"
-                tools:text="alexey@example.com" />
+                tools:text="iuturakulov@example.com" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="@string/role"
+            android:hint="@string/role_editor"
             app:startIconDrawable="@drawable/baseline_manage_accounts_24"
             app:helperText="@string/select_role"
             app:helperTextEnabled="true">

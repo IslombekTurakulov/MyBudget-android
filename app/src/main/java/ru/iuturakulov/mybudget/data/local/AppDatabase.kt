@@ -22,7 +22,7 @@ import ru.iuturakulov.mybudget.data.local.entities.UserSettingsEntity
         UserSettingsEntity::class,
         NotificationEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

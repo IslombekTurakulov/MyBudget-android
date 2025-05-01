@@ -20,23 +20,24 @@ enum class ProjectStatus(val type: String) {
         return allowedTransitions[this]?.contains(newStatus) == true
     }
 
-    companion object {
-        fun ProjectStatus.getStatusColor(context: Context): Int {
-            return when (this) {
-                ACTIVE -> ContextCompat.getColor(context, R.color.green)
-                DELETED -> ContextCompat.getColor(context, R.color.blue)
-                ARCHIVED -> ContextCompat.getColor(context, R.color.red)
-                ALL -> ContextCompat.getColor(context, R.color.gray)
-            }
-        }
+    fun getStatusText(): String = when (this) {
+        ProjectStatus.ACTIVE -> "Активен"
+        ProjectStatus.ARCHIVED -> "В архиве"
+        ProjectStatus.DELETED -> "Удалён"
+        ProjectStatus.ALL -> "Все"
+    }
 
-        fun ProjectStatus.getStatusText(): String {
-            return when (this) {
-                ACTIVE -> "Активный"
-                DELETED -> "Удален"
-                ARCHIVED -> "Архивирован"
-                ALL -> ""
-            }
-        }
+    fun getStatusColor(context: Context): Int = when (this) {
+        ProjectStatus.ACTIVE -> ContextCompat.getColor(context, R.color.green)
+        ProjectStatus.ARCHIVED -> ContextCompat.getColor(context, R.color.gray)
+        ProjectStatus.DELETED -> ContextCompat.getColor(context, R.color.red)
+        else -> ContextCompat.getColor(context, R.color.networkStatusBackgroundOff)
+    }
+
+    fun getStatusIcon(): Int = when (this) {
+        ProjectStatus.ACTIVE -> R.drawable.ic_status_active
+        ProjectStatus.ARCHIVED -> R.drawable.ic_status_archived
+        ProjectStatus.DELETED -> R.drawable.ic_status_deleted
+        else -> R.drawable.ic_status_all
     }
 }

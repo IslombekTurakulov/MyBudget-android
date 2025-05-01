@@ -199,10 +199,6 @@
         android:name="ru.iuturakulov.mybudget.ui.projects.details.EditProjectDialogFragment"
         android:label="Редактировать проект"
         tools:layout="@layout/dialog_edit_project">
-
-        <argument
-            android:name="projectId"
-            app:argType="string" />
     </dialog>
 
     <!-- Добавить транзакцию -->

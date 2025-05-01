@@ -1,21 +1,17 @@
 package ru.iuturakulov.mybudget.ui.projects.details
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
-import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.domain.models.TransactionFilter
 import ru.iuturakulov.mybudget.domain.repositories.ProjectRepository
 import ru.iuturakulov.mybudget.domain.repositories.TransactionRepository
@@ -41,7 +37,7 @@ class ProjectDetailsViewModel @Inject constructor(
     val transactions: StateFlow<List<TransactionEntity>> = _transactions.asStateFlow()
 
     private val _currentFilter = MutableStateFlow(TransactionFilter())
-    val currentFilter: StateFlow<TransactionFilter> = _currentFilter
+    val currentFilter: StateFlow<TransactionFilter> = _currentFilter.asStateFlow()
 
     init {
         observeFilterChanges()
@@ -57,7 +53,6 @@ class ProjectDetailsViewModel @Inject constructor(
                 val projectDetails = projectRepository.getProjectWithTransactions(projectId)
                 _uiState.value = UiState.Success(projectDetails)
                 _transactions.value = projectDetails.transactions
-                applyCurrentFilter(projectDetails.transactions)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error("Ошибка загрузки данных: ${e.localizedMessage}")
             }
@@ -69,9 +64,10 @@ class ProjectDetailsViewModel @Inject constructor(
      */
     private fun observeFilterChanges() {
         viewModelScope.launch {
-            _currentFilter.collect { filter ->
-                val transactions = _transactions.value
-                applyCurrentFilter(transactions)
+            combine(_transactions, _currentFilter) { list, filter ->
+                applyFilterInternal(list, filter)
+            }.collect { filtered ->
+                _filteredTransactions.value = filtered
             }
         }
     }
@@ -144,16 +140,28 @@ class ProjectDetailsViewModel @Inject constructor(
         _currentFilter.value = filter
     }
 
-    private fun applyCurrentFilter(transactions: List<TransactionEntity>) {
-        val filter = _currentFilter.value
-        val minAmount = filter.minAmount
-        val maxAmount = filter.maxAmount
-        val category = filter.category
+    private fun applyFilterInternal(
+        transactions: List<TransactionEntity>,
+        filter: TransactionFilter
+    ): List<TransactionEntity> {
+        return transactions.filter { t ->
+            val signedAmount = when (TransactionEntity.TransactionType.fromString(t.type)) {
+                TransactionEntity.TransactionType.INCOME  ->  t.amount
+                TransactionEntity.TransactionType.EXPENSE -> -t.amount
+            }
 
-        _filteredTransactions.value = transactions.filter { transaction ->
-            (category == null || transaction.category == category) &&
-                    (minAmount == null || transaction.amount >= minAmount) &&
-                    (maxAmount == null || transaction.amount <= maxAmount)
+            // категория
+            (filter.category == null || t.category == filter.category) &&
+                    // пользователь
+                    (filter.userName == null || t.userName == filter.userName) &&
+                    // тип
+                    (filter.type == null || t.type == filter.type.typeName) &&
+                    // диапазон дат
+                    (filter.startDate?.let { t.date >= it } ?: true) &&
+                    (filter.endDate?.let { t.date <= it } ?: true) &&
+                    // диапазон суммы
+                    (filter.minAmount == null || signedAmount >= filter.minAmount) &&
+                    (filter.maxAmount == null || signedAmount <= filter.maxAmount)
         }
     }
 
@@ -222,7 +230,10 @@ class ProjectDetailsViewModel @Inject constructor(
                 loadProjectDetails(project.id)
                 _updateState.value = UiState.Success(Unit)
             } catch (e: Exception) {
-                _updateState.value = UiState.Error(e.localizedMessage ?: "Ошибка обновления проекта")
+                _updateState.value =
+                    UiState.Error(e.localizedMessage ?: "Ошибка обновления проекта")
+            } finally {
+                _updateState.value = UiState.Idle
             }
         }
     }

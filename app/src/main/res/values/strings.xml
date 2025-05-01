@@ -1,14 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MyBudget</string>
+
+    <!-- App -->
+    <string name="app_name">Мой Бюджет</string>
+    <string name="splash_tagline">Ваши финансы — под контролем</string>
     <string name="action_settings">Settings</string>
 
-    <!--  Roles -->
+    <!-- Roles -->
     <string name="role_viewer">Наблюдатель</string>
     <string name="role_editor">Редактор</string>
     <string name="role_admin">Владелец</string>
+    <string name="select_role">Выберите роль из списка</string>
     <string name="error_select_valid_role">Выберите корректную роль</string>
+    <string-array name="roles_list">
+        <item>Наблюдатель</item>
+        <item>Редактор</item>
+    </string-array>
 
-    <!-- Strings used for fragments for navigation -->
+    <!-- Navigation & status -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
@@ -16,119 +25,115 @@
     <string name="network_status_icon">Иконка статуса сети</string>
     <string name="no_internet_connection">Нет подключения к Интернету</string>
     <string name="connected">Подключено к Интернету</string>
+
+    <!-- Common UI -->
     <string name="show_more">Показать больше</string>
     <string name="show_less">Показать меньше</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="add">Добавить</string>
+    <string name="delete">Удалить</string>
+    <string name="filters">Фильтры</string>
+    <string name="select_date">Выберите дату</string>
 
-    <!-- Ошибки ввода -->
+    <!-- Errors & validation -->
     <string name="error_empty_email">Email не может быть пустым</string>
     <string name="error_empty_password">Пароль не может быть пустым</string>
     <string name="error_short_password">Пароль должен содержать минимум 6 символов</string>
-
-    <!-- Сообщения о статусе приглашения -->
-    <string name="invitation_sent_success">Приглашение успешно отправлено</string>
-    <string name="invitation_sent_error">%s</string>
-    <string name="invitation_processing">Отправка приглашения…</string>
-
-    <!-- Сообщения валидации -->
     <string name="error_invalid_email">Введите корректный email</string>
     <string name="error_select_role">Выберите роль участника</string>
     <string name="error_role_not_found">Указана несуществующая роль</string>
+    <string name="error_loading_image">Ошибка загрузки изображения</string>
+    <string name="error_loading_data">Ошибка загрузки данных</string>
+    <string name="error_enter_name">Введите название</string>
+    <string name="error_enter_valid_amount">Введите корректную сумму</string>
+    <string name="error_enter_custom_category">Введите свою категорию</string>
+    <string name="required_field">Обязательное поле</string>
 
+    <!-- Invitations -->
+    <string name="invitation_sent_success">Приглашение успешно отправлено</string>
+    <string name="invitation_sent_error">%s</string>
+    <string name="invitation_processing">Отправка приглашения…</string>
     <string name="add_participant_title">Добавить участника</string>
     <string name="email_hint">Email участника</string>
     <string name="role_hint">Роль участника</string>
     <string name="send_invitation">Отправить приглашение</string>
 
-    <!-- Сообщения -->
-    <string name="password_change_success">Успех! Проверьте почту</string>
-
-    <!-- Диалог выбора источника изображения -->
-    <string name="camera">Камера</string>
-    <string name="gallery">Галерея</string>
-    <string name="select_image_source">Выберите источник изображения</string>
-
-    <!-- Ошибки ввода -->
-    <string name="error_loading_image">Ошибка загрузки изображения</string>
-    <string name="error_enter_name">Введите название</string>
-    <string name="error_enter_valid_amount">Введите корректную сумму</string>
-    <string name="error_enter_custom_category">Введите свою категорию</string>
-
-    <!-- Сообщение о распознанной сумме -->
-    <string name="recognized_amount">Распознанная сумма: %.2f</string>
-
-    <!-- Тексты кнопок -->
-    <string name="save">Сохранить</string>
-    <string name="add">Добавить</string>
-    <string name="delete_transaction">Удалить транзакцию</string>
-    <string name="add_transaction">Добавить транзакцию</string>
-    <string name="delete_transaction_confirmation">Вы уверены, что хотите удалить эту транзакцию?</string>
-    <string name="delete">Удалить</string>
-    <string name="cancel">Отмена</string>
-
-    <!-- Заголовки и кнопки -->
+    <!-- Project details -->
     <string name="delete_project">Удалить проект</string>
     <string name="delete_project_confirmation">Вы уверены, что хотите удалить этот проект?</string>
-
-    <!-- Информация о бюджете -->
+    <string name="project_archived">Проект архивирован</string>
+    <string name="project_unarchived">Проект разархивирован</string>
+    <string name="financial_info_title">Финансовая информация</string>
     <string name="project_budget">Бюджет: %1$.2f ₽</string>
     <string name="project_spent">Потрачено: %1$.2f ₽</string>
     <string name="project_remaining">Осталось: %1$.2f ₽</string>
-
-
+    <string name="project_description_title">Описание проекта</string>
     <string name="total_amount_format">Всего потрачено: </string>
-    <string name="no_category_data">Нет данных по категориям</string>
-    <string name="no_period_data">Нет данных по периодам</string>
 
-    <!-- Транзакции -->
+    <!-- Transactions list -->
+    <string name="transaction_section_name">Транзакции</string>
     <string name="no_transactions">Нет транзакций</string>
     <string name="empty_transactions_desc">Пусто</string>
-    <string name="transaction_section_name">Транзакции</string>
     <string name="all">Все</string>
     <string name="other">Другое</string>
+    <string name="project_transaction_filters">Фильтры</string>
 
+    <!-- Transaction item samples -->
+    <string name="sample_date">01.12.2024</string>
+    <string name="sample_amount">−1 000 ₽</string>
+    <string name="sample_user">Иван Иванов</string>
+    <string name="sample_transaction_name">Моя транзакция</string>
+    <string name="sample_category">Моя категория</string>
+
+    <!-- Transaction details dialog -->
+    <string name="select_image_source">Выберите источник изображения</string>
+    <string name="add_transaction">Добавить транзакцию</string>
+    <string name="delete_transaction">Удалить транзакцию</string>
+    <string name="delete_transaction_confirmation">Вы уверены, что хотите удалить эту транзакцию?</string>
+    <string name="receipt_preview">Предпросмотр чека</string>
+    <string name="recognized_amount_template">Распознанная сумма: %1$.2f</string>
+    <string name="transaction_name">Название транзакции</string>
+    <string name="transaction_amount">Сумма</string>
     <string name="transaction_date">Дата транзакции</string>
-    <string name="select_date">Выберите дату</string>
+    <string name="income">Доход</string>
+    <string name="expense">Расход</string>
+    <string name="camera">Камера</string>
+    <string name="gallery">Галерея</string>
+    <string name="scan_receipt">Сканировать чек</string>
+    <string name="transaction_category_icon">Иконка категории</string>
+    <string name="transaction_category">Категория транзакции</string>
+    <string name="custom_category">Другая категория</string>
+    <string name="transaction_images_count">Количество прикреплённых изображений</string>
     <string name="share_image_title">Поделиться изображением</string>
+    <string name="emoji_search">Поиск эмодзи...</string>
 
-    <!-- Сообщения об ошибках -->
-    <string name="error_loading_data">Ошибка загрузки данных</string>
-
-    <!-- Profile Section -->
-    <string name="profile_image">Изображение профиля</string>
-    <string name="username">Имя пользователя</string>
-    <string name="user_email">Электронная почта</string>
-
-    <!-- App Settings Section -->
+    <!-- Settings & profile -->
     <string name="app_settings">Настройки приложения</string>
     <string name="app_language">Язык приложения</string>
     <string name="select_language">Выберите язык</string>
     <string name="notifications">Уведомления</string>
+    <string name="no_notifications">Нет уведомлений :(</string>
     <string name="dark_theme">Тёмная тема</string>
-
-    <!-- Security Section -->
     <string name="security">Безопасность</string>
     <string name="change_password">Сменить пароль</string>
     <string name="logout">Выйти</string>
-
-    <string name="participant_name">Имя участника</string>
-    <string name="email">Email участника</string>
-    <string name="role">Роль</string>
-    <string name="required_field">Обязательное поле</string>
-    <string name="select_role">Выберите роль</string>
-
-    <string name="notifications_empty">Уведомлений нет</string>
-
-    <!-- Экспорт   -->
+    <string name="profile_image">Изображение профиля</string>
+    <string name="username">Имя пользователя</string>
+    <string name="user_email">Электронная почта</string>
     <string name="export_choose_format">Выберите формат для экспорта</string>
+    <string name="password_change_success">Успех! Проверьте почту</string>
 
+    <!-- Placeholder descriptions -->
+    <string name="ic_category_placeholder_description">Категория</string>
+    <string name="ic_user_placeholder_description">Пользователь</string>
+
+    <!-- Lorem ipsum -->
     <string name="lorem_ipsum">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
-        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae, molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor bibendum, vel congue leo egestas.\n\n
-        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel, molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula, in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque est.\n\n
-        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh. Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc, quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus convallis.\n\n
-        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper, libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a, ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.
     </string>
 
+    <!-- Transaction categories -->
     <string-array name="transaction_categories">
         <item>Все</item>
         <item>Еда</item>
@@ -147,7 +152,7 @@
         <item>Другое</item>
     </string-array>
 
-    <!-- Список эмодзи для выбора и отображения -->
+    <!-- Emoji picker list -->
     <string-array name="emoji_list">
         <item>🍕</item>
         <item>🍔</item>
@@ -185,18 +190,121 @@
         <item>📊</item>
     </string-array>
 
-    <string-array name="roles_list">
-        <item>Наблюдатель</item>
-        <item>Редактор</item>
-    </string-array>
-
+    <!-- Languages -->
     <string-array name="languages">
         <item>Русский</item>
         <item>English</item>
     </string-array>
-
     <string-array name="language_codes">
         <item>ru</item>
         <item>en</item>
     </string-array>
+
+    <string name="amount_range">Сумма (₽)</string>
+    <string name="amount_range_template">%1$.0f₽ — %2$.0f₽</string>
+    <string name="clear_filters">Очистить</string>
+    <string name="apply_filters">Применить</string>
+    <string name="min_amount">Мин. сумма</string>
+    <string name="max_amount">Макс. сумма</string>
+    <string name="transaction_type">Тип транзакции (Доход/Расход)</string>
+    <string name="error_min_max_amount">Минимальная сумма не может быть больше максимальной</string>
+
+    <string name="transaction_category_helper">Выберите категорию</string>
+
+    <string name="date_range">Диапазон дат</string>
+    <string name="start_date">С</string>
+    <string name="start_date_helper">Начальная дата</string>
+    <string name="end_date">По</string>
+    <string name="end_date_helper">Конечная дата</string>
+
+    <string name="min_amount_helper">Минимальная</string>
+    <string name="max_amount_helper">Максимальная</string>
+
+    <string name="clear">Очистить</string>
+    <string name="apply">Применить</string>
+    <string name="transaction_user">Пользователь</string>
+    <string name="transaction_user_helper">Выберите пользователя</string>
+
+    <string name="error_date_order">Дата начала не может быть позже даты окончания</string>
+
+    <string name="sample_participant_name">Иван Иванов</string>
+    <string name="sample_participant_email">iuturakulov@example.com</string>
+    <string name="edit">Редактировать</string>
+    <string name="role_member">Член команды</string>
+
+    <string name="project_list_title">Проекты</string>
+    <string name="filter_project_owner">Фильтр проекта по владельцу</string>
+    <string name="filter_project_budget_range">Фильтр проекта по бюджету</string>
+    <string name="project_status_all">Все</string>
+    <string name="project_status_active">Активен</string>
+    <string name="project_status_deleted">Удален</string>
+    <string name="project_status_archived">Архивирован</string>
+    <string name="no_projects_yet">У вас пока нет проектов</string>
+    <string name="error_loading_projects">Не удалось загрузить проекты. Попробуйте ещё раз.</string>
+    <string name="project_status">Статус проекта</string>
+    <string name="filter_project_category">Фильтр по категории проекта</string>
+    <string name="add_project">Добавить проект</string>
+
+    <string name="menu_refresh">Обновить</string>
+    <string name="menu_settings">Настройки</string>
+
+    <string name="search_projects">Поиск проектов</string>
+    <string name="empty_projects">У вас пока нет проектов</string>
+    <string name="error_sync_projects">Ошибка синхронизации проектов</string>
+
+    <!-- Присоединение по коду -->
+    <string name="join_project">Присоединиться к проекту</string>
+    <string name="join">Присоединиться</string>
+    <string name="success">Успех</string>
+    <string name="error_empty_code">Код не может быть пустым</string>
+
+
+    <integer-array name="default_amount_range">
+        <item>0</item>
+        <item>100000</item>
+    </integer-array>
+
+    <string name="category_design">Дизайн</string>
+    <string name="category_development">Разработка</string>
+    <string name="category_marketing">Маркетинг</string>
+    <string name="category_other">Другое</string>
+
+    <string name="project_category">Категория</string>
+    <string name="project_category_hint">Выберите или введите категорию</string>
+
+    <string-array name="project_categories">
+        <item>Разработка</item>
+        <item>Маркетинг</item>
+        <item>Дизайн</item>
+        <item>Исследования</item>
+        <item>Другое</item>
+    </string-array>
+
+    <string name="hint_select_category">Выберите категорию</string>
+    <string name="hint_custom_category">Введите свою категорию</string>
+
+    <string name="label_owner">Владелец:</string>
+
+    <string name="no_description">Описание отсутствует</string>
+    <string name="no_category">Без категории</string>
+    <string name="project_budget_progress">%1$s из %2$s\n Потрачено бюджета: %3$s</string>
+    <string name="label_owner_with_name">Владелец: %1$s</string>
+    <string name="cannot_open_project_due_to_deleted_status">Проект \"%1$s\" нельзя открыть так как он удален</string>
+    <string name="label_category_project_with_name">Категория: %1$s</string>
+
+    <string name="create_project">Создать проект</string>
+
+    <string name="project_name">Название проекта</string>
+    <string name="project_description">Описание проекта</string>
+    <string name="budget_limit">Лимит бюджета (₽)</string>
+
+    <string name="error_empty_name">Введите название проекта</string>
+    <string name="error_empty_budget">Введите лимит бюджета</string>
+    <string name="error_empty_category">Выберите категорию</string>
+    <string name="error_empty_icon">Выберите иконку</string>
+
+    <string name="edit_project">Редактировать проект</string>
+    <string name="choose_icon">Нажмите, чтобы выбрать иконку</string>
+
+    <string name="loading_message">Идет загрузка, подождите…</string>
 </resources>

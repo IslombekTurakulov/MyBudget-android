@@ -1,19 +1,14 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Material3.CardView.Elevated"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:background="?attr/colorSurface">
-
-    <!-- Тулбар с иконкой закрыть -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
-        app:subtitle="@string/add_transaction"
-        app:navigationIcon="@drawable/baseline_close_24" />
+    android:layout_margin="16dp"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,233 +16,254 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-    <!-- Превью изображения -->
-    <ImageView
-        android:id="@+id/ivReceiptPreview"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"
-        android:contentDescription="Превью изображения"
-        tools:src="@drawable/ic_launcher_foreground" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationContentDescription="@string/cancel"
+            app:navigationIcon="@drawable/baseline_close_24"
+            app:popupTheme="@style/ThemeOverlay.Material3"
+            app:title="@string/add_transaction"
+            app:titleCentered="true"
+            app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium" />
 
-    <!-- Распознанная сумма -->
-    <TextView
-        android:id="@+id/tvRecognizedAmount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Распознанная сумма: 0.0"
-        android:visibility="gone"
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-        android:layout_marginBottom="8dp" />
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="8dp"
+            app:dividerColor="?attr/colorOutlineVariant"
+            app:dividerThickness="1dp" />
 
-    <!-- Название транзакции -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Название транзакции"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etTransactionName"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:fillViewport="true"
+            android:overScrollMode="ifContentScrolls">
 
-    <!-- Сумма транзакции -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Сумма"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginTop="8dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etTransactionAmount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Дата транзакции -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/dateInputLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox"
-        android:layout_marginTop="16dp"
-        android:hint="@string/transaction_date"
-        app:endIconMode="dropdown_menu"
-        app:endIconDrawable="@drawable/ic_calendar">
-
-        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-            android:id="@+id/etTransactionDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusable="false"
-            android:minHeight="60dp"
-            android:paddingTop="14dp"
-            android:paddingStart="12dp"
-            android:clickable="true"
-            android:inputType="none" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Выбор типа транзакции -->
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggleTransactionType"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:singleSelection="true"
-        android:layout_marginTop="8dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnIncome"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Доход" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnExpense"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Расход" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
-
-    <!-- Кнопка "Сканировать чек" -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnScanReceipt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Сканировать чек"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_marginTop="16dp"
-        android:icon="@drawable/baseline_camera_alt_24"
-        app:iconGravity="start" />
-
-    <!-- Категория и иконка -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginTop="16dp">
-
-        <!-- Иконка категории -->
-        <TextView
-            android:id="@+id/ivTransactionCategoryIcon"
-            android:layout_width="58dp"
-            android:layout_height="58dp"
-            android:gravity="center"
-            android:textSize="24sp"
-            android:background="?attr/colorSecondaryContainer"
-            android:contentDescription="Иконка категории" />
-
-        <!-- Список категорий -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Категория"
-            android:minHeight="60dp"
-            style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-            android:layout_marginStart="12dp">
-
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:id="@+id/spinnerCategory"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:focusable="true"
-                android:minHeight="60dp"
-                android:paddingTop="14dp"
-                android:focusableInTouchMode="true"
-                android:cursorVisible="false"
-                android:paddingStart="12dp"
-                style="@style/ThemeOverlay.Material3.AutoCompleteTextView.FilledBox.Dense" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvRecognizedAmount"
+                    style="@style/TextAppearance.Material3.BodyMedium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/recognized_amount_template"
+                    android:visibility="gone" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:hint="@string/transaction_name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTransactionName"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapSentences" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:hint="@string/transaction_amount">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTransactionAmount"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/dateInputLayout"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:hint="@string/transaction_date"
+                    app:endIconDrawable="@drawable/baseline_calendar_month_24"
+                    app:endIconMode="custom">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/etTransactionDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:inputType="none"
+                        android:paddingStart="16dp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleTransactionType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnIncome"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/income" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnExpense"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/expense" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnScanReceipt"
+                    style="@style/Widget.Material3.Button.ElevatedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/scan_receipt"
+                    app:icon="@drawable/baseline_camera_alt_24"
+                    app:iconGravity="textStart" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_marginEnd="12dp"
+                        app:cardBackgroundColor="?attr/colorSecondaryContainer"
+                        app:cardCornerRadius="28dp">
+
+                        <TextView
+                            android:id="@+id/ivTransactionCategoryIcon"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="@string/ic_category_placeholder_description"
+                            android:gravity="center"
+                            android:textSize="24sp" />
+
+                        <com.vanniktech.emoji.EmojiEditText
+                            android:id="@+id/etHiddenEmojiInput"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:visibility="gone"/>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/transaction_category">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/spinnerCategory"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:clickable="true"
+                            android:focusable="false"
+                            android:inputType="none"
+                            android:paddingStart="16dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCustomCategory"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="@string/custom_category"
+                    android:visibility="gone">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCustomCategory"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:inputType="text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvReceiptImages"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:spanCount="3"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_receipt_image" />
+
+                <LinearLayout
+                    android:id="@+id/addTransactionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCancel"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:text="@string/cancel" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSave"
+                        style="@style/Widget.Material3.Button.ElevatedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/save" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/removeTransactionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="end"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditTransaction"
+                        style="@style/Widget.Material3.Button.ElevatedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:text="@string/save" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDeleteTransaction"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/delete_transaction"
+                        android:textColor="?attr/colorError" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-
-    <!-- Поле для ввода собственной категории (появляется при выборе "Другое") -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilCustomCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Введите свою категорию"
-        style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-        android:layout_marginTop="8dp"
-        android:visibility="gone">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etCustomCategory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- RecyclerView для отображения загруженных изображений чеков -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvReceiptImages"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_receipt_image" />
-
-    <!-- Кнопки "Отмена" и "Сохранить" -->
-    <LinearLayout
-        android:id="@+id/addTransactionLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="24dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Отмена"
-            style="@style/Widget.Material3.Button.TextButton" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Сохранить"
-            style="@style/Widget.Material3.Button.ElevatedButton"
-            android:layout_marginStart="16dp" />
-    </LinearLayout>
-
-    <!-- Кнопки "Сохранить" и "Удалить" -->
-    <LinearLayout
-        android:id="@+id/removeTransactionLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="24dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEditTransaction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Сохранить"
-            style="@style/Widget.Material3.Button.ElevatedButton" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDeleteTransaction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Удалить"
-            android:textColor="?attr/colorError"
-            android:layout_marginStart="16dp"
-            style="@style/Widget.Material3.Button.TextButton" />
-    </LinearLayout>
-    </LinearLayout>
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

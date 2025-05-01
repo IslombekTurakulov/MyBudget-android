@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -13,7 +14,6 @@ import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
-import android.graphics.drawable.ColorDrawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -26,40 +26,45 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.chrisbanes.photoview.PhotoView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.vanniktech.emoji.EmojiPopup
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
+import ru.iuturakulov.mybudget.ui.transactions.emoji.EmojiPickerBottomSheet
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -68,16 +73,16 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 
 @AndroidEntryPoint
 class AddTransactionDialogFragment : DialogFragment() {
 
     private var _binding: DialogAddTransactionBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: AddTransactionViewModel by viewModels()
 
     private var args: AddTransactionArgs? = null
     private var transaction: TemporaryTransaction? = null
@@ -87,6 +92,10 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private var currentDateMillis: Long = MaterialDatePicker.todayInUtcMilliseconds()
     private lateinit var dateFormatter: SimpleDateFormat
+
+    private enum class PendingAction { SHARE, SAVE }
+    private var pendingAction: PendingAction? = null
+    private var pendingBitmap: Bitmap? = null
 
     // Список для загруженных изображений
     private val selectedImages = mutableListOf<Bitmap>()
@@ -100,10 +109,16 @@ class AddTransactionDialogFragment : DialogFragment() {
     ) { uri: Uri? ->
         uri?.let {
             getBitmapFromUri(it)?.let { bitmap ->
-                val processedBitmap = preprocessBitmap(bitmap)
-                selectedImages.add(processedBitmap)
-                receiptImageAdapter.notifyDataSetChanged()
-                recognizeTextFromImage(processedBitmap)
+                lifecycleScope.launch {
+                    val processed = withContext(Dispatchers.Default) { preprocessBitmap(bitmap) }
+                    withContext(Dispatchers.Main) {
+                        selectedImages.add(processed)
+                        receiptImageAdapter.updateImages(selectedImages.toList())
+                    }
+                    withContext(Dispatchers.IO) {
+                        recognizeTextFromImage(processed)
+                    }
+                }
             }
         }
     }
@@ -142,9 +157,24 @@ class AddTransactionDialogFragment : DialogFragment() {
         args = arguments?.getParcelable(ARG_TRANSACTION)
         dateFormatter = SimpleDateFormat("dd MMMM yyyy HH:mm", Locale.getDefault())
         setupReceiptImagesRecyclerView() // Инициализация RecyclerView для изображений
-//        setupViews()
         setupViewsBasedOnRole() // Метод для настройки в зависимости от роли
         setupToolbar()
+
+        args?.let { arg ->
+            if (arg.transactionId != null) {
+                viewModel.loadTransaction(arg.projectId, arg.transactionId!!)
+                lifecycleScope.launchWhenStarted {
+                    viewModel.transaction.collect { tmp ->
+                        if (tmp != null) {
+                            transaction = tmp
+                            setupViewsBasedOnRole()
+                        }
+                    }
+                }
+            } else {
+                setupViewsBasedOnRole()
+            }
+        }
     }
 
     private fun setupViewsBasedOnRole() {
@@ -168,7 +198,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             toggleTransactionType.isEnabled = true
             btnScanReceipt.isEnabled = true
             btnSave.isEnabled = true
-            btnDeleteTransaction.isEnabled = arguments.transaction != null
+            btnDeleteTransaction.isEnabled = transaction != null
             btnEditTransaction.isEnabled = true
             etTransactionName.isEnabled = true
             etTransactionDate.isEnabled = true
@@ -231,7 +261,6 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun setupCommonViews(arguments: AddTransactionArgs) {
-        transaction = arguments.transaction
         binding.apply {
             if (transaction != null) {
                 toolbar.subtitle = ""
@@ -240,10 +269,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                 etTransactionAmount.setText(transaction?.amount.toString())
                 spinnerCategory.setText(transaction?.category, false)
                 updateCategoryIcon(transaction?.categoryIcon.orEmpty())
-                selectedImages.addAll(
-                    transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList()
-                )
-                receiptImageAdapter.notifyDataSetChanged()
+                loadExistingImages(encoded = transaction?.images.orEmpty())
                 removeTransactionLayout.visibility = View.VISIBLE
                 addTransactionLayout.visibility = View.GONE
                 btnSave.text = getString(R.string.save)
@@ -263,7 +289,6 @@ class AddTransactionDialogFragment : DialogFragment() {
                 btnSave.setOnClickListener { processSaveButton(onTransactionAdded, arguments) }
                 toggleTransactionType.check(R.id.btnIncome)
                 btnCancel.setOnClickListener { dismiss() }
-                setupTransactionIcon()
             }
 
             setupDatePicker(transaction?.date)
@@ -274,52 +299,17 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-//    private fun setupViews() {
-//        args?.let { argument ->
-//            transaction = argument.transaction
-//            binding.apply {
-//                if (transaction != null) {
-//                    // Режим редактирования: заполняем поля
-//                    etTransactionName.setText(transaction?.name)
-//                    etTransactionAmount.setText(transaction?.amount.toString())
-//                    spinnerCategory.setText(transaction?.category, false)
-//                    updateCategoryIcon(transaction?.categoryIcon.orEmpty())
-//                    selectedImages.addAll(
-//                        transaction?.images?.mapNotNull(::decodeBase64ToBitmap) ?: emptyList()
-//                    )
-//                    receiptImageAdapter.notifyDataSetChanged()
-//                    removeTransactionLayout.visibility = View.VISIBLE
-//                    addTransactionLayout.visibility = View.GONE
-//                    btnSave.text = getString(R.string.save)
-//                    toggleTransactionType.check(
-//                        if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
-//                        else R.id.btnExpense
-//                    )
-//                    btnEditTransaction.setOnClickListener {
-//                        processSaveButton(
-//                            onTransactionUpdated,
-//                            argument
-//                        )
-//                    }
-//                    btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
-//                } else {
-//                    // Режим добавления: скрываем кнопку удаления
-//                    removeTransactionLayout.visibility = View.GONE
-//                    addTransactionLayout.visibility = View.VISIBLE
-//                    btnSave.text = getString(R.string.add)
-//                    btnSave.setOnClickListener { processSaveButton(onTransactionAdded, argument) }
-//                    toggleTransactionType.check(R.id.btnIncome)
-//                    btnCancel.setOnClickListener { dismiss() }
-//                    setupTransactionIcon()
-//                }
-//                setupDatePicker(transaction?.date)
-//                setupCategorySpinner(transaction?.category)
-//                setupEmojiPicker()
-//                setupTransactionTypeToggle()
-//                btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
-//            }
-//        }
-//    }
+    private fun loadExistingImages(encoded: List<String>) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val bitmaps = withContext(Dispatchers.Default) {
+                encoded.mapNotNull { decodeBase64ToBitmap(it) }
+            }
+            selectedImages.clear()
+            selectedImages.addAll(bitmaps)
+            receiptImageAdapter.updateImages(bitmaps)
+            receiptImageAdapter.notifyDataSetChanged()
+        }
+    }
 
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
@@ -359,6 +349,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun setupTransactionTypeToggle() {
+        binding.toggleTransactionType.isSelectionRequired = true
         binding.toggleTransactionType.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
@@ -397,30 +388,39 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-    private fun setupTransactionIcon() {
-        val emojis = resources.getStringArray(R.array.emoji_list).toList()
-        binding.ivTransactionCategoryIcon.text = emojis.shuffled().first()
-    }
-
     private fun setupCategorySpinner(currentCategory: String?) {
         // TODO: перейти на новую фильтрацию
-        val categories = resources.getStringArray(R.array.transaction_categories).filter {
-            it != "Все"
-        }.apply {
-            if (currentCategory != null) {
-                this.filter { it != "Другое" }
+        val allCategories = resources.getStringArray(R.array.transaction_categories).toList()
+        val otherText = getString(R.string.other)
+        val allText = getString(R.string.all)
+
+        val filtered = allCategories.filter { category ->
+            category != allText &&
+                    (currentCategory.isNullOrBlank() || category != otherText)
+        }
+
+        val categories = buildList {
+            add(allText)
+            addAll(filtered)
+            currentCategory?.takeIf { it.isNotBlank() }?.let { add(it) }
+            add(otherText)
+        }.distinct()
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            categories
+        )
+
+        binding.spinnerCategory.apply {
+            setAdapter(adapter)
+            setSelection(0)
+            setOnClickListener { showDropDown() }
+            setOnItemClickListener { _, _, position, _ ->
+                // Показываем поле для ввода собственной категории только при выборе "Другое"
+                binding.tilCustomCategory.isVisible =
+                    categories[position].equals(otherText, ignoreCase = true)
             }
-        }.plus(currentCategory).filterNotNull().distinct()
-        val adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories)
-        binding.spinnerCategory.setAdapter(adapter)
-        binding.spinnerCategory.setSelection(0)
-        binding.spinnerCategory.setOnClickListener { binding.spinnerCategory.showDropDown() }
-        binding.spinnerCategory.setOnItemClickListener { _, _, position, _ ->
-            val selectedCategory = categories[position]
-            binding.tilCustomCategory.visibility =
-                if (selectedCategory.equals("Другое", ignoreCase = true))
-                    View.VISIBLE else View.GONE
         }
     }
 
@@ -488,6 +488,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun openCamera() {
+        takePicturePreview.launch(null)
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
     }
@@ -496,19 +497,19 @@ class AddTransactionDialogFragment : DialogFragment() {
         imagePickerLauncher.launch("image/*")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            data?.data?.let { uri ->
-                getBitmapFromUri(uri)?.let { bitmap ->
-                    val processedBitmap = preprocessBitmap(bitmap)
-                    selectedImages.add(processedBitmap)
-                    receiptImageAdapter.notifyDataSetChanged()
-                    recognizeTextFromImage(processedBitmap)
+    private val takePicturePreview =
+        registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+            bitmap?.let {
+                lifecycleScope.launch {
+                    val processed = withContext(Dispatchers.Default) { preprocessBitmap(bitmap) }
+                    selectedImages.add(processed)
+                    receiptImageAdapter.updateImages(selectedImages.toList())
+                    withContext(Dispatchers.IO) {
+                        recognizeTextFromImage(processed)
+                    }
                 }
             }
         }
-    }
 
     private fun setupReceiptImagesRecyclerView() {
         receiptImageAdapter = ReceiptImageAdapter(
@@ -591,11 +592,6 @@ class AddTransactionDialogFragment : DialogFragment() {
             showMaterialSnackbar("Для этого действия необходимо разрешение на доступ к хранилищу")
         }
     }
-
-    // Enum для отслеживания ожидающего действия
-    private enum class PendingAction { SHARE, SAVE }
-    private var pendingAction: PendingAction? = null
-    private var pendingBitmap: Bitmap? = null
 
     private fun shareImage(bitmap: Bitmap) {
         if (checkStoragePermission()) {
@@ -698,7 +694,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun saveImageToGalleryApi29Plus(bitmap: Bitmap) {
         val resolver = requireContext().contentResolver
         val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "receipt_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.DISPLAY_NAME, "receipt_${transaction?.name}_${transaction?.category}_${System.currentTimeMillis()}.jpg")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MyBudget")
             put(MediaStore.Images.Media.IS_PENDING, 1)
@@ -726,6 +722,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun saveImageToGalleryLegacy(bitmap: Bitmap) {
         val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        // TODO: сохранять чеки в рамках проекта и не хранить в общей папке
         val appDir = File(imagesDir, "MyBudget")
         if (!appDir.exists()) appDir.mkdirs()
 
@@ -794,7 +791,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
         }
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
-        return resizeBitmap(grayscale, 1024, 1024)
+        return resizeBitmap(grayscale, 512, 512)
     }
 
     private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
@@ -815,7 +812,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                 val processedText = preprocessText(visionText.text)
                 val totalAmount = extractTotalAmount(processedText)
                 binding.tvRecognizedAmount.text =
-                    getString(R.string.recognized_amount, totalAmount.toDoubleOrNull() ?: 0.0)
+                    getString(R.string.recognized_amount_template, totalAmount.toDoubleOrNull() ?: 0.0)
                 updateTransactionAmount(totalAmount)
                 val duration = System.currentTimeMillis() - startTime
                 Snackbar.make(
@@ -1027,27 +1024,26 @@ class AddTransactionDialogFragment : DialogFragment() {
         @kotlinx.parcelize.Parcelize
         data class AddTransactionArgs(
             val projectId: String,
-            var transaction: TemporaryTransaction? = null,
+            var transactionId: String?,
             var currentRole: String
         ) : Parcelable
 
         fun newInstance(
             projectId: String,
             currentRole: String,
-            transaction: TemporaryTransaction? = null
+            transactionId: String? = null
         ): AddTransactionDialogFragment {
             val fragment = AddTransactionDialogFragment()
-            val args = Bundle().apply {
+            fragment.arguments = Bundle().apply {
                 putParcelable(
                     ARG_TRANSACTION,
                     AddTransactionArgs(
                         projectId = projectId,
-                        transaction = transaction,
+                        transactionId = transactionId,
                         currentRole = currentRole
                     )
                 )
             }
-            fragment.arguments = args
             return fragment
         }
     }

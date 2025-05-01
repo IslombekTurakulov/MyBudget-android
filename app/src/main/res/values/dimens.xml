@@ -7,4 +7,6 @@
     <dimen name="spacing_24">24dp</dimen>
     <dimen name="corner_radius">12dp</dimen>
     <dimen name="divider_thickness">1dp</dimen>
+    <dimen name="emoji_spacing">8dp</dimen>
+    <dimen name="emoji_sheet_peek">200dp</dimen>
 </resources>

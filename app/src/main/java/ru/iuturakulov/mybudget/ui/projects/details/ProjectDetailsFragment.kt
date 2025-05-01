@@ -1,465 +1,488 @@
 package ru.iuturakulov.mybudget.ui.projects.details
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.transition.TransitionManager
+import android.view.MenuItem
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.ArrayAdapter
 import androidx.core.view.isGone
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
-import ru.iuturakulov.mybudget.core.BooleanExtension.ifTrue
 import ru.iuturakulov.mybudget.core.UiState
-import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
 import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
-import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus.Companion.getStatusColor
-import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus.Companion.getStatusText
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
 import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction.Companion.toEntity
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
-import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity.Companion.toTemporaryModel
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogFilterTransactionsBinding
 import ru.iuturakulov.mybudget.databinding.FragmentProjectDetailsBinding
 import ru.iuturakulov.mybudget.domain.models.TransactionFilter
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import ru.iuturakulov.mybudget.ui.projects.list.ProjectFilterBottomSheet
 import ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment
 import ru.iuturakulov.mybudget.ui.transactions.TransactionAdapter
-import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class ProjectDetailsFragment :
     BaseFragment<FragmentProjectDetailsBinding>(R.layout.fragment_project_details) {
 
     private val viewModel: ProjectDetailsViewModel by viewModels()
-    private val args: ProjectDetailsFragmentArgs by navArgs()
+    private val args by navArgs<ProjectDetailsFragmentArgs>()
+
     private var isTextExpanded = false
     private lateinit var transactionAdapter: TransactionAdapter
+    private var projectData: ProjectWithTransactions? = null
 
-    private var project: ProjectWithTransactions? = null
-
-    override fun getViewBinding(view: View): FragmentProjectDetailsBinding =
+    override fun getViewBinding(view: View) =
         FragmentProjectDetailsBinding.bind(view)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedInstanceState?.let {
+            isTextExpanded = it.getBoolean(KEY_TEXT_EXPANDED, false)
+        }
         viewModel.loadProjectDetails(args.projectId)
     }
 
-    override fun setupViews() {
-        setupSwipeRefresh()
-        setupToolbar()
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_TEXT_EXPANDED, isTextExpanded)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupUi()
+        observeViewModel()
+    }
+
+    private fun setupUi() = binding.apply {
+        toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
+        toolbar.setOnMenuItemClickListener(::onMenuItemClicked)
+
+        swipeRefreshLayout.setOnRefreshListener { refreshData() }
+
         setupRecyclerView()
-        setupListeners()
-        setupScrollBehavior()
-        binding.btnToggleDescription.setOnClickListener { toggleTextView() }
-        updateTextView()
+
+        btnToggleDescription.setOnClickListener { toggleDescription() }
+        updateDescription()
+
+        btnFilterTransactions.setOnClickListener { showFilterDialog() }
+        fabAddTransaction.setOnClickListener { openAddTransactionDialog() }
+
+        rvTransactions.addOnScrollListener(scrollListener)
     }
 
-    private fun setupScrollBehavior() {
-        binding.rvTransactions.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val currentRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
-                if (currentRole == ParticipantRole.VIEWER) {
-                    return
-                }
-
-                if (dy > 0 && binding.fabAddTransaction.isShown) {
-                    // Скролл вниз - скрываем добавление транзакции
-                    binding.fabAddTransaction.hide()
-                } else if (dy < 0 && !binding.fabAddTransaction.isShown) {
-                    // Скролл вверх - показываем добавление транзакции
-                    binding.fabAddTransaction.show()
-                }
-
-                if (!recyclerView.canScrollVertically(-1)) {
-                    binding.fabAddTransaction.show()
-                }
-            }
-        })
-    }
-
-    private fun toggleTextView() {
-        isTextExpanded = !isTextExpanded
-        updateTextView()
-    }
-
-    private fun updateTextView() {
-        binding.apply {
-            if (isTextExpanded) {
-                tvProjectDescription.maxLines = Int.MAX_VALUE
-                btnToggleDescription.text = getString(R.string.show_less)
-                btnToggleDescription.setIconResource(R.drawable.baseline_expand_less_24)
-            } else {
-                tvProjectDescription.maxLines = 3
-                btnToggleDescription.text = getString(R.string.show_more)
-                btnToggleDescription.setIconResource(R.drawable.baseline_expand_more_24)
-            }
+    private fun setupRecyclerView() = binding.rvTransactions.apply {
+        transactionAdapter = TransactionAdapter(::onTransactionClicked)
+        adapter = transactionAdapter
+        setHasFixedSize(true)
+        itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 120L
+            removeDuration = 120L
+            moveDuration = 120L
+            changeDuration = 120L
         }
+        layoutAnimation =
+            AnimationUtils.loadLayoutAnimation(context, R.anim.layout_animation_fall_down)
     }
 
-    override fun setupObservers() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.uiState.collect { state ->
-                when (state) {
-                    is UiState.Loading -> showLoading()
-                    is UiState.Success -> {
-                        showContent()
-                        state.data?.let { projectWithTransactions ->
-                            // Проверка архивирован ли проект
-                            val isProjectArchived =
-                                projectWithTransactions.project.status == ProjectStatus.ARCHIVED
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+            val role = projectData?.currentRole ?: return
+            if (role == ParticipantRole.VIEWER) return
 
-                            if (projectWithTransactions.currentRole == ParticipantRole.OWNER) {
-                                binding.toolbar.menu.findItem(
-                                    R.id.menuArchiveProject
-                                ).isVisible = !isProjectArchived
-
-                                binding.toolbar.menu.findItem(
-                                    R.id.menuUnarchiveProject
-                                ).isVisible = isProjectArchived
-                            }
-                            processUserRole(projectWithTransactions.currentRole)
-                            project = projectWithTransactions
-
-                            showProjectDetails(projectWithTransactions)
-                        }
-                    }
-
-                    is UiState.Error -> {
-                        showContent()
-                        showError(state.message)
-                    }
-
-                    is UiState.Idle -> Unit
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.filteredTransactions.collect { transactions ->
-                updateTransactions(transactions)
-            }
-        }
-    }
-
-    private fun processUserRole(role: ParticipantRole?) {
-        if (role == ParticipantRole.VIEWER) {
-            binding.toolbar.menu.findItem(R.id.menuEdit).setVisible(false)
-            binding.toolbar.menu.setGroupVisible(
-                R.id.group_editor, false
-            )
-
-            binding.fabAddTransaction.isGone = true
-        } else if (role == ParticipantRole.EDITOR) {
-            binding.toolbar.menu.findItem(R.id.menuEdit).setVisible(true)
-            binding.toolbar.menu.setGroupVisible(
-                R.id.group_editor, false
-            )
-
-            binding.fabAddTransaction.isGone = false
-        } else {
-            binding.toolbar.menu.findItem(R.id.menuEdit).setVisible(true)
-            binding.toolbar.menu.setGroupVisible(
-                R.id.group_editor, true
-            )
-
-            binding.fabAddTransaction.isGone = false
-        }
-    }
-
-    private fun setupSwipeRefresh() {
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            val currentRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
-            binding.fabAddTransaction.hide()
-            // Обновление данных
-            viewModel.syncProjectDetails(args.projectId)
-            if (currentRole != ParticipantRole.VIEWER) {
+            if (dy > 0 && binding.fabAddTransaction.isShown) {
+                binding.fabAddTransaction.hide()
+            } else if (dy < 0 && !binding.fabAddTransaction.isShown) {
                 binding.fabAddTransaction.show()
             }
-            // Сброс состояния будет выполнен после обновления данных в наблюдателе
-        }
-    }
-
-    private fun setupToolbar() {
-        binding.toolbar.apply {
-            setNavigationOnClickListener { findNavController().navigateUp() }
-            setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.menuEdit -> {
-                        navigateToEditProject()
-                        true
-                    }
-
-                    R.id.menuDelete -> {
-                        confirmDeleteProject()
-                        true
-                    }
-
-                    R.id.menuArchiveProject -> {
-                        project?.project?.copy(status = ProjectStatus.ARCHIVED)
-                            ?.let { projectEntity ->
-                                viewModel.updateProject(project = projectEntity)
-                                Snackbar.make(
-                                    binding.root,
-                                    "Проект заархивирован",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                            }
-                        true
-                    }
-
-                    R.id.menuUnarchiveProject -> {
-                        project?.project?.copy(status = ProjectStatus.ACTIVE)
-                            ?.let { projectEntity ->
-                                viewModel.updateProject(project = projectEntity)
-                                Snackbar.make(
-                                    binding.root,
-                                    "Проект разаархивирован",
-                                    Snackbar.LENGTH_LONG
-                                ).show()
-                            }
-                        true
-                    }
-
-                    R.id.menuParticipants -> {
-                        navigateToParticipants()
-                        true
-                    }
-
-                    R.id.menuAnalytics -> {
-                        navigateToAnalytics()
-                        true
-                    }
-
-                    else -> false
-                }
+            if (!recyclerView.canScrollVertically(-1)) {
+                binding.fabAddTransaction.show()
             }
         }
     }
 
-    private fun setupRecyclerView() {
-        transactionAdapter = TransactionAdapter(
-            onTransactionClicked = { transaction ->
-                showTransactionDetailsDialog(transaction)
-            }
-        )
-        binding.rvTransactions.adapter = transactionAdapter
-
-        binding.rvTransactions.apply {
-            adapter = transactionAdapter
-            setHasFixedSize(true)
-            itemAnimator = DefaultItemAnimator().apply {
-                // Уменьшаем длительность анимаций для лучшей производительности
-                addDuration = 120L
-                removeDuration = 120L
-                moveDuration = 120L
-                changeDuration = 120L
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { viewModel.uiState.collectLatest(::handleUiState) }
+                launch { viewModel.filteredTransactions.collectLatest(::updateTransactions) }
             }
         }
     }
 
-    private fun setupListeners() {
-        binding.apply {
-            fabAddTransaction.setOnClickListener { showAddTransactionDialog() }
-            btnFilterTransactions.setOnClickListener { showFilterDialog() }
-        }
-    }
+    private fun handleUiState(state: UiState<ProjectWithTransactions>) = binding.apply {
+        swipeRefreshLayout.isRefreshing = state is UiState.Loading
+        progressBarTransactions.isVisible = state is UiState.Loading
 
-    private fun navigateToEditProject() {
-        val action = ProjectDetailsFragmentDirections.actionProjectToEdit(args.projectId)
-        findNavController().navigate(action)
-    }
-
-    private fun confirmDeleteProject() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.delete_project))
-            .setMessage(getString(R.string.delete_project_confirmation))
-            .setPositiveButton(getString(R.string.delete)) { _, _ ->
-                viewModel.deleteProject(args.projectId)
-                viewModel.syncProjects()
-                findNavController().navigateUp()
-            }
-            .setNegativeButton(getString(R.string.cancel), null)
-            .show()
-    }
-
-    private fun navigateToParticipants() {
-        val currentRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
-        val action = ProjectDetailsFragmentDirections.actionDetailsToParticipants(
-            projectId = args.projectId,
-            userRole = currentRole?.name ?: ParticipantRole.VIEWER.name
-        )
-        findNavController().navigate(action)
-    }
-
-    private fun navigateToAnalytics() {
-        val action = ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
-        findNavController().navigate(action)
-    }
-
-    private fun showLoading() {
-        binding.apply {
-            progressBarTransactions.isVisible = true
-            rvTransactions.isVisible = false
-            tvEmptyTransactions.isVisible = false
-        }
-    }
-
-    private fun showContent() {
-        binding.apply {
-            progressBarTransactions.isVisible = false
-            swipeRefreshLayout.isRefreshing = false
-            rvTransactions.isVisible = true
-        }
-    }
-
-    private fun showProjectDetails(projectWithTransactions: ProjectWithTransactions) {
-        binding.apply {
-            showContent()
-            toolbar.title = projectWithTransactions.project.name
-            toolbar.subtitle = project?.project?.status?.getStatusText()
-
-            project?.project?.status?.getStatusColor(context = binding.root.context)?.let { color ->
-                toolbar.setSubtitleTextColor(color)
+        when (state) {
+            is UiState.Success -> {
+                projectData = state.data
+                state.data?.let { renderProjectDetails(it) }
             }
 
-            tvProjectBudget.text =
-                getString(R.string.project_budget, projectWithTransactions.project.budgetLimit)
-            tvProjectSpent.text =
-                getString(R.string.project_spent, projectWithTransactions.project.amountSpent)
-            tvRemainingBudget.text = getString(
-                R.string.project_remaining,
-                projectWithTransactions.project.budgetLimit - projectWithTransactions.project.amountSpent
+            is UiState.Error -> showError(state.message)
+            else -> Unit
+        }
+    }
+
+    private fun renderProjectDetails(data: ProjectWithTransactions) = binding.apply {
+        toolbar.title = data.project.name
+        toolbar.subtitle = data.project.status.getStatusText().also {
+            toolbar.setSubtitleTextColor(
+                data.project.status.getStatusColor(requireContext())
             )
+        }
 
-            // Показываем описание только если оно не пустое
-            projectWithTransactions.project.description.isNullOrEmpty().not().ifTrue {
-                val description = projectWithTransactions.project.description ?: run {
-                    projectDescriptionCard.isVisible = false
-                    return@ifTrue
-                }
-                projectDescriptionCard.isVisible = true
-                tvProjectDescription.text = description
-                btnToggleDescription.isVisible = description.length >= 300
-            }
-            updateTransactions(projectWithTransactions.transactions)
+        processUserRole(data.currentRole)
+        updateMenuItems(data.currentRole, data.project.status)
+
+        tvProjectBudget.text =
+            getString(R.string.project_budget, data.project.budgetLimit)
+        tvProjectSpent.text =
+            getString(R.string.project_spent, data.project.amountSpent)
+        tvRemainingBudget.text = getString(
+            R.string.project_remaining,
+            data.project.budgetLimit - data.project.amountSpent
+        )
+
+        data.project.description?.takeIf(String::isNotBlank)?.let { desc ->
+            projectDescriptionCard.isVisible = true
+            tvProjectDescription.text = desc
+            btnToggleDescription.isVisible = desc.length >= MIN_DESC_LENGTH
+        } ?: run {
+            projectDescriptionCard.isGone = true
+        }
+
+        updateTransactions(data.transactions)
+    }
+
+    private fun processUserRole(role: ParticipantRole?) = binding.apply {
+        val isViewer = role == ParticipantRole.VIEWER
+        toolbar.menu.findItem(R.id.menuEdit).isVisible = !isViewer
+        toolbar.menu.setGroupVisible(R.id.group_editor, role == ParticipantRole.OWNER)
+        fabAddTransaction.isVisible = role != ParticipantRole.VIEWER
+    }
+
+    private fun updateMenuItems(role: ParticipantRole?, status: ProjectStatus) =
+        binding.toolbar.apply {
+            menu.findItem(R.id.menuArchiveProject).isVisible =
+                role == ParticipantRole.OWNER && status != ProjectStatus.ARCHIVED
+            menu.findItem(R.id.menuUnarchiveProject).isVisible =
+                role == ParticipantRole.OWNER && status == ProjectStatus.ARCHIVED
+        }
+
+    private fun updateTransactions(list: List<TransactionEntity>) = binding.apply {
+        if (list.isEmpty()) {
+            emptyTransactionsLayout.isVisible = true
+            emptyTransactionsLayout.isVisible = true
+            rvTransactions.isGone = true
+        } else {
+            emptyTransactionsLayout.isGone = true
+            emptyTransactionsLayout.isGone = true
+            rvTransactions.isVisible = true
+            transactionAdapter.submitList(list)
+            rvTransactions.scheduleLayoutAnimation()
         }
     }
 
-    private fun showError(message: String) {
-        binding.progressBarTransactions.isVisible = false
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    private fun toggleDescription() {
+        isTextExpanded = !isTextExpanded
+        TransitionManager.beginDelayedTransition(binding.projectDescriptionCard)
+        updateDescription()
     }
 
-    private fun updateTransactions(transactions: List<TransactionEntity>) {
-        binding.apply {
-            if (transactions.isEmpty()) {
-                ivEmptyTransactions.isVisible = true
-                tvEmptyTransactions.apply {
-                    isVisible = true
-                    text = getString(R.string.no_transactions)
-                }
-                rvTransactions.isVisible = false
+    private fun updateDescription() = binding.apply {
+        tvProjectDescription.maxLines =
+            if (isTextExpanded) Int.MAX_VALUE else MAX_COLLAPSED_LINES
+        btnToggleDescription.apply {
+            text = getString(
+                if (isTextExpanded) R.string.show_less
+                else R.string.show_more
+            )
+            setIconResource(
+                if (isTextExpanded) R.drawable.baseline_expand_less_24
+                else R.drawable.baseline_expand_more_24
+            )
+        }
+    }
+
+    private fun showFilterDialog() {
+        val dlg = DialogFilterTransactionsBinding.inflate(layoutInflater)
+        val currentF = viewModel.currentFilter.value.copy()
+
+        val rawCats = resources.getStringArray(R.array.transaction_categories)
+            .filter { it != getString(R.string.all) }
+        val dynCats = viewModel.transactions.value
+            .mapNotNull { it.category.takeIf(String::isNotBlank) }
+        val cats = listOf(getString(R.string.all)) + (rawCats + dynCats).distinct()
+        dlg.spinnerCategory.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            cats
+        )
+        val catSel = currentF.category ?: getString(R.string.all)
+        dlg.spinnerCategory.setSelection(cats.indexOf(catSel).coerceAtLeast(0))
+
+        val users = listOf(getString(R.string.all)) + viewModel.transactions.value
+            .mapNotNull { it.userName.takeIf(String::isNotBlank) }
+            .distinct()
+        dlg.spinnerUser.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            users
+        )
+        val userSel = currentF.userName ?: getString(R.string.all)
+        dlg.spinnerUser.setSelection(users.indexOf(userSel).coerceAtLeast(0))
+
+        dlg.toggleType.isSelectionRequired = true
+        val typeChecked = when (currentF.type) {
+            TransactionEntity.TransactionType.INCOME -> R.id.btnTypeIncome
+            TransactionEntity.TransactionType.EXPENSE -> R.id.btnTypeExpense
+            else -> R.id.btnTypeAll
+        }
+        dlg.toggleType.check(typeChecked)
+
+        val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        var pickedStart = currentF.startDate
+        var pickedEnd = currentF.endDate
+        pickedStart?.let { dlg.etStartDate.setText(df.format(Date(it))) }
+        pickedEnd?.let { dlg.etEndDate.setText(df.format(Date(it))) }
+
+        fun pickDate(target: MaterialAutoCompleteTextView, onSet: (Long) -> Unit) {
+            val picker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(R.string.select_date)
+                .build()
+            picker.addOnPositiveButtonClickListener { ts ->
+                onSet(ts)
+                target.setText(df.format(Date(ts)))
+            }
+            picker.show(parentFragmentManager, "DATE_PICKER")
+        }
+        dlg.etStartDate.setOnClickListener { pickDate(dlg.etStartDate) { pickedStart = it } }
+        dlg.etEndDate.setOnClickListener { pickDate(dlg.etEndDate) { pickedEnd = it } }
+
+        val signedList = viewModel.transactions.value.map { t ->
+            when (TransactionEntity.TransactionType.fromString(t.type)) {
+                TransactionEntity.TransactionType.INCOME -> t.amount.toFloat()
+                TransactionEntity.TransactionType.EXPENSE -> -t.amount.toFloat()
+            }
+        }
+        val globalMin = signedList.minOrNull() ?: -1000f
+        val globalMax = signedList.maxOrNull() ?: 1000f
+
+        val curMin = currentF.minAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin
+        val curMax = currentF.maxAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax
+
+        dlg.sliderAmount.apply {
+            valueFrom = globalMin
+            valueTo = globalMax
+            stepSize = 1f
+            values = listOf(curMin, curMax)
+        }
+        dlg.etMinAmount.setText(curMin.toString())
+        dlg.etMaxAmount.setText(curMax.toString())
+
+        dlg.sliderAmount.addOnChangeListener { _, _, _ ->
+            dlg.etMinAmount.setText(dlg.sliderAmount.values[0].toString())
+            dlg.etMaxAmount.setText(dlg.sliderAmount.values[1].toString())
+        }
+        fun syncSlider() {
+            val low =
+                dlg.etMinAmount.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
+                    ?: globalMin
+            val high = dlg.etMaxAmount.text.toString().toFloatOrNull()?.coerceIn(low, globalMax)
+                ?: globalMax
+            dlg.sliderAmount.values = listOf(low, high)
+        }
+        dlg.etMinAmount.doAfterTextChanged { syncSlider() }
+        dlg.etMaxAmount.doAfterTextChanged { syncSlider() }
+
+        val builder = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.filters)
+            .setView(dlg.root)
+            .setPositiveButton(R.string.apply_filters, null)
+            .setNegativeButton(R.string.clear_filters) { dialog, _ ->
+                viewModel.applyFilter(TransactionFilter())
+                dialog.dismiss()
+            }
+
+        val dialog = builder.create()
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            if (pickedStart != null && pickedEnd != null && pickedStart!! > pickedEnd!!) {
+                dlg.etStartDateLayout.error = getString(R.string.error_date_order)
+                Snackbar.make(dlg.root, R.string.error_date_order, Snackbar.LENGTH_SHORT).show()
+                return@setOnClickListener
             } else {
-                tvEmptyTransactions.isVisible = false
-                ivEmptyTransactions.isVisible = false
-                rvTransactions.isVisible = true
-                transactionAdapter.submitList(transactions)
+                dlg.etStartDateLayout.error = null
             }
+
+            val selMin = dlg.etMinAmount.text.toString().toDoubleOrNull()
+            val selMax = dlg.etMaxAmount.text.toString().toDoubleOrNull()
+            if (selMin != null && selMax != null && selMin > selMax) {
+                dlg.etMinAmountLayout.error = getString(R.string.error_min_max_amount)
+                Snackbar.make(dlg.root, R.string.error_min_max_amount, Snackbar.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else {
+                dlg.etMinAmountLayout.error = null
+            }
+
+            val applied = TransactionFilter(
+                category  = dlg.spinnerCategory.selectedItem.toString()
+                    .takeIf { it != getString(R.string.all) },
+                type      = when (dlg.toggleType.checkedButtonId) {
+                    R.id.btnTypeIncome  -> TransactionEntity.TransactionType.INCOME
+                    R.id.btnTypeExpense -> TransactionEntity.TransactionType.EXPENSE
+                    else                -> null
+                },
+                userName  = dlg.spinnerUser.selectedItem.toString()
+                    .takeIf { it != getString(R.string.all) },
+                startDate = pickedStart,
+                endDate   = pickedEnd,
+                minAmount = selMin,
+                maxAmount = selMax
+            )
+            viewModel.applyFilter(applied)
+            dialog.dismiss()
         }
     }
 
-    private fun showAddTransactionDialog() {
+    private fun openAddTransactionDialog() {
         val dialog = AddTransactionDialogFragment.newInstance(
             projectId = args.projectId,
-            currentRole = ParticipantRole.EDITOR.name
+            currentRole = projectData?.currentRole?.name.orEmpty()
         )
-        dialog.setOnTransactionAdded { transaction ->
-            viewModel.addTransaction(args.projectId, transaction.toEntity())
-        }
-        dialog.show(childFragmentManager, "AddTransactionDialog")
+        dialog.setOnTransactionAdded { viewModel.addTransaction(args.projectId, it.toEntity()) }
+        dialog.show(childFragmentManager, "AddTransaction")
     }
 
-    private fun showTransactionDetailsDialog(transaction: TransactionEntity) {
-        val currentUserRole = (viewModel.uiState.value as? UiState.Success)?.data?.currentRole
+    private fun onTransactionClicked(transaction: TransactionEntity) {
         val dialog = AddTransactionDialogFragment.newInstance(
             projectId = args.projectId,
-            currentRole = currentUserRole?.name ?: ParticipantRole.VIEWER.name,
-            transaction = transaction.toTemporaryModel()
+            currentRole = projectData?.currentRole?.name.orEmpty(),
+            transactionId = transaction.id
         )
-        dialog.setOnTransactionUpdated { updatedTransaction ->
-            viewModel.updateTransaction(args.projectId, updatedTransaction.toEntity())
+
+        dialog.setOnTransactionUpdated {
+            viewModel.updateTransaction(args.projectId, it.toEntity())
         }
         dialog.setOnTransactionDeleted {
             viewModel.deleteTransaction(args.projectId, transaction.id)
         }
-        dialog.show(childFragmentManager, "TransactionDetailsDialog")
+        dialog.show(childFragmentManager, "TransactionDetails")
     }
 
-    private fun showFilterDialog() {
-        val dialog = BottomSheetDialog(requireContext())
-        val dialogBinding = DialogFilterTransactionsBinding.inflate(layoutInflater)
-        dialog.setContentView(dialogBinding.root)
+    private fun onMenuItemClicked(item: MenuItem): Boolean =
+        when (item.itemId) {
+            R.id.menuEdit -> {
+                navigateToEdit(); true
+            }
 
-        // Получаем список категорий из ресурсов. Если нужно заменить "Все", можно использовать ресурс
-        val categories = (
-                resources.getStringArray(
-                    R.array.transaction_categories
-                ) + viewModel.transactions.value.mapNotNull { it.category.ifEmpty { null } }
-                ).distinct()
-        val adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        dialogBinding.spinnerCategory.setAdapter(adapter)
+            R.id.menuDelete -> {
+                confirmDelete(); true
+            }
 
-        // Предположим, что viewModel.currentFilter хранит выбранный ранее фильтр.
-        val currentFilter = viewModel.currentFilter.value
-        dialogBinding.etMinAmount.setText(currentFilter.minAmount?.toString() ?: "")
-        dialogBinding.etMaxAmount.setText(currentFilter.maxAmount?.toString() ?: "")
-        // Если категория не выбрана, устанавливаем значение "Все"
-        val defaultValue = currentFilter.category ?: getString(R.string.all)
-        val index = adapter.getPosition(defaultValue)
-        dialogBinding.spinnerCategory.setSelection(index)
+            R.id.menuArchiveProject -> {
+                changeStatus(ProjectStatus.ARCHIVED); true
+            }
 
-        dialogBinding.btnApplyFilters.setOnClickListener {
-            val minAmount = dialogBinding.etMinAmount.text.toString().toDoubleOrNull()
-            val maxAmount = dialogBinding.etMaxAmount.text.toString().toDoubleOrNull()
-            val selectedCategory =
-                dialogBinding.spinnerCategory.selectedItem.toString().let { category ->
-                    if (category == getString(R.string.all)) {
-                        null
-                    } else if (category == getString(R.string.other)) {
-                        null
-                    } else {
-                        category
-                    }
-                }
-            val filter = TransactionFilter(
-                category = selectedCategory,
-                minAmount = minAmount,
-                maxAmount = maxAmount
+            R.id.menuUnarchiveProject -> {
+                changeStatus(ProjectStatus.ACTIVE); true
+            }
+
+            R.id.menuParticipants -> {
+                navigateToParticipants(); true
+            }
+
+            R.id.menuAnalytics -> {
+                navigateToAnalytics(); true
+            }
+
+            else -> false
+        }
+
+    private fun changeStatus(newStatus: ProjectStatus) {
+        projectData?.project?.copy(status = newStatus)?.let {
+            viewModel.updateProject(it)
+        }
+        Snackbar.make(
+            binding.root,
+            getString(
+                if (newStatus == ProjectStatus.ARCHIVED)
+                    R.string.project_archived
+                else
+                    R.string.project_unarchived
+            ),
+            Snackbar.LENGTH_LONG
+        ).show()
+    }
+
+    private fun refreshData() {
+        viewModel.syncProjectDetails(args.projectId)
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
+    private fun navigateToEdit() {
+        val bottomSheet = EditProjectDialogFragment(args.projectId)
+        bottomSheet.show(childFragmentManager, ProjectFilterBottomSheet.TAG)
+    }
+
+    private fun confirmDelete() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.delete_project)
+            .setMessage(R.string.delete_project_confirmation)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                viewModel.deleteProject(args.projectId)
+                viewModel.syncProjects()
+                findNavController().navigateUp()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun navigateToParticipants() =
+        findNavController().navigate(
+            ProjectDetailsFragmentDirections.actionDetailsToParticipants(
+                projectId = args.projectId,
+                userRole = projectData?.currentRole?.name.orEmpty()
             )
-            // Применяем фильтр и сохраняем его в viewModel
-            viewModel.applyFilter(filter)
-            dialog.dismiss()
-        }
+        )
 
-        dialogBinding.btnClearFilters.setOnClickListener {
-            viewModel.applyFilter(TransactionFilter())
-            dialog.dismiss()
-        }
-        dialog.show()
+    private fun navigateToAnalytics() =
+        findNavController().navigate(
+            ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
+        )
+
+    companion object {
+        private const val KEY_TEXT_EXPANDED = "KEY_TEXT_EXPANDED"
+        private const val MAX_COLLAPSED_LINES = 3
+        private const val MIN_DESC_LENGTH = 300
     }
 }

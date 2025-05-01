@@ -14,7 +14,12 @@ object ProjectMapper {
             amountSpent = dto.amountSpent,
             status = dto.status,
             createdAt = dto.createdAt,
-            lastModified = dto.lastModified
+            lastModified = dto.lastModified,
+            categoryIcon = dto.categoryIcon,
+            category = dto.category,
+            ownerName = dto.ownerName,
+            ownerEmail = dto.ownerEmail,
+            ownerId = dto.ownerId
         )
     }
 
@@ -27,7 +32,12 @@ object ProjectMapper {
             amountSpent = entity.amountSpent,
             status = entity.status,
             createdAt = entity.createdAt,
-            lastModified = entity.lastModified
+            lastModified = entity.lastModified,
+            categoryIcon = entity.categoryIcon,
+            category = entity.category,
+            ownerName = entity.ownerName,
+            ownerEmail = entity.ownerEmail,
+            ownerId = entity.ownerId
         )
     }
 }

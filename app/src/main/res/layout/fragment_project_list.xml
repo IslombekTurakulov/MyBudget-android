@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorRoot"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
 
-    <!-- AppBarLayout с Toolbar и поисковой строкой -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -15,104 +15,79 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:layout_gravity="center_vertical"
-            app:menu="@menu/projects_list_menu">
+            android:contentInsetStartWithNavigation="0dp"
+            app:menu="@menu/projects_list_menu"
+            app:title="@string/project_list_title">
 
-            <!-- Поисковая строка -->
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Поиск проектов"
+                android:hint="@string/search_projects"
                 android:paddingEnd="16dp"
+                app:boxStrokeColor="?attr/colorPrimary"
                 app:startIconDrawable="@drawable/baseline_search_24">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/searchEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textEnableTextConversionSuggestions" />
+                    android:imeOptions="actionSearch"
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
         </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Основной контент -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Сообщение об ошибке -->
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/btnRetry"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Не удалось загрузить проекты"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Заглушка для пустого списка -->
-        <TextView
-            android:id="@+id/tvEmptyPlaceholder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="У вас пока нет проектов"
-            android:textAppearance="?attr/textAppearanceBody1"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- SwipeRefreshLayout с RecyclerView списка проектов -->
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipeRefreshLayout"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/fabAddProject"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewProjects"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipToPadding="false"
                 android:padding="8dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_project"
-                tools:itemCount="1"/>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                tools:itemCount="3"
+                tools:listitem="@layout/item_project" />
 
-        <!-- Кнопка добавления проекта -->
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/fabAddProject"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginTop="24dp"
-            android:contentDescription="Добавить проект"
-            android:text="Добавить проект"
-            app:icon="@drawable/baseline_add_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <!-- Плейсхолдер "нет проектов" -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvEmptyPlaceholder"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/no_projects_yet"
+                android:visibility="gone" />
 
-        <!-- Кнопка фильтрации -->
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/fabFilterProjects"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="82dp"
-            android:contentDescription="Фильтрация"
-            android:text="Фильтры"
-            app:icon="@drawable/baseline_filter_list_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            <!-- Плейсхолдер "ошибка" -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvErrorState"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/error_loading_projects"
+                android:visibility="gone" />
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <com.leinardi.android.speeddial.SpeedDialView
+        android:id="@+id/speedDial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        app:sdMainFabClosedBackgroundColor="?attr/colorPrimaryContainer"
+        app:sdMainFabClosedSrc="@drawable/ic_dashboard_24"
+        app:sdMainFabOpenedBackgroundColor="?attr/colorSecondaryContainer"
+        app:sdMainFabOpenedSrc="@drawable/baseline_close_24" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,12 +1,31 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="?attr/colorSurface">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="@drawable/baseline_close_24"
+        app:navigationContentDescription="@string/cancel"
+        app:title="@string/create_project"
+        app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+        app:popupTheme="@style/ThemeOverlay.Material3" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:overScrollMode="ifContentScrolls"
+        android:layout_marginTop="?actionBarSize"
+        android:padding="16dp"
+        app:layout_behavior="@string/bottom_sheet_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -14,89 +33,139 @@
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Создать проект"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="16dp"/>
+                android:text="@string/project_category"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_marginBottom="8dp"/>
 
-            <!-- Название проекта -->
-            <com.google.android.material.textfield.TextInputLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Название проекта"
-                style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardIconPicker"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardBackgroundColor="?attr/colorSecondaryContainer">
+
+                    <TextView
+                        android:id="@+id/tvCategoryIcon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textSize="24sp"
+                        android:contentDescription="@string/error_empty_icon"
+                        tools:text="🍔"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCategory"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:hint="@string/project_category_hint"
+                    android:layout_marginStart="12dp">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/spinnerCategory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapWords"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:clickable="true"
+                        android:minHeight="50dp"
+                        android:paddingStart="12dp"
+                        android:imeOptions="actionDone"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilProjectName"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/project_name"
+                android:layout_marginBottom="12dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etProjectName"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:layout_height="wrap_content"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Описание проекта -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilProjectDescription"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Описание проекта"
-                style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-                android:layout_marginTop="8dp">
+                android:hint="@string/project_description"
+                android:layout_marginBottom="12dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etProjectDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textMultiLine" />
+                    android:inputType="textMultiLine"
+                    android:minLines="3"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Лимит бюджета -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilBudgetLimit"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Лимит бюджета (₽)"
-                style="@style/Widget.Material3.TextInputLayout.FilledBox.Dense"
-                android:layout_marginTop="8dp">
+                android:hint="@string/budget_limit"
+                app:endIconDrawable="@drawable/ic_baseline_attach_money_24"
+                app:endIconTint="?attr/colorOnSurfaceVariant"
+                android:layout_marginBottom="24dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etBudgetLimit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="numberDecimal" />
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Прогресс -->
             <ProgressBar
                 android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="?attr/progressBarStyle"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_gravity="center"
                 android:visibility="gone"
-                android:layout_marginTop="16dp" />
+                android:layout_marginBottom="24dp"/>
 
-            <!-- Кнопки -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="end"
-                android:layout_marginTop="24dp">
+                android:gravity="end">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancel"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Отмена"
-                    style="@style/Widget.Material3.Button.TextButton" />
+                    android:text="@string/cancel"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCreate"
+                    style="@style/Widget.Material3.Button.ElevatedButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Создать"
-                    style="@style/Widget.Material3.Button.ElevatedButton"
-                    android:layout_marginStart="16dp" />
+                    android:layout_marginStart="16dp"
+                    android:text="@string/create_project"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</com.google.android.material.card.MaterialCardView>

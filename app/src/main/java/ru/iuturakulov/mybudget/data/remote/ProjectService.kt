@@ -28,6 +28,13 @@ interface ProjectService {
     @GET("projects/{id}/transactions")
     suspend fun fetchTransactions(@Path("id") projectId: String): Response<List<TransactionDto>>
 
+    // Получение транзакции из проекта
+    @GET("projects/{id}/transactions/{transactionId}")
+    suspend fun getTransactionById(
+        @Path("id") projectId: String,
+        @Path("transactionId") transactionId: String
+    ): Response<TransactionDto>
+
     // Добавление проекта
     @POST("projects")
     suspend fun addProject(@Body project: ProjectDto): Response<ProjectDto>

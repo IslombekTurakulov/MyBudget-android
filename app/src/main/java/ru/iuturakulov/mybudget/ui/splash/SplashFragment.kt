@@ -32,7 +32,7 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
                     } else {
                         findNavController().navigate(R.id.action_splash_to_login)
                     }
-                }, 2000) // 2 секунды задержки для визуализации загруз
+                }, 2000) // 2 секунды задержки для визуализации загрузки
             }
         }
     }

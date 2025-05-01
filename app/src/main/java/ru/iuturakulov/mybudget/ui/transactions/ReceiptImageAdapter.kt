@@ -8,91 +8,89 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import ru.iuturakulov.mybudget.R
 
-// Улучшенный адаптер для RecyclerView с изображениями чеков
+import ru.iuturakulov.mybudget.databinding.ItemReceiptImageBinding
+
 class ReceiptImageAdapter(
-    private var images: List<Bitmap>,
+    initialImages: List<Bitmap>,
     private val onDelete: (Int) -> Unit,
     private val onImageClick: (Int) -> Unit
 ) : RecyclerView.Adapter<ReceiptImageAdapter.ImageViewHolder>() {
 
-    // Константы для анимации
     companion object {
         private const val ANIMATION_DURATION = 200L
     }
 
-    inner class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.ivReceiptImage)
-        val btnDelete: ImageButton = itemView.findViewById(R.id.btnDeleteImage)
-        val rootLayout: ViewGroup = itemView.findViewById(R.id.rootLayout)
+    private var images: List<Bitmap> = initialImages
+
+    inner class ImageViewHolder(
+        private val binding: ItemReceiptImageBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.ivReceiptImage.setOnClickListener {
+                val pos = this.position
+                if (pos != RecyclerView.NO_POSITION) {
+                    onImageClick(pos)
+                }
+            }
+            binding.btnDeleteImage.setOnClickListener {
+                val pos = position
+                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
+
+                binding.rootLayout.animate()
+                    .scaleX(0.8f).scaleY(0.8f)
+                    .setDuration(ANIMATION_DURATION)
+                    .withEndAction {
+                        onDelete(pos)
+                    }
+                    .start()
+            }
+        }
+
+        fun bind(bitmap: Bitmap) {
+            binding.ivReceiptImage.setImageBitmap(bitmap)
+
+            binding.rootLayout.alpha = 0f
+            binding.rootLayout.animate()
+                .alpha(1f)
+                .setDuration(ANIMATION_DURATION)
+                .start()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_receipt_image, parent, false)
-        return ImageViewHolder(view)
+        val binding = ItemReceiptImageBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ImageViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        // Устанавливаем изображение с учетом памяти
-        holder.imageView.setImageBitmap(images.getOrNull(position))
-        
-        // Обработчик клика по изображению (просмотр)
-        holder.imageView.setOnClickListener {
-            onImageClick(position)
-        }
-        
-        // Обработчик удаления с анимацией
-        holder.btnDelete.apply {
-            // Всегда показываем кнопку удаления
-            visibility = View.VISIBLE
-            
-            setOnClickListener {
-                animate().apply {
-                    duration = ANIMATION_DURATION
-                    scaleX(0.8f)
-                    scaleY(0.8f)
-                    withEndAction {
-                        onDelete(position)
-                        // Анимация удаления элемента
-                        holder.rootLayout.animate()
-                            .alpha(0f)
-                            .setDuration(ANIMATION_DURATION)
-                            .withEndAction {
-                                notifyItemRemoved(position)
-                            }
-                            .start()
-                    }
-                }.start()
-            }
-        }
-        
-        // Анимация при появлении элемента
-        holder.rootLayout.alpha = 0f
-        holder.rootLayout.animate()
-            .alpha(1f)
-            .setDuration(ANIMATION_DURATION)
-            .start()
+        holder.bind(images[position])
     }
 
     override fun getItemCount(): Int = images.size
 
-    // Метод для обновления данных
+    fun getImageAt(position: Int): Bitmap? =
+        images.getOrNull(position)
+
     fun updateImages(newImages: List<Bitmap>) {
-        val diffCallback = object : DiffUtil.Callback() {
+        val diff = object : DiffUtil.Callback() {
             override fun getOldListSize() = images.size
             override fun getNewListSize() = newImages.size
-            override fun areItemsTheSame(oldPos: Int, newPos: Int) = 
-                images[oldPos].sameAs(newImages[newPos])
-            override fun areContentsTheSame(oldPos: Int, newPos: Int) = true
-        }
-        
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        images = newImages
-        diffResult.dispatchUpdatesTo(this)
-    }
 
-    // Метод для получения изображения по позиции
-    fun getImageAt(position: Int): Bitmap? = images.getOrNull(position)
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) =
+                images[oldPos] === newImages[newPos]
+
+            override fun areContentsTheSame(oldPos: Int, newPos: Int) =
+                images[oldPos].sameAs(newImages[newPos])
+        }
+
+        val result = DiffUtil.calculateDiff(diff)
+        images = newImages
+        result.dispatchUpdatesTo(this)
+    }
 }

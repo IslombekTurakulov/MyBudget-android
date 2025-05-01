@@ -1,29 +1,26 @@
 package ru.iuturakulov.mybudget.ui.projects.list
 
-import android.app.AlertDialog
-import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.core.view.isVisible
-import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.leinardi.android.speeddial.SpeedDialActionItem
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
-import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
-import ru.iuturakulov.mybudget.databinding.DialogFilterBinding
 import ru.iuturakulov.mybudget.databinding.FragmentProjectListBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
 import ru.iuturakulov.mybudget.ui.projects.create.CreateProjectFragment
@@ -35,50 +32,70 @@ class ProjectListFragment :
     private val viewModel: ProjectListViewModel by viewModels()
     private lateinit var adapter: ProjectAdapter
 
-    override fun getViewBinding(view: View): FragmentProjectListBinding =
-        FragmentProjectListBinding.bind(view)
+    override fun getViewBinding(view: View) = FragmentProjectListBinding.bind(view)
 
-    @OptIn(FlowPreview::class)
     override fun setupViews() {
         adapter = ProjectAdapter { project ->
             val action =
                 ProjectListFragmentDirections.actionProjectsToDetails(projectId = project.id)
             findNavController().navigate(action)
         }
-        setupToolbar()
         binding.recyclerViewProjects.adapter = adapter
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.syncProjects()
         }
 
-        binding.searchEditText.addTextChangedListener { editable ->
-            val query = editable?.toString().orEmpty()
-            lifecycleScope.launch {
-                flow {
-                    emit(query)
+        MutableStateFlow("")
+            .also { state ->
+                binding.searchEditText.doOnTextChanged { text, _, _, _ ->
+                    state.value = text?.toString().orEmpty()
                 }
-                    .debounce(300)
-                    .collect { debouncedQuery ->
-                        viewModel.setSearchQuery(debouncedQuery)
-                    }
+            }
+            .debounce(300)
+            .distinctUntilChanged()
+            .onEach { query ->
+                viewModel.setSearchQuery(query)
+            }
+            .launchIn(lifecycleScope)
+
+        binding.searchEditText.apply {
+            imeOptions = EditorInfo.IME_ACTION_SEARCH
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    this.clearFocus()
+                    true
+                } else false
             }
         }
 
-        binding.fabAddProject.setOnClickListener {
-            val createProjectBottomSheet = CreateProjectFragment()
-            createProjectBottomSheet.show(
-                this.requireActivity().supportFragmentManager,
-                "CreateProjectFragment"
+        binding.speedDial.apply {
+            addActionItem(
+                SpeedDialActionItem.Builder(R.id.fab_add, R.drawable.baseline_add_24)
+                    .setLabel(getString(R.string.add_project))
+                    .create()
             )
-            createProjectBottomSheet.setOnProjectAdded {
-                viewModel.syncProjects()
+            addActionItem(
+                SpeedDialActionItem.Builder(R.id.fab_filter, R.drawable.baseline_filter_list_24)
+                    .setLabel(getString(R.string.filters))
+                    .create()
+            )
+            setOnActionSelectedListener { action ->
+                when (action.id) {
+                    R.id.fab_add -> {
+                        navigateToAddProject()
+                        true
+                    }
+                    R.id.fab_filter -> {
+                        showFilterDialog()
+                        true
+                    }
+                    else -> false
+                }
             }
         }
 
-        binding.fabFilterProjects.setOnClickListener {
-            showFilterDialog()
-        }
+        setupToolbar()
     }
 
     override fun onResume() {
@@ -88,163 +105,94 @@ class ProjectListFragment :
 
     override fun setupObservers() {
         lifecycleScope.launchWhenStarted {
-            viewModel.uiState.collect { state ->
-                when (state) {
-                    is UiState.Loading -> {
-                        binding.swipeRefreshLayout.isRefreshing = true
-                        binding.tvEmptyPlaceholder.isVisible = false
-                        binding.btnRetry.isVisible = false
-                    }
-
-                    is UiState.Success -> {
-                        binding.swipeRefreshLayout.isRefreshing = false
-                        binding.tvEmptyPlaceholder.isVisible = state.data?.isEmpty() == true
-                        binding.recyclerViewProjects.isVisible = state.data?.isEmpty() == false
-                        binding.btnRetry.isVisible = false
-
-                        adapter.submitList(state.data)
-                        adapter.notifyDataSetChanged()
-                    }
-
-                    is UiState.Error -> {
-                        binding.swipeRefreshLayout.isRefreshing = false
-                        binding.tvEmptyPlaceholder.isVisible = false
-                        binding.btnRetry.isVisible = true
-                    }
-
-                    is UiState.Idle -> {}
-                }
-            }
-        }
-
-        lifecycleScope.launchWhenStarted {
             viewModel.filteredProjects.collect { projects ->
-                adapter.submitList(projects)
+                binding.swipeRefreshLayout.isRefreshing = false
+                binding.recyclerViewProjects.isVisible = projects.isNotEmpty()
                 binding.tvEmptyPlaceholder.isVisible = projects.isEmpty()
+                adapter.submitList(projects)
             }
         }
 
         lifecycleScope.launchWhenStarted {
             viewModel.syncEvent.collect { success ->
                 if (!success) {
-                    Snackbar.make(binding.root, "Ошибка синхронизации", Snackbar.LENGTH_SHORT)
+                    Snackbar.make(binding.root, R.string.error_sync_projects, Snackbar.LENGTH_SHORT)
                         .show()
                 }
             }
         }
 
         lifecycleScope.launchWhenStarted {
-            viewModel.inviteCodeEvent.collect { success ->
-                if (success is UiState.Success) {
-                    Snackbar.make(binding.root, success.data ?: "Успех", Snackbar.LENGTH_SHORT)
-                        .show()
-                } else if (success is UiState.Error) {
-                    Snackbar.make(binding.root, success.message, Snackbar.LENGTH_SHORT).show()
+            viewModel.isSyncing.collect { isSyncing ->
+                binding.swipeRefreshLayout.isRefreshing = isSyncing
+            }
+        }
+
+        // Ответ на приглашение по коду
+        lifecycleScope.launchWhenStarted {
+            viewModel.inviteCodeEvent.collect { event ->
+                when (event) {
+                    is UiState.Success -> {
+                        Snackbar.make(binding.root, event.data ?: getString(R.string.success), Snackbar.LENGTH_SHORT)
+                            .show()
+                    }
+                    is UiState.Error -> {
+                        Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
+                    }
+                    else -> {}
                 }
             }
         }
+    }
+
+    private fun navigateToAddProject() {
+        val bottomSheet = CreateProjectFragment()
+        bottomSheet.setOnProjectAdded { viewModel.syncProjects() }
+        bottomSheet.show(childFragmentManager, CreateProjectFragment.TAG)
     }
 
     private fun showFilterDialog() {
-        val bottomSheet = BottomSheetDialog(
-            requireContext(),
-        )
-        val binding = DialogFilterBinding.inflate(layoutInflater)
-        bottomSheet.setContentView(binding.root)
-        bottomSheet.setCancelable(true)
-        bottomSheet.behavior.isFitToContents = true
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.filterStatus.collect { status ->
-                    val id = when (status) {
-                        ProjectStatus.ACTIVE -> R.id.radioActive
-                        ProjectStatus.DELETED -> R.id.radioDeleted
-                        ProjectStatus.ARCHIVED -> R.id.radioArchived
-                        else -> R.id.radioAll
-                    }
-                    // Проверяем, что радио-кнопка ещё не отмечена
-                    if (binding.radioGroupStatus.checkedRadioButtonId != id) {
-                        binding.radioGroupStatus.check(id)
-                    }
-                }
-            }
-        }
-
-        binding.radioGroupStatus.setOnCheckedChangeListener { _, checkedId ->
-            val newStatus = when (checkedId) {
-                R.id.radioActive -> ProjectStatus.ACTIVE
-                R.id.radioDeleted -> ProjectStatus.DELETED
-                R.id.radioArchived -> ProjectStatus.ARCHIVED
-                else -> ProjectStatus.ALL
-            }
-            viewModel.setFilterStatus(newStatus)
-            bottomSheet.dismiss()
-        }
-
-        bottomSheet.show()
+        val bottomSheet = ProjectFilterBottomSheet()
+        bottomSheet.show(childFragmentManager, ProjectFilterBottomSheet.TAG)
     }
 
-
     private fun setupToolbar() {
-        binding.toolbar.apply {
-            setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.menuInviteCode -> {
-                        showJoinByCodeDialog()
-                        true
-                    }
-
-                    R.id.menuNotifications -> {
-                        findNavController().navigate(R.id.action_projects_to_notifications)
-                        true
-                    }
-
-                    else -> false
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menuInviteCode -> {
+                    showJoinByCodeDialog()
+                    true
                 }
+                R.id.menuNotifications -> {
+                    findNavController().navigate(R.id.action_projects_to_notifications)
+                    true
+                }
+                else -> false
             }
         }
     }
 
     private fun showJoinByCodeDialog() {
-        val dialogView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.dialog_join_by_code, null)
-
+        val dialogView = layoutInflater.inflate(R.layout.dialog_join_by_code, null)
         val inputLayout = dialogView.findViewById<TextInputLayout>(R.id.inputLayoutProjectCode)
-        val input = dialogView.findViewById<TextInputEditText>(R.id.etProjectCode)
+        val editText = dialogView.findViewById<TextInputEditText>(R.id.etProjectCode)
 
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Присоединиться к проекту")
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.join_project)
             .setView(dialogView)
-            .setPositiveButton("Присоединиться", null)
-            .setNegativeButton("Отмена", null)
-            .create()
-
-        dialog.setOnShowListener {
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            positiveButton.setOnClickListener {
-                val code = input.text?.toString().orEmpty()
-                if (validateProjectCode(inputLayout, code)) {
+            .setPositiveButton(R.string.join) { dialog, _ ->
+                val code = editText.text?.toString().orEmpty()
+                if (code.isBlank()) {
+                    inputLayout.error = getString(R.string.error_empty_code)
+                } else {
+                    inputLayout.error = null
                     viewModel.joinProjectByCode(code)
                     viewModel.syncProjects()
                     dialog.dismiss()
                 }
             }
-        }
-
-        dialog.show()
-    }
-
-    private fun validateProjectCode(
-        inputLayout: TextInputLayout,
-        code: String
-    ): Boolean {
-        return if (code.isBlank()) {
-            inputLayout.error = "Код не может быть пустым"
-            false
-        } else {
-            inputLayout.error = null
-            true
-        }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 }
+
