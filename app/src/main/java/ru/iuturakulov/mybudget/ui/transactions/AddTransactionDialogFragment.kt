@@ -518,6 +518,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             onDelete = { position ->
                 if (position in selectedImages.indices) {
                     selectedImages.removeAt(position)
+                    receiptImageAdapter.updateImages(selectedImages)
                     receiptImageAdapter.notifyItemRemoved(position)
                     receiptImageAdapter.notifyItemRangeChanged(position, selectedImages.size - position)
                 } else {
