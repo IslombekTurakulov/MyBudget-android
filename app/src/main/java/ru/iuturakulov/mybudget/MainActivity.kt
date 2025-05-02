@@ -127,6 +127,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.splashFragment,
                 R.id.loginFragment,
                 R.id.registerFragment,
+                R.id.privacyPolicyFragment,
                 R.id.resetPasswordFragment -> View.GONE
 
                 else -> View.VISIBLE

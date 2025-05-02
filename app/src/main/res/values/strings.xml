@@ -2,7 +2,7 @@
 <resources>
 
     <!-- App -->
-    <string name="app_name">My Budget</string>
+    <string name="app_name">Мой бюджет</string>
     <string name="splash_tagline">Ваши финансы — под контролем</string>
     <string name="action_settings">Settings</string>
 
@@ -399,4 +399,17 @@
     <string name="logout_button">Выйти</string>
     <string name="choose_date">Выберите дату</string>
     <string name="choose_time">Выберите время</string>
+
+    <string name="policy_part1">Я согласен с </string>
+    <string name="policy_link">Политикой&#160;конфиденциальности</string>
+    <string name="policy_html">%1$s <u><font color='?attr/colorPrimary'>%2$s</font></u></string>
+
+    <string name="error_load_privacy_policy">
+        Не удалось загрузить политику конфиденциальности. Проверьте соединение.
+    </string>
+    <string name="action_retry">Повторить</string>
+    <string name="error_name_too_short">Имя должно быть не менее 4 символов</string>
+    <string name="error_empty_confirm">Подтвердите пароль</string>
+    <string name="error_password_mismatch">Пароли не совпадают</string>
+    <string name="error_policy_required">Нужно принять политику конфиденциальности</string>
 </resources>

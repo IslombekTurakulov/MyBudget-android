@@ -15,34 +15,30 @@ import ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment
 @AndroidEntryPoint
 class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login) {
 
-    private val viewModel: LoginViewModel by viewModels<LoginViewModel>()
+    private val viewModel: LoginViewModel by viewModels()
 
-    override fun getViewBinding(view: View): FragmentLoginBinding {
-        return FragmentLoginBinding.bind(view)
-    }
+    override fun getViewBinding(view: View) = FragmentLoginBinding.bind(view)
 
     override fun setupViews() {
         binding.btnLogin.setOnClickListener {
-            // TODO: remove
-//            val dialog = AddTransactionDialogFragment.newInstance("adasda", "sadsadas")
-//            dialog.show(childFragmentManager, "AddTransactionDialog")
-//            return@setOnClickListener
             val email = binding.etEmail.text?.toString().orEmpty().trim()
             val password = binding.etPassword.text?.toString().orEmpty().trim()
             val emailPattern = Patterns.EMAIL_ADDRESS
+
             if (email.isBlank() || !emailPattern.matcher(email).matches()) {
-                binding.etEmailInputLayout.error =
-                    "Введите корректный email\nНапример: example@gmail.com"
+                binding.tilEmail.error = getString(R.string.error_invalid_email)
                 return@setOnClickListener
             } else {
-                binding.etEmailInputLayout.isErrorEnabled = false
+                binding.tilEmail.error = null
             }
+
             if (password.isBlank()) {
-                binding.etPasswordInputLayout.error = "Введите пароль"
+                binding.tilPassword.error = getString(R.string.error_empty_password)
                 return@setOnClickListener
             } else {
-                binding.etPasswordInputLayout.isErrorEnabled = false
+                binding.tilPassword.error = null
             }
+
             viewModel.login(email, password)
         }
 
@@ -59,6 +55,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login
         viewModel.loginState.observe(viewLifecycleOwner) { state ->
             binding.progressBar.isVisible = state is LoginViewModel.LoginState.Loading
             binding.btnLogin.isEnabled = state !is LoginViewModel.LoginState.Loading
+
             when (state) {
                 is LoginViewModel.LoginState.Success -> {
                     findNavController().navigate(R.id.action_login_to_projects)
@@ -68,7 +65,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login
                     Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
                 }
 
-                else -> Unit // Ничего не делаем для Loading
+                else -> Unit
             }
         }
     }

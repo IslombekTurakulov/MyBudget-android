@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy — My Budget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #f5f5f5; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 8px; }
+        h1 { font-size: 2em; margin-bottom: 0.2em; color: #e91e63; }
+        .date { font-size: 0.9em; color: #777; margin-bottom: 1.5em; }
+        section { margin-bottom: 1.5em; }
+        h2 { font-size: 1.3em; margin-bottom: 0.5em; position: relative; padding-bottom: 0.3em; }
+        h2::after { content: ''; position: absolute; left: 0; bottom: 0; width: 50px; height: 3px; background-color: #e91e63; border-radius: 2px; }
+        ul { margin: 0; padding-left: 1.2em; }
+        li { margin-bottom: 0.5em; }
+        p { margin-bottom: 0.8em; line-height: 1.5; }
+        .contact { font-size: 0.95em; background: #f9f9f9; padding: 10px; border-left: 4px solid #e91e63; border-radius: 4px; }
+        a { color: #e91e63; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Privacy Policy</h1>
+    <p class="date">Last updated: May 3, 2025</p>
+
+    <section>
+        <h2>1. Terms</h2>
+        <ul>
+            <li><strong>User</strong> — any individual using the application.</li>
+            <li><strong>Personal Data</strong> — information that can identify the User.</li>
+            <li><strong>Administrator</strong> — the developer and operator of the backend, hosted on <a href="https://cloud.yandex.com">Yandex Cloud</a>.</li>
+            <li><strong>Data Processing</strong> — any operation performed on data (collection, storage, modification, deletion, etc.).</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>2. Data Collection and Types</h2>
+        <p>The application collects the following categories of data:</p>
+        <ul>
+            <li><strong>Registration data</strong> (name, email address, password). Passwords are encrypted using the <a href="https://en.wikipedia.org/wiki/Bcrypt">bcrypt</a> algorithm.</li>
+            <li><strong>Financial transactions</strong> (amount, date, category, description). Receipt images are processed via <a href="https://developers.google.com/ml-kit">Google ML Kit</a> or <a href="https://cloud.google.com/vision">Cloud Vision</a> for OCR.</li>
+            <li><strong>Technical data</strong> (device identifier, OS version, app version, usage logs). Logs are sent to <a href="https://firebase.google.com/products/crashlytics">Firebase Crashlytics</a> for debugging.</li>
+            <li><strong>Notification settings</strong> (preferences for push notifications via <a href="https://firebase.google.com/products/cloud-messaging">Firebase Cloud Messaging</a>, history of sent reminders).</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>3. Purposes of Processing</h2>
+        <ul>
+            <li>Authentication and access control using <a href="https://jwt.io">JSON Web Tokens (JWT)</a>.</li>
+            <li>Data synchronization between devices via REST API built with <a href="https://ktor.io">Ktor</a>.</li>
+            <li>Ensuring data integrity with ACID transactions in <a href="https://www.postgresql.org">PostgreSQL</a>.</li>
+            <li>Improving application performance based on anonymous analytics collected with <a href="https://firebase.google.com/products/analytics">Firebase Analytics</a>.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>4. Legal Basis</h2>
+        <ul>
+            <li><strong>Contract:</strong> performance of obligations to provide the service.</li>
+            <li><strong>User Consent:</strong> given during registration.</li>
+            <li><strong>Legitimate Interests:</strong> ensuring security and improving service quality.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>5. Data Retention</h2>
+        <ul>
+            <li><strong>Personal Data</strong> — retained until account deletion and for up to 5 years afterward for legal purposes.</li>
+            <li><strong>Logs and technical metrics</strong> — stored for up to 1 year in Firebase.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>6. Data Sharing and Disclosure</h2>
+        <p>Personal data is not shared with third parties except in the following cases:</p>
+        <ul>
+            <li>Legal requirements by applicable law.</li>
+            <li>Trusted services necessary for functionality (Google, Firebase) — only essential data is shared.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>7. Security Measures</h2>
+        <ul>
+            <li>Data transmission is encrypted using <a href="https://tools.ietf.org/html/rfc8446">TLS 1.3</a> over <a href="https://en.wikipedia.org/wiki/HTTPS">HTTPS</a>.</li>
+            <li>Passwords are stored hashed with bcrypt (hash + salt).</li>
+            <li>Access to the database is restricted and regularly audited.</li>
+            <li>Local caching using <a href="https://developer.android.com/guide/topics/data/room">Room</a> for offline access.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>8. User Rights</h2>
+        <ul>
+            <li>Request and receive a copy of all personal data.</li>
+            <li>Request corrections or updates to personal data.</li>
+            <li>Withdraw consent to data processing at any time.</li>
+            <li>Request account deletion via support; deletion will be completed within the specified timeframe.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>9. Cache and Analytics</h2>
+        <ul>
+            <li>Local caching via <a href="https://developer.android.com/guide/topics/data/room">Room</a> enables offline functionality.</li>
+            <li>Anonymous analytics in <a href="https://firebase.google.com/products/analytics">Firebase Analytics</a> to improve user experience without identifying individuals.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>10. Changes to This Policy</h2>
+        <p>We will notify users at least 14 days before any changes become effective. Notifications are available within the app.</p>
+    </section>
+
+    <div class="contact">
+        <strong>Support Contacts:</strong><br>
+        ✉️ <a href="mailto:iuturakulov@edu.hse.ru">iuturakulov@edu.hse.ru</a><br>
+        For inquiries about data processing and rights implementation.
+    </div>
+</div>
+</body>
+</html>

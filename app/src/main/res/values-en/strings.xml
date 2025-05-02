@@ -397,4 +397,18 @@
 
     <string name="choose_date">Choose date</string>
     <string name="choose_time">Choose time</string>
+
+    <string name="policy_html">%1$s <u><font color='?attr/colorPrimary'>%2$s</font></u></string>
+    <string name="policy_part1">I agree to the</string>
+    <string name="policy_link">Privacy&#160;policy</string>
+
+    <string name="error_load_privacy_policy">
+        Failed to load Privacy Policy. Please check your connection.
+    </string>
+    <string name="action_retry">Retry</string>
+
+    <string name="error_name_too_short">Name must be at least 4 characters</string>
+    <string name="error_empty_confirm">Please confirm your password</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_policy_required">You must accept the privacy policy</string>
 </resources>

@@ -3,8 +3,10 @@
     <dimen name="fab_elevation">6dp</dimen>
     <dimen name="spacing_4">4dp</dimen>
     <dimen name="spacing_8">8dp</dimen>
+    <dimen name="spacing_12">12dp</dimen>
     <dimen name="spacing_16">16dp</dimen>
     <dimen name="spacing_24">24dp</dimen>
+    <dimen name="spacing_32">32dp</dimen>
     <dimen name="corner_radius">12dp</dimen>
     <dimen name="divider_thickness">1dp</dimen>
     <dimen name="emoji_spacing">8dp</dimen>
