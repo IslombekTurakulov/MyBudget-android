@@ -103,7 +103,21 @@
     <string name="project_spent">Потрачено: %1$.2f ₽</string>
     <string name="project_remaining">Осталось: %1$.2f ₽</string>
     <string name="project_description_title">Описание проекта</string>
+    <string name="project_participants">Участники проекта</string>
     <string name="total_amount_format">Всего потрачено: </string>
+
+    <string name="total_amount">Общая сумма</string>
+
+    <string name="confirm_delete_participant_title">Удалить участника</string>
+    <string name="confirm_delete_participant_message">
+        Вы уверены, что хотите удалить участника %1$s?
+    </string>
+
+    <string name="report_actions_title">Что вы хотите сделать с отчётом?</string>
+    <string name="report_action_save_as">Сохранить как…</string>
+    <string name="report_action_share">Поделиться</string>
+    <string name="overview_analytics">Общая аналитика</string>
+    <string name="project_analytics">Аналитика проекта</string>
 
     <!-- Transactions list -->
     <string name="transaction_section_name">Транзакции</string>
@@ -112,6 +126,9 @@
     <string name="all">Все</string>
     <string name="other">Другое</string>
     <string name="project_transaction_filters">Фильтры</string>
+
+    <string name="confirm_delete_transaction_title">Удаление транзакции</string>
+    <string name="confirm_delete_transaction_message">Вы уверены, что хотите удалить транзакцию?</string>
 
     <!-- Transaction item samples -->
     <string name="sample_date">01.12.2024</string>
@@ -359,4 +376,10 @@
     <string name="select_end_period">Конец периода</string>
     <string name="not_selected">не выбрано</string>
     <string name="retry">Повторить</string>
+
+    <string name="logout_confirm_title">Выход из аккаунта</string>
+    <string name="logout_confirm_message">Вы уверены, что хотите выйти из аккаунта?</string>
+    <string name="logout_button">Выйти</string>
+    <string name="choose_date">Выберите дату</string>
+    <string name="choose_time">Выберите время</string>
 </resources>

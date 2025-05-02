@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- AppBar для заголовка и действий -->
     <com.google.android.material.appbar.AppBarLayout
@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Общая аналитика"
+            app:title="@string/overview_analytics"
             app:menu="@menu/project_analytics_menu"
             app:titleCentered="true" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -55,7 +55,7 @@
                     style="@style/TextAppearance.Material3.TitleLarge"
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp"
-                    android:text="Всего потрачено: 0 ₽" />
+                    tools:text="Всего потрачено: 0 ₽" />
 
                 <!-- Блок: Распределение по категориям -->
                 <com.google.android.material.card.MaterialCardView

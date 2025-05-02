@@ -168,18 +168,6 @@ class ParticipantDialogFragment : DialogFragment() {
         }
     }
 
-    private fun showDeleteConfirmationDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Удалить участника")
-            .setMessage("Вы уверены, что хотите удалить этого участника?")
-            .setPositiveButton("Удалить") { _, _ ->
-                onParticipantDeleted?.invoke()
-                dismiss()
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

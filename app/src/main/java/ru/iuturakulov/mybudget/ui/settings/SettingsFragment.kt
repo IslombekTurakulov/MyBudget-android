@@ -43,13 +43,13 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
         binding.btnLogout.setOnClickListener {
             MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Выход из аккаунта")
-                .setMessage("Вы уверены, что хотите выйти из аккаунта?")
-                .setPositiveButton("Выйти") { _, _ ->
+                .setTitle(R.string.logout_confirm_title)
+                .setMessage(R.string.logout_confirm_message)
+                .setPositiveButton(R.string.logout_button) { _, _ ->
                     viewModel.logout()
                     findNavController().navigate(R.id.action_settings_to_login)
                 }
-                .setNegativeButton("Отмена", null)
+                .setNegativeButton(R.string.cancel, null)
                 .show()
         }
     }

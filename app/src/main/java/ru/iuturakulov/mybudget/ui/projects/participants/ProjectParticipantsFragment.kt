@@ -77,7 +77,7 @@ class ProjectParticipantsFragment :
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
-        binding.toolbar.title = "Участники проекта"
+        binding.toolbar.title = getString(R.string.project_participants)
     }
 
     private fun setupRecyclerView() {
@@ -144,12 +144,18 @@ class ProjectParticipantsFragment :
 
     private fun confirmDeleteParticipant(participant: ParticipantEntity) {
         AlertDialog.Builder(requireContext())
-            .setTitle("Удалить участника")
-            .setMessage("Вы уверены, что хотите удалить участника ${participant.name}?")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setTitle(R.string.confirm_delete_participant_title)
+            .setMessage(
+                getString(
+                    R.string.confirm_delete_participant_message,
+                    participant.name
+                )
+            )
+            .setPositiveButton(R.string.delete) { _, _ ->
                 viewModel.deleteParticipant(participant)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
+
 }

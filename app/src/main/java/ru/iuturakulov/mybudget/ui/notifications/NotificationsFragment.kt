@@ -37,12 +37,12 @@ class NotificationsFragment :
             },
             onLong = { item ->
                 MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Удаление транзакции")
-                    .setMessage("Вы уверены, что хотите удалить транзакцию?")
-                    .setPositiveButton("Удалить") { _, _ ->
+                    .setTitle(R.string.confirm_delete_transaction_title)
+                    .setMessage(R.string.confirm_delete_transaction_message)
+                    .setPositiveButton(R.string.delete) { _, _ ->
                         vm.remove(item.id)
                     }
-                    .setNegativeButton("Отмена", null)
+                    .setNegativeButton(R.string.cancel, null)
                     .show()
             }
         ).apply {

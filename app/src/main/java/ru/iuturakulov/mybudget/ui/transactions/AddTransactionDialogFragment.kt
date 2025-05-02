@@ -971,7 +971,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             .build()
 
         val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Выберите дату")
+            .setTitleText(getString(R.string.choose_date))
             .setSelection(minOf(currentDateMillis, todayStartUtcMillis))
             .setCalendarConstraints(constraints)
             .setTheme(R.style.ThemeOverlay_Material3_DatePicker)
@@ -987,7 +987,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             val isTodayMoscow = selectedLocalDate == todayMoscow
 
             val timePicker = MaterialTimePicker.Builder()
-                .setTitleText("Выберите время")
+                .setTitleText(getString(R.string.choose_time))
                 .setTimeFormat(TimeFormat.CLOCK_24H)
                 .setHour(currentMoscowDateTime.hour)
                 .setMinute(currentMoscowDateTime.minute)

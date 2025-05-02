@@ -65,7 +65,6 @@ class SettingsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             tokenStorage.clearTokens()
-            message.emit("Выход выполнен успешно")
         }
     }
 

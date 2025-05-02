@@ -100,7 +100,22 @@
     <string name="project_spent">Spent: %1$.2f ₽</string>
     <string name="project_remaining">Remaining: %1$.2f ₽</string>
     <string name="project_description_title">Project description</string>
+    <string name="project_participants">Project participants</string>
     <string name="total_amount_format">Total spent: </string>
+
+    <string name="total_amount">Total</string>
+
+    <string name="confirm_delete_participant_title">Delete participant</string>
+    <string name="confirm_delete_participant_message">
+        Are you sure you want to delete participant %1$s?
+    </string>
+
+    <string name="report_actions_title">What would you like to do with the report?</string>
+    <string name="report_action_save_as">Save as…</string>
+    <string name="report_action_share">Share</string>
+
+    <string name="overview_analytics">Overview analytics</string>
+    <string name="project_analytics">Project analytics</string>
 
     <!-- Transactions list -->
     <string name="transaction_section_name">Transactions</string>
@@ -109,6 +124,9 @@
     <string name="all">All</string>
     <string name="other">Other</string>
     <string name="project_transaction_filters">Filters</string>
+
+    <string name="confirm_delete_transaction_title">Delete transaction</string>
+    <string name="confirm_delete_transaction_message">Are you sure you want to delete the transaction?</string>
 
     <!-- Transaction item samples -->
     <string name="sample_date">01.12.2024</string>
@@ -354,4 +372,11 @@
     <string name="select_end_period">Select end date</string>
     <string name="not_selected">not selected</string>
     <string name="retry">Retry</string>
+
+    <string name="logout_confirm_title">Logout</string>
+    <string name="logout_confirm_message">Are you sure you want to log out?</string>
+    <string name="logout_button">Log out</string>
+
+    <string name="choose_date">Choose date</string>
+    <string name="choose_time">Choose time</string>
 </resources>

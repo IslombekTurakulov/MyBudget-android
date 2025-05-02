@@ -210,7 +210,6 @@ class OverviewAnalyticsFragment :
         binding.tvOverviewSubtitle.text =
             "Аналитика за период: ${first.ifEmpty { "-" }} — ${last.ifEmpty { "-" }}"
 
-        // Общая сумма
         val total = data.totalAmount.toLong()
         binding.tvOverviewTotal.text =
             "Всего потрачено: ${NumberFormat.getInstance().format(total)} ₽"
@@ -389,15 +388,19 @@ class OverviewAnalyticsFragment :
     private fun promptSaveOrShare(file: File) {
         tempFile = file
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Что вы хотите сделать с отчётом?")
-            .setItems(arrayOf("Сохранить как…", "Поделиться")) { _, which ->
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.report_actions_title)
+            .setItems(arrayOf(
+                getString(R.string.report_action_save_as),
+                getString(R.string.report_action_share)
+            )) { _, which ->
                 when (which) {
                     0 -> promptSaveAs(file.name)
                     1 -> doShare(file)
                 }
             }
             .show()
+
     }
 
     private fun promptSaveAs(defaultFileName: String) {

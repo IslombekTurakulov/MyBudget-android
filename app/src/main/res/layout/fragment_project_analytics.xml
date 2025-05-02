@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Аналитика проекта"
+            app:title="@string/project_analytics"
             app:menu="@menu/project_analytics_menu"
             app:navigationIcon="?attr/homeAsUpIndicator" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -39,7 +39,6 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Общая сумма -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -56,7 +55,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Общая сумма"
+                            android:text="@string/total_amount_format"
                             style="@style/TextAppearance.Material3.TitleSmall"/>
 
                         <TextView

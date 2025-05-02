@@ -52,7 +52,7 @@ class ParticipantsAdapter(
                     ) as ClipboardManager
                     val clip = ClipData.newPlainText("ParticipantInfo", text)
                     clipboard.setPrimaryClip(clip)
-                    Snackbar.make(root, "Скопировано: $text", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(root, text, Snackbar.LENGTH_SHORT).show()
                 }
 
                 tvParticipantName.setOnClickListener {
