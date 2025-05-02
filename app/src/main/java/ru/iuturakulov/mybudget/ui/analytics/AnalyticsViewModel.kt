@@ -31,61 +31,111 @@ class AnalyticsViewModel @Inject constructor(
     private val analyticsRepository: AnalyticsRepository,
 ) : ViewModel() {
 
-    private val _overviewAnalytics =
+    private val _appliedFilter = MutableStateFlow(AnalyticsFilter())
+    val appliedFilter: StateFlow<AnalyticsFilter> = _appliedFilter
+
+    private val _initialOverviewAnalytics =
         MutableStateFlow<UiState<OverviewAnalyticsDto>>(UiState.Idle)
-    val overviewAnalytics: StateFlow<UiState<OverviewAnalyticsDto>> = _overviewAnalytics
+    val initialOverviewAnalytics: StateFlow<UiState<OverviewAnalyticsDto>> =
+        _initialOverviewAnalytics
 
-    private val _projectAnalytics =
+    // Отфильтрованная overview (с учётом appliedFilter)
+    private val _filteredOverviewAnalytics =
+        MutableStateFlow<UiState<OverviewAnalyticsDto>>(UiState.Idle)
+    val filteredOverviewAnalytics: StateFlow<UiState<OverviewAnalyticsDto>> =
+        _filteredOverviewAnalytics
+
+    // Изначальная и отфильтрованная project
+    private val _initialProjectAnalytics =
         MutableStateFlow<UiState<ProjectAnalyticsDto>>(UiState.Idle)
-    val projectAnalytics: StateFlow<UiState<ProjectAnalyticsDto>> = _projectAnalytics
+    val initialProjectAnalytics: StateFlow<UiState<ProjectAnalyticsDto>> =
+        _initialProjectAnalytics
 
-    private val _filter = MutableStateFlow(AnalyticsFilter())
-    val filter: StateFlow<AnalyticsFilter> = _filter
+    private val _filteredProjectAnalytics =
+        MutableStateFlow<UiState<ProjectAnalyticsDto>>(UiState.Idle)
+    val filteredProjectAnalytics: StateFlow<UiState<ProjectAnalyticsDto>> =
+        _filteredProjectAnalytics
+
+    private var currentProjectId: String? = null
 
     private val _exportState = MutableSharedFlow<UiState<File>>(replay = 0)
     val exportState: SharedFlow<UiState<File>> = _exportState
 
-    private var currentProjectId: String? = null   // null → overview
-
     init {
+        fetchInitialOverviewAnalytics()
+        fetchFilteredOverviewAnalytics()
+
         viewModelScope.launch {
-            filter.drop(1).collect { currentProjectId?.let { fetchProjectAnalytics(it) } }
+            _appliedFilter.drop(1).collect {
+                fetchFilteredOverviewAnalytics()
+                currentProjectId?.let { fetchFilteredProjectAnalytics(it) }
+            }
         }
-        fetchOverviewAnalytics()       // первый запрос
     }
 
     fun applyFilter(newFilter: AnalyticsFilter) {
-        _filter.value = newFilter
+        _appliedFilter.value = newFilter
     }
 
-    fun fetchOverviewAnalytics() = viewModelScope.launch {
-        _overviewAnalytics.value = UiState.Loading
+    private fun fetchInitialOverviewAnalytics() = viewModelScope.launch {
+        _initialOverviewAnalytics.value = UiState.Loading
         try {
             val dto = analyticsRepository
-                .getOverviewAnalytics(_filter.value)
-                .body()
-            _overviewAnalytics.value = UiState.Success(dto)
-        } catch (e: IOException) {
-            _overviewAnalytics.value = UiState.Error("Ошибка сети")
+                .getOverviewAnalytics(AnalyticsFilter())   // без фильтра
+                .body()!!
+            _initialOverviewAnalytics.value = UiState.Success(dto)
         } catch (e: Exception) {
-            _overviewAnalytics.value = UiState.Error(e.localizedMessage ?: "")
+            _initialOverviewAnalytics.value = UiState.Error(e.message ?: "Error")
         }
     }
 
-    fun fetchProjectAnalytics(projectId: String) {
+    private fun fetchFilteredOverviewAnalytics() = viewModelScope.launch {
+        _filteredOverviewAnalytics.value = UiState.Loading
+        try {
+            val dto = analyticsRepository
+                .getOverviewAnalytics(_appliedFilter.value) // с текущим фильтром
+                .body()!!
+            _filteredOverviewAnalytics.value = UiState.Success(dto)
+        } catch (e: Exception) {
+            _filteredOverviewAnalytics.value = UiState.Error(e.message ?: "Error")
+        }
+    }
+
+    // --- Project ---
+
+    /** Вызывать из UI, когда нужно открыть конкретный проект */
+    fun startProjectAnalytics(projectId: String) {
         currentProjectId = projectId
-        viewModelScope.launch {
-            _projectAnalytics.value = UiState.Loading
-            try {
-                val dto = analyticsRepository
-                    .getProjectAnalytics(projectId, _filter.value)
-                    .body()
-                _projectAnalytics.value = UiState.Success(dto)
-            } catch (e: IOException) {
-                _projectAnalytics.value = UiState.Error("Ошибка сети")
-            } catch (e: Exception) {
-                _projectAnalytics.value = UiState.Error(e.localizedMessage ?: "")
-            }
+        fetchInitialProjectAnalytics(projectId)
+        fetchFilteredProjectAnalytics(projectId)
+    }
+
+    fun startOverviewProjectAnalytics() {
+        fetchInitialOverviewAnalytics()
+        fetchFilteredOverviewAnalytics()
+    }
+
+    private fun fetchInitialProjectAnalytics(projectId: String) = viewModelScope.launch {
+        _initialProjectAnalytics.value = UiState.Loading
+        try {
+            val dto = analyticsRepository
+                .getProjectAnalytics(projectId, AnalyticsFilter())
+                .body()!!
+            _initialProjectAnalytics.value = UiState.Success(dto)
+        } catch (e: Exception) {
+            _initialProjectAnalytics.value = UiState.Error(e.message ?: "Error")
+        }
+    }
+
+    private fun fetchFilteredProjectAnalytics(projectId: String) = viewModelScope.launch {
+        _filteredProjectAnalytics.value = UiState.Loading
+        try {
+            val dto = analyticsRepository
+                .getProjectAnalytics(projectId, _appliedFilter.value)
+                .body()!!
+            _filteredProjectAnalytics.value = UiState.Success(dto)
+        } catch (e: Exception) {
+            _filteredProjectAnalytics.value = UiState.Error(e.message ?: "Error")
         }
     }
 
@@ -99,7 +149,7 @@ class AnalyticsViewModel @Inject constructor(
             val file = analyticsRepository.exportAnalytics(
                 exportFrom = from,
                 projectId = currentProjectId,
-                filter = _filter.value,
+                filter = _appliedFilter.value,
                 format = format
             )
             _exportState.emit(UiState.Success(file))

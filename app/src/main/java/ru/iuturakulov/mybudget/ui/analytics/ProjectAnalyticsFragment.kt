@@ -75,7 +75,7 @@ class ProjectAnalyticsFragment :
         setupSwipeRefresh()
         setupCharts()
         // сразу загружаем аналитику по проекту
-        viewModel.fetchProjectAnalytics(args.projectId)
+        viewModel.startProjectAnalytics(args.projectId)
     }
 
     override fun setupObservers() {
@@ -110,7 +110,7 @@ class ProjectAnalyticsFragment :
 
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.fetchProjectAnalytics(args.projectId)
+            viewModel.startProjectAnalytics(args.projectId)
         }
     }
 
@@ -140,28 +140,18 @@ class ProjectAnalyticsFragment :
 
     private fun observeProjectAnalytics() {
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.projectAnalytics.collect { state ->
+            viewModel.filteredProjectAnalytics.collect { state ->
                 when (state) {
-                    is UiState.Loading -> {
-                        showLoading()
-                    }
-
+                    is UiState.Loading -> showLoading()
                     is UiState.Success -> {
                         binding.swipeRefreshLayout.isRefreshing = false
-                        state.data?.let {
-                            showContent()
-                            updateCharts(it)
-                        } ?: run {
-                            showContent()
-                            showFallback("Нет данных аналитики")
-                        }
+                        showContent()
+                        state.data?.let { updateCharts(it) }
                     }
-
                     is UiState.Error -> {
                         binding.swipeRefreshLayout.isRefreshing = false
                         showError(state.message)
                     }
-
                     else -> Unit
                 }
             }
@@ -186,8 +176,8 @@ class ProjectAnalyticsFragment :
     private fun showError(message: String) {
         binding.progressBar.isVisible = false
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG)
-            .setAction("Повторить") {
-                viewModel.fetchProjectAnalytics(args.projectId)
+            .setAction(getString(R.string.retry)) {
+                viewModel.startProjectAnalytics(args.projectId)
             }
             .show()
     }
@@ -436,11 +426,12 @@ class ProjectAnalyticsFragment :
     private fun hideProgress() = progressDialog?.dismiss()
 
     private fun openFilterDialog() {
-        val currentFilter = viewModel.filter.value
-        val state = viewModel.projectAnalytics.value
-        if (state !is UiState.Success) return
-        val data = state.data
+        // берём текущий применённый фильтр
+        val currentFilter = viewModel.appliedFilter.value
+        val initialState = viewModel.initialProjectAnalytics.value
+        if (initialState !is UiState.Success) return
 
+        // inflate
         val dlgView = layoutInflater.inflate(R.layout.dialog_filter_analytics, null)
         val btnFrom = dlgView.findViewById<MaterialButton>(R.id.btnFromDate)
         val btnTo = dlgView.findViewById<MaterialButton>(R.id.btnToDate)
@@ -448,74 +439,77 @@ class ProjectAnalyticsFragment :
         val acGran = dlgView.findViewById<AutoCompleteTextView>(R.id.acGranularity)
 
         fun formatDate(ts: Long?) = ts?.let {
-            SimpleDateFormat("yyyy‑MM‑dd", Locale.getDefault()).format(Date(it))
-        } ?: "не выбрано"
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(it))
+        } ?: getString(R.string.not_selected)
 
-        var selFrom: Long? = currentFilter.fromDate
-        var selTo: Long? = currentFilter.toDate
+        // локальные переменные для выбора пользователем
+        var selFrom = currentFilter.fromDate
+        var selTo = currentFilter.toDate
 
-        btnFrom.text = "С: ${formatDate(selFrom)}"
+        // init buttons
+        btnFrom.text = getString(R.string.from_date_label, formatDate(selFrom))
         btnFrom.setOnClickListener {
             val picker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Начало периода")
+                .setTitleText(getString(R.string.select_start_period))
                 .setSelection(selFrom ?: MaterialDatePicker.todayInUtcMilliseconds())
                 .build()
             picker.addOnPositiveButtonClickListener { sel ->
                 selFrom = sel
-                btnFrom.text = "С: ${formatDate(selFrom)}"
+                btnFrom.text = getString(R.string.from_date_label, formatDate(selFrom))
             }
             picker.show(parentFragmentManager, "DATE_FROM")
         }
 
-        btnTo.text = "По: ${formatDate(selTo)}"
+        btnTo.text = getString(R.string.to_date_label, formatDate(selTo))
         btnTo.setOnClickListener {
             val picker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Конец периода")
+                .setTitleText(getString(R.string.select_end_period))
                 .setSelection(selTo ?: MaterialDatePicker.todayInUtcMilliseconds())
                 .build()
             picker.addOnPositiveButtonClickListener { sel ->
                 selTo = sel
-                btnTo.text = "По: ${formatDate(selTo)}"
+                btnTo.text = getString(R.string.to_date_label, formatDate(selTo))
             }
             picker.show(parentFragmentManager, "DATE_TO")
         }
 
+        // категории
         chipGroup.removeAllViews()
-        val allCategories = data?.categoryDistribution?.map { it.category }.orEmpty()
-        val preselected = currentFilter.categories ?: allCategories
-        allCategories.forEach { category ->
-            val chip = Chip(
-                requireContext(),
-                null,
-                com.google.android.material.R.style.Widget_MaterialComponents_Chip_Filter
-            ).apply {
-                id = View.generateViewId()
-                text = category
-                isCheckable = true
-                isClickable = true
-                isFocusable = true
-                isChecked = preselected.contains(category)
-            }
-            chipGroup.addView(chip)
+        val allCats = initialState.data?.categoryDistribution.orEmpty().map { it.category }
+        val preselected = currentFilter.categories ?: allCats
+        allCats.forEach { cat ->
+            chipGroup.addView(
+                Chip(
+                    requireContext(),
+                    null,
+                    com.google.android.material.R.style.Widget_MaterialComponents_Chip_Filter
+                ).apply {
+                    id = View.generateViewId()
+                    text = cat
+                    isCheckable = true
+                    isChecked = preselected.contains(cat)
+                })
         }
 
-        val granList = Granularity.entries
+        val granList = Granularity.entries.map { it.name }
         acGran.setAdapter(
             ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            granList.map { it.name }
-        ))
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                granList
+            )
+        )
         acGran.setText(currentFilter.granularity.name, false)
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Фильтры аналитики")
+            .setTitle(R.string.analytics_filters_title)
             .setView(dlgView)
-            .setPositiveButton("Применить") { _, _ ->
+            .setPositiveButton(R.string.apply) { _, _ ->
                 val selectedCats = chipGroup.checkedChipIds.map { id ->
                     dlgView.findViewById<Chip>(id).text.toString()
                 }
-                val categories = if (selectedCats.size == allCategories.size) null else selectedCats
+                val categories = selectedCats
+                    .takeIf { it.size != allCats.size }  // если все выбраны — значит null
                 val gran = Granularity.fromFilter(acGran.text.toString()) ?: Granularity.MONTH
 
                 viewModel.applyFilter(
@@ -526,9 +520,8 @@ class ProjectAnalyticsFragment :
                         granularity = gran
                     )
                 )
-                viewModel.fetchProjectAnalytics(args.projectId)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
