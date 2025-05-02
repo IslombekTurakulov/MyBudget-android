@@ -20,24 +20,24 @@ enum class ProjectStatus(val type: String) {
         return allowedTransitions[this]?.contains(newStatus) == true
     }
 
-    fun getStatusText(): String = when (this) {
-        ProjectStatus.ACTIVE -> "Активен"
-        ProjectStatus.ARCHIVED -> "В архиве"
-        ProjectStatus.DELETED -> "Удалён"
-        ProjectStatus.ALL -> "Все"
+    fun getStatusText(context: Context): String = when (this) {
+        ACTIVE -> ContextCompat.getString(context, R.string.project_status_active)
+        ARCHIVED -> ContextCompat.getString(context, R.string.project_status_archived)
+        DELETED -> ContextCompat.getString(context, R.string.project_status_deleted)
+        ALL -> ContextCompat.getString(context, R.string.project_status_all)
     }
 
     fun getStatusColor(context: Context): Int = when (this) {
-        ProjectStatus.ACTIVE -> ContextCompat.getColor(context, R.color.green)
-        ProjectStatus.ARCHIVED -> ContextCompat.getColor(context, R.color.gray)
-        ProjectStatus.DELETED -> ContextCompat.getColor(context, R.color.red)
+        ACTIVE -> ContextCompat.getColor(context, R.color.green)
+        ARCHIVED -> ContextCompat.getColor(context, R.color.gray)
+        DELETED -> ContextCompat.getColor(context, R.color.red)
         else -> ContextCompat.getColor(context, R.color.networkStatusBackgroundOff)
     }
 
     fun getStatusIcon(): Int = when (this) {
-        ProjectStatus.ACTIVE -> R.drawable.ic_status_active
-        ProjectStatus.ARCHIVED -> R.drawable.ic_status_archived
-        ProjectStatus.DELETED -> R.drawable.ic_status_deleted
+        ACTIVE -> R.drawable.ic_status_active
+        ARCHIVED -> R.drawable.ic_status_archived
+        DELETED -> R.drawable.ic_status_deleted
         else -> R.drawable.ic_status_all
     }
 }

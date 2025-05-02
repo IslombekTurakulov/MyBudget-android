@@ -3,18 +3,18 @@
     <item
         android:id="@+id/projectListFragment"
         android:icon="@drawable/outline_cases_24"
-        android:title="Проекты"
+        android:title="@string/menu_projects"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/analyticsFragment"
         android:icon="@drawable/outline_analytics_24"
-        android:title="Аналитика"
+        android:title="@string/menu_analytics"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/settingsFragment"
         android:icon="@drawable/outline_settings_24"
-        android:title="Настройки"
+        android:title="@string/menu_settings"
         app:showAsAction="ifRoom" />
 </menu>

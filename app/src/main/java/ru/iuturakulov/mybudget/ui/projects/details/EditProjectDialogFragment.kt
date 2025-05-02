@@ -186,6 +186,11 @@ class EditProjectDialogFragment(
                 binding.tilCategory.error = getString(R.string.error_empty_category)
                 ok = false
             } else binding.tilCategory.error = null
+
+            if ((binding.etBudgetLimit.text!!.trim().toString().toDoubleOrNull() ?: 0.0) <= 0.0) {
+                binding.tilBudgetLimit.error = getString(R.string.error_empty_budget_limit)
+                ok = false
+            } else binding.tilBudgetLimit.error = null
         }
         return ok
     }

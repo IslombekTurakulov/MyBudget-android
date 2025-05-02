@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
+import ru.iuturakulov.mybudget.data.remote.dto.InvitationDto
+import ru.iuturakulov.mybudget.data.remote.dto.InvitationRequest
 import ru.iuturakulov.mybudget.domain.repositories.ParticipantsRepository
 import java.io.IOException
 import javax.inject.Inject
@@ -28,8 +30,8 @@ class ProjectParticipantsViewModel @Inject constructor(
     val uiState: StateFlow<UiState<List<ParticipantEntity>>> = _uiState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Idle)
 
-    private val _invitationState = MutableStateFlow<InvitationState<Boolean>>(InvitationState.Idle)
-    val invitationState: StateFlow<InvitationState<Boolean>> = _invitationState
+    private val _invitationState = MutableStateFlow<InvitationState<InvitationDto?>>(InvitationState.Idle)
+    val invitationState: StateFlow<InvitationState<InvitationDto?>> = _invitationState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), InvitationState.Idle)
 
     private val _isLoading = MutableStateFlow(false)
@@ -97,12 +99,12 @@ class ProjectParticipantsViewModel @Inject constructor(
      * @param email Email приглашаемого
      * @param role Роль участника
      */
-    fun sendInvitation(projectId: String, email: String, role: String) {
+    fun sendInvitation(request: InvitationRequest) {
         viewModelScope.launch {
             _invitationState.value = InvitationState.Loading
             try {
-                participantRepository.sendInvitation(projectId, email, role)
-                _invitationState.value = InvitationState.Success(true)
+                val invitationDto = participantRepository.sendInvitation(request)
+                _invitationState.value = InvitationState.Success(invitationDto)
             } catch (e: Exception) {
                 _invitationState.value = InvitationState.Error(
                     e.localizedMessage ?: "Ошибка отправки приглашения"

@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
@@ -29,19 +31,15 @@ class ProjectDetailsViewModel @Inject constructor(
     private val _updateState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
     val updateState: StateFlow<UiState<Unit>> = _updateState.asStateFlow()
 
-    private val _filteredTransactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
-    val filteredTransactions: StateFlow<List<TransactionEntity>> =
-        _filteredTransactions.asStateFlow()
-
     private val _transactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val transactions: StateFlow<List<TransactionEntity>> = _transactions.asStateFlow()
 
     private val _currentFilter = MutableStateFlow(TransactionFilter())
-    val currentFilter: StateFlow<TransactionFilter> = _currentFilter.asStateFlow()
+    val currentFilter: StateFlow<TransactionFilter> = _currentFilter
 
-    init {
-        observeFilterChanges()
-    }
+    val filteredTransactions = combine(_transactions, _currentFilter) { list, filter ->
+        applyFilterInternal(list, filter)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(1_000), emptyList())
 
     /**
      * Загрузка проекта с транзакциями.
@@ -60,19 +58,6 @@ class ProjectDetailsViewModel @Inject constructor(
     }
 
     /**
-     * Наблюдение за изменением фильтра и динамическая фильтрация.
-     */
-    private fun observeFilterChanges() {
-        viewModelScope.launch {
-            combine(_transactions, _currentFilter) { list, filter ->
-                applyFilterInternal(list, filter)
-            }.collect { filtered ->
-                _filteredTransactions.value = filtered
-            }
-        }
-    }
-
-    /**
      * Добавление транзакции.
      */
     fun addTransaction(projectId: String, transaction: TransactionEntity) {
@@ -82,7 +67,7 @@ class ProjectDetailsViewModel @Inject constructor(
                 syncTransactions(projectId)
             } catch (e: Exception) {
                 _uiState.value =
-                    UiState.Error("Ошибка добавления транзакции: ${e.localizedMessage}")
+                    UiState.Error("${e.localizedMessage}")
             }
         }
     }
@@ -97,7 +82,7 @@ class ProjectDetailsViewModel @Inject constructor(
                 syncTransactions(projectId)
             } catch (e: Exception) {
                 _uiState.value =
-                    UiState.Error("Ошибка добавления транзакции: ${e.localizedMessage}")
+                    UiState.Error("${e.localizedMessage}")
             }
         }
     }

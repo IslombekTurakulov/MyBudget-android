@@ -12,6 +12,7 @@
     <string name="role_admin">Владелец</string>
     <string name="select_role">Выберите роль из списка</string>
     <string name="error_select_valid_role">Выберите корректную роль</string>
+    <string name="stub_change_username">Мое новое имя</string>
     <string-array name="roles_list">
         <item>Наблюдатель</item>
         <item>Редактор</item>
@@ -36,6 +37,28 @@
     <string name="filters">Фильтры</string>
     <string name="select_date">Выберите дату</string>
 
+    <string name="change_password_title">Сменить пароль</string>
+    <string name="email_hint">Email</string>
+    <string name="current_password_hint">Текущий пароль</string>
+    <string name="new_password_hint">Новый пароль</string>
+    <string name="change_password_button">Сменить пароль</string>
+
+    <string name="login_button">Войти</string>
+    <string name="password_hint">Пароль</string>
+    <string name="register_prompt">Нет аккаунта? Зарегистрируйтесь</string>
+    <string name="forgot_password_prompt">Забыли пароль?</string>
+
+    <string name="register_title">Регистрация</string>
+    <string name="name_hint">Имя</string>
+    <string name="confirm_password_hint">Подтвердите пароль</string>
+    <string name="policy_agreement">Я согласен с политикой конфиденциальности</string>
+
+    <string name="register_button">Зарегистрироваться</string>
+    <string name="already_registered">Уже зарегистрированы?</string>
+
+    <string name="reset_password_title">Сброс пароля</string>
+    <string name="reset_password_button">Восстановить пароль</string>
+
     <!-- Errors & validation -->
     <string name="error_empty_email">Email не может быть пустым</string>
     <string name="error_empty_password">Пароль не может быть пустым</string>
@@ -55,9 +78,20 @@
     <string name="invitation_sent_error">%s</string>
     <string name="invitation_processing">Отправка приглашения…</string>
     <string name="add_participant_title">Добавить участника</string>
-    <string name="email_hint">Email участника</string>
+    <string name="participant_email_hint">Email участника</string>
+    <string name="no_participants">Нет участников :(</string>
     <string name="role_hint">Роль участника</string>
     <string name="send_invitation">Отправить приглашение</string>
+    <string name="generate_qr">Сгенерировать QR-код</string>
+    <string name="share_qr">Поделиться QR</string>
+
+    <string name="invite_by_email">По Email</string>
+    <string name="invite_by_qr">Через QR-код</string>
+
+    <string name="qr_code">QR-код приглашения</string>
+    <string name="invite_code_label">Код приглашения %1$s</string>
+
+    <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
 
     <!-- Project details -->
     <string name="delete_project">Удалить проект</string>
@@ -96,11 +130,13 @@
     <string name="transaction_name">Название транзакции</string>
     <string name="transaction_amount">Сумма</string>
     <string name="transaction_date">Дата транзакции</string>
+    <string name="transaction_title_your">Вы</string>
     <string name="income">Доход</string>
     <string name="expense">Расход</string>
     <string name="camera">Камера</string>
     <string name="gallery">Галерея</string>
     <string name="scan_receipt">Сканировать чек</string>
+    <string name="view_receipt_title">Просмотр чека</string>
     <string name="transaction_category_icon">Иконка категории</string>
     <string name="transaction_category">Категория транзакции</string>
     <string name="custom_category">Другая категория</string>
@@ -223,6 +259,7 @@
     <string name="clear">Очистить</string>
     <string name="apply">Применить</string>
     <string name="transaction_user">Пользователь</string>
+    <string name="transaction_author">Автор: %1$s</string>
     <string name="transaction_user_helper">Выберите пользователя</string>
 
     <string name="error_date_order">Дата начала не может быть позже даты окончания</string>
@@ -247,6 +284,12 @@
 
     <string name="menu_refresh">Обновить</string>
     <string name="menu_settings">Настройки</string>
+    <string name="menu_projects">Проекты</string>
+    <string name="menu_analytics">Аналитика</string>
+
+    <string name="menu_project_to_participants">Участники</string>
+    <string name="menu_project_to_archive">Архивировать</string>
+    <string name="menu_project_to_unarchive">Разархивировать</string>
 
     <string name="search_projects">Поиск проектов</string>
     <string name="empty_projects">У вас пока нет проектов</string>
@@ -300,6 +343,7 @@
 
     <string name="error_empty_name">Введите название проекта</string>
     <string name="error_empty_budget">Введите лимит бюджета</string>
+    <string name="error_empty_budget_limit">Лимит бюджета должна быть больше 0</string>
     <string name="error_empty_category">Выберите категорию</string>
     <string name="error_empty_icon">Выберите иконку</string>
 
@@ -307,4 +351,12 @@
     <string name="choose_icon">Нажмите, чтобы выбрать иконку</string>
 
     <string name="loading_message">Идет загрузка, подождите…</string>
+
+    <string name="analytics_filters_title">Фильтры аналитики</string>
+    <string name="from_date_label">С: %1$s</string>
+    <string name="to_date_label">По: %1$s</string>
+    <string name="select_start_period">Начало периода</string>
+    <string name="select_end_period">Конец периода</string>
+    <string name="not_selected">не выбрано</string>
+    <string name="retry">Повторить</string>
 </resources>

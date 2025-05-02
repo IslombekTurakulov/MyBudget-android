@@ -73,11 +73,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
     private fun setupLanguageSelector() {
         val languages = resources.getStringArray(R.array.languages)
-        val currentLanguage = viewModel.userSettings.value?.language ?: "ru"
-
-        // Устанавливаем текущий язык
-        updateSelectedLanguage(currentLanguage)
-
+        updateSelectedLanguage(Locale.getDefault().language)
         binding.tvSelectedLanguage.setOnClickListener {
             showLanguageSelectionDialog(languages)
         }
@@ -94,8 +90,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
     private fun showLanguageSelectionDialog(languages: Array<String>) {
         val languageCodes = resources.getStringArray(R.array.language_codes)
-        val currentLanguage = viewModel.userSettings.value?.language ?: "ru"
-        val currentIndex = languageCodes.indexOf(currentLanguage).coerceAtLeast(0)
+        val currentIndex = languageCodes.indexOf(Locale.getDefault().language).coerceAtLeast(0)
 
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.select_language)
@@ -141,8 +136,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
         binding.tvUserEmail.setText(settings.email)
         binding.switchNotifications.isChecked = settings.notificationsEnabled
 //        binding.switchDarkTheme.isChecked = settings.darkThemeEnabled
-
-        updateSelectedLanguage(settings.language)
     }
 
     private fun showChangePasswordDialog() {

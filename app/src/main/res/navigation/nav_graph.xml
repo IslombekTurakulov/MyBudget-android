@@ -267,6 +267,11 @@
             android:name="userRole"
             app:argType="string"
             app:nullable="false" />
+
+        <argument
+            android:name="projectStatus"
+            app:argType="string"
+            app:nullable="false" />
     </fragment>
 
 

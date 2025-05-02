@@ -12,6 +12,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.FragmentProjectParticipantsBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
@@ -112,6 +113,10 @@ class ProjectParticipantsFragment :
         binding.progressBar.isVisible = false
         binding.tvEmptyParticipants.isVisible = participants.isNullOrEmpty()
         binding.rvParticipants.isVisible = true
+        binding.fabAddParticipant.isVisible = args.projectStatus.equals(
+            other = ProjectStatus.DELETED.type,
+            ignoreCase = true
+        ).not()
         adapter.submitList(participants)
     }
 

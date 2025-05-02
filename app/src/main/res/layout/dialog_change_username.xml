@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="Новое имя"
+            android:hint="@string/stub_change_username"
             app:endIconMode="none">
 
             <com.google.android.material.textfield.TextInputEditText

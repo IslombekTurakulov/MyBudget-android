@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.ui.projects.create
 
 import android.view.Gravity
 import android.view.View
+import android.view.View.TEXT_ALIGNMENT_CENTER
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
@@ -114,8 +115,6 @@ class CreateProjectFragment :
                     ownerId = ""
                 )
                 viewModel.createProject(project)
-                onProjectAdded?.invoke()
-                dismiss()
             }
         }
     }
@@ -128,11 +127,6 @@ class CreateProjectFragment :
             ok = false
         } else binding.tilProjectName.error = null
 
-        if (binding.etBudgetLimit.text?.trim().isNullOrBlank()) {
-            binding.tilBudgetLimit.error = getString(R.string.error_empty_budget)
-            ok = false
-        } else binding.tilBudgetLimit.error = null
-
         if (binding.spinnerCategory.text?.trim().isNullOrBlank()) {
             binding.tilCategory.error = getString(R.string.error_empty_category)
             ok = false
@@ -143,6 +137,16 @@ class CreateProjectFragment :
                 .show()
             ok = false
         }
+
+        if (binding.etBudgetLimit.text?.trim().isNullOrBlank()) {
+            binding.tilBudgetLimit.error = getString(R.string.error_empty_budget)
+            ok = false
+        } else binding.tilBudgetLimit.error = null
+
+        if ((binding.etBudgetLimit.text!!.trim().toString().toDoubleOrNull() ?: 0.0) <= 0.0) {
+            binding.tilBudgetLimit.error = getString(R.string.error_empty_budget_limit)
+            ok = false
+        } else binding.tilBudgetLimit.error = null
 
         return ok
     }
@@ -159,6 +163,10 @@ class CreateProjectFragment :
                     is UiState.Success -> {
                         binding.progressBar.isVisible = false
                         binding.btnCreate.isEnabled = true
+
+                        // НАША ПРАВКА: вызываем колбэк и закрываем только когда реально успешно создалось
+                        onProjectAdded?.invoke()
+                        dismiss()
                     }
 
                     is UiState.Error -> {

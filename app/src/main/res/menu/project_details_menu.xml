@@ -6,7 +6,7 @@
     <item
         android:id="@+id/menuEdit"
         android:icon="@drawable/baseline_edit_note_24"
-        android:title="Редактировать"
+        android:title="@string/edit"
         app:showAsAction="ifRoom" />
 
     <group android:id="@+id/group_editor" >
@@ -15,20 +15,20 @@
         <item
             android:id="@+id/menuDelete"
             android:icon="@drawable/baseline_delete_forever_24"
-            android:title="Удалить"
+            android:title="@string/delete"
             app:showAsAction="ifRoom" />
 
         <item
             android:id="@+id/menuArchiveProject"
             android:icon="@drawable/baseline_archive_24"
-            android:title="Архивировать"
+            android:title="@string/menu_project_to_archive"
             android:visible="false"
             app:showAsAction="never" />
 
         <item
             android:id="@+id/menuUnarchiveProject"
             android:icon="@drawable/baseline_unarchive_24"
-            android:title="Разархивировать"
+            android:title="@string/menu_project_to_unarchive"
             android:visible="false"
             app:showAsAction="never" />
     </group>
@@ -36,13 +36,13 @@
     <item
         android:id="@+id/menuParticipants"
         android:icon="@drawable/baseline_people_24"
-        android:title="Участники"
+        android:title="@string/menu_project_to_participants"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/menuAnalytics"
         android:icon="@drawable/outline_analytics_24"
-        android:title="Аналитика"
+        android:title="@string/menu_analytics"
         app:showAsAction="never" />
 
 </menu>

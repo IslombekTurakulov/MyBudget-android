@@ -46,20 +46,18 @@ class TransactionAdapter(
         private val onTransactionClicked: (TransactionEntity) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        companion object {
-            private val currencyFormatter: NumberFormat =
-                NumberFormat.getCurrencyInstance(Locale("ru", "RU")).apply {
-                    currency = Currency.getInstance("RUB")
-                    maximumFractionDigits = 2
-                    minimumFractionDigits = 2
-                }
-        }
-
         fun bind(transaction: TransactionEntity) {
             binding.apply {
                 tvTransactionName.text = transaction.name
                 tvTransactionCategory.text = transaction.category
-                tvTransactionUser.text = "Автор: ${transaction.userName}"
+                tvTransactionUser.text = binding.root.context.getString(
+                    R.string.transaction_author,
+                    if (transaction.userName.equals("Вы", ignoreCase = true)) {
+                        binding.root.context.getString(R.string.transaction_title_your)
+                    } else {
+                        transaction.userName
+                    }
+                )
                 tvTransactionDate.text = transaction.date.toIso8601Date()
 
                 val transactionType = TransactionEntity.TransactionType.fromString(transaction.type)
@@ -133,7 +131,11 @@ class TransactionAdapter(
             transaction: TransactionEntity,
             type: TransactionEntity.TransactionType
         ): String {
-            val formattedAmount = currencyFormatter.format(transaction.amount)
+            val formattedAmount = NumberFormat.getCurrencyInstance(Locale.getDefault()).apply {
+                currency = Currency.getInstance("RUB")
+                maximumFractionDigits = 2
+                minimumFractionDigits = 2
+            }.format(transaction.amount)
             return when (type) {
                 TransactionEntity.TransactionType.EXPENSE -> "-$formattedAmount"
                 TransactionEntity.TransactionType.INCOME -> "+$formattedAmount"

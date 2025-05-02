@@ -11,7 +11,7 @@ object DateTimeExtension {
         val dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
         // Устанавливаем локаль на русский
         // Todo: private val encryptedSharedPreferences: SharedPreferences
-        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss", Locale("ru"))
+        val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())
         return dateTime.format(formatter)
     }
 }

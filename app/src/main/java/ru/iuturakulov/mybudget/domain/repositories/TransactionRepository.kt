@@ -37,11 +37,17 @@ class TransactionRepository @Inject constructor(
     suspend fun updateTransaction(projectId: String, transaction: TransactionEntity) {
         try {
             val dto = TransactionMapper.entityToDto(transaction)
-            val response = projectService.updateTransaction(projectId, transaction.id, dto).body()
+            val response = projectService.updateTransaction(projectId, transaction.id, dto)
 
-            requireNotNull(response)
+            if (!response.isSuccessful) {
+                throw Exception(response.errorBody()?.string())
+            }
 
-            val updatedTransaction = TransactionMapper.dtoToEntity(response)
+            val body = response.body()
+
+            requireNotNull(body)
+
+            val updatedTransaction = TransactionMapper.dtoToEntity(body)
             transactionDao.updateTransaction(updatedTransaction) // Обновляем локальный кэш
         } catch (e: Exception) {
             throw Exception(e.localizedMessage)

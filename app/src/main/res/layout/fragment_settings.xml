@@ -107,8 +107,7 @@
                     android:paddingEnd="@dimen/spacing_16"
                     android:background="?attr/selectableItemBackground"
                     android:drawableEnd="@drawable/baseline_expand_more_24"
-                    android:text="@string/select_language"
-                    tools:text="Русский" />
+                    android:text="@string/select_language" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchNotifications"

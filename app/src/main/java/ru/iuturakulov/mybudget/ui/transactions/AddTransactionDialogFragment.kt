@@ -71,9 +71,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.Date
 import java.util.Locale
 
@@ -565,7 +568,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                 btnClose?.setOnClickListener { dismiss() }
 
                 toolbar?.setNavigationOnClickListener { dismiss() }
-                toolbar?.title = "Просмотр чека"
+                toolbar?.title = getString(R.string.view_receipt_title)
 
                 toolbar?.setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
@@ -937,71 +940,83 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun showMaterialDateTimePicker() {
-        val todayMillis = MaterialDatePicker.todayInUtcMilliseconds()
-        val currentDateTime = LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(currentDateMillis),
-            ZoneId.systemDefault()
-        )
-        val now = LocalDateTime.now()
+        val moscowZone = ZoneId.of("Europe/Moscow")
 
-        // Ограничиваем выбор даты до текущего дня
-        val constraintsBuilder = CalendarConstraints.Builder()
-            .setEnd(todayMillis) // Максимальная дата - сегодня
+        val todayMoscow = LocalDate.now(moscowZone)
+        val todayStartZdt = todayMoscow.atStartOfDay(moscowZone)
+        val todayStartUtcMillis = todayStartZdt.toInstant().toEpochMilli()
+
+        val currentMoscowDateTime = Instant
+            .ofEpochMilli(currentDateMillis)
+            .atZone(moscowZone)
+            .toLocalDateTime()
+
+        val nowMoscow = ZonedDateTime.now(moscowZone).toLocalDateTime()
+
+        val constraints = CalendarConstraints.Builder()
+            .setEnd(todayStartUtcMillis)
             .setValidator(object : CalendarConstraints.DateValidator {
-                override fun isValid(date: Long): Boolean {
-                    return date <= todayMillis
+                override fun describeContents(): Int {
+                   return 0
                 }
 
-                override fun describeContents(): Int = 0
-                override fun writeToParcel(dest: Parcel, flags: Int) {}
+                override fun writeToParcel(p0: Parcel, p1: Int) {
+                    // no-op
+                }
+
+                override fun isValid(date: Long): Boolean {
+                    return date <= todayStartUtcMillis
+                }
             })
+            .build()
 
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Выберите дату")
-            .setSelection(minOf(currentDateMillis, todayMillis)) // Не позволяем выбрать дату больше сегодняшней
-            .setCalendarConstraints(constraintsBuilder.build())
+            .setSelection(minOf(currentDateMillis, todayStartUtcMillis))
+            .setCalendarConstraints(constraints)
             .setTheme(R.style.ThemeOverlay_Material3_DatePicker)
             .build()
 
-        datePicker.addOnPositiveButtonClickListener { selectedDate ->
-            val isToday = selectedDate == todayMillis
+        datePicker.addOnPositiveButtonClickListener { selectedUtcDateMillis ->
+            val selectedLocalDate = Instant
+                .ofEpochMilli(selectedUtcDateMillis)
+                .atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(moscowZone)
+                .toLocalDate()
+
+            val isTodayMoscow = selectedLocalDate == todayMoscow
 
             val timePicker = MaterialTimePicker.Builder()
                 .setTitleText("Выберите время")
                 .setTimeFormat(TimeFormat.CLOCK_24H)
-                .setHour(currentDateTime.hour)
-                .setMinute(currentDateTime.minute)
+                .setHour(currentMoscowDateTime.hour)
+                .setMinute(currentMoscowDateTime.minute)
                 .setTheme(R.style.ThemeOverlay_Material3_TimePicker)
                 .build()
 
             timePicker.addOnPositiveButtonClickListener {
-                val selectedHour = timePicker.hour
-                val selectedMinute = timePicker.minute
+                val h = timePicker.hour
+                val m = timePicker.minute
 
-                // Если выбрана сегодняшняя дата, проверяем чтобы время не было будущим
-                if (isToday) {
-                    val selectedTime = now.withHour(selectedHour).withMinute(selectedMinute)
-                    if (selectedTime.isAfter(now)) {
-                        // Если выбрано будущее время для сегодняшнего дня - показываем ошибку
+                // Если это сегодня — не позволяем выбрать будущее время в Москве
+                if (isTodayMoscow) {
+                    val picked = LocalDateTime.of(selectedLocalDate, LocalTime.of(h, m))
+                    if (picked.isAfter(nowMoscow)) {
                         showTimeErrorSnackbar()
                         return@addOnPositiveButtonClickListener
                     }
                 }
 
-                val selectedDateTime = LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(selectedDate),
-                    ZoneId.systemDefault()
-                ).withHour(selectedHour).withMinute(selectedMinute)
-
-                currentDateMillis = selectedDateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
+                val finalZdt = ZonedDateTime.of(selectedLocalDate, LocalTime.of(h, m), moscowZone)
+                currentDateMillis = finalZdt.toInstant().toEpochMilli()
                 updateDateDisplay()
             }
 
             timePicker.show(parentFragmentManager, "TIME_PICKER_TAG")
         }
-
         datePicker.show(parentFragmentManager, "DATE_PICKER_TAG")
     }
+
 
     private fun showTimeErrorSnackbar() {
         Snackbar.make(

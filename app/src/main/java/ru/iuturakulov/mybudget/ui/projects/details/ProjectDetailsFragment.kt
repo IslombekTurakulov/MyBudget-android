@@ -111,7 +111,7 @@ class ProjectDetailsFragment :
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
             val role = projectData?.currentRole ?: return
-            if (role == ParticipantRole.VIEWER) return
+            if (role == ParticipantRole.VIEWER || projectData?.project?.status == ProjectStatus.DELETED) return
 
             if (dy > 0 && binding.fabAddTransaction.isShown) {
                 binding.fabAddTransaction.hide()
@@ -150,13 +150,13 @@ class ProjectDetailsFragment :
 
     private fun renderProjectDetails(data: ProjectWithTransactions) = binding.apply {
         toolbar.title = data.project.name
-        toolbar.subtitle = data.project.status.getStatusText().also {
+        toolbar.subtitle = data.project.status.getStatusText(requireContext()).also {
             toolbar.setSubtitleTextColor(
                 data.project.status.getStatusColor(requireContext())
             )
         }
 
-        processUserRole(data.currentRole)
+        processUserRole(data.currentRole, data.project.status)
         updateMenuItems(data.currentRole, data.project.status)
 
         tvProjectBudget.text =
@@ -175,23 +175,25 @@ class ProjectDetailsFragment :
         } ?: run {
             projectDescriptionCard.isGone = true
         }
-
-        updateTransactions(data.transactions)
     }
 
-    private fun processUserRole(role: ParticipantRole?) = binding.apply {
+    private fun processUserRole(role: ParticipantRole?, status: ProjectStatus) = binding.apply {
         val isViewer = role == ParticipantRole.VIEWER
-        toolbar.menu.findItem(R.id.menuEdit).isVisible = !isViewer
-        toolbar.menu.setGroupVisible(R.id.group_editor, role == ParticipantRole.OWNER)
-        fabAddTransaction.isVisible = role != ParticipantRole.VIEWER
+        val isProjectDeleted = status == ProjectStatus.DELETED
+        toolbar.menu.findItem(R.id.menuEdit).isVisible = !isViewer && !isProjectDeleted
+        toolbar.menu.setGroupVisible(
+            R.id.group_editor,
+            role == ParticipantRole.OWNER && !isProjectDeleted
+        )
+        fabAddTransaction.isVisible = role != ParticipantRole.VIEWER && !isProjectDeleted
     }
 
     private fun updateMenuItems(role: ParticipantRole?, status: ProjectStatus) =
         binding.toolbar.apply {
             menu.findItem(R.id.menuArchiveProject).isVisible =
-                role == ParticipantRole.OWNER && status != ProjectStatus.ARCHIVED
+                role == ParticipantRole.OWNER && status != ProjectStatus.ARCHIVED && status != ProjectStatus.DELETED
             menu.findItem(R.id.menuUnarchiveProject).isVisible =
-                role == ParticipantRole.OWNER && status == ProjectStatus.ARCHIVED
+                role == ParticipantRole.OWNER && status == ProjectStatus.ARCHIVED && status != ProjectStatus.DELETED
         }
 
     private fun updateTransactions(list: List<TransactionEntity>) = binding.apply {
@@ -296,6 +298,8 @@ class ProjectDetailsFragment :
         val curMin = currentF.minAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin
         val curMax = currentF.maxAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax
 
+        var isSyncSliderDisabled = false
+
         dlg.sliderAmount.apply {
             valueFrom = globalMin
             valueTo = globalMax
@@ -306,10 +310,13 @@ class ProjectDetailsFragment :
         dlg.etMaxAmount.setText(curMax.toString())
 
         dlg.sliderAmount.addOnChangeListener { _, _, _ ->
+            isSyncSliderDisabled = true
             dlg.etMinAmount.setText(dlg.sliderAmount.values[0].toString())
             dlg.etMaxAmount.setText(dlg.sliderAmount.values[1].toString())
+            isSyncSliderDisabled = false
         }
         fun syncSlider() {
+            if (isSyncSliderDisabled) return
             val low =
                 dlg.etMinAmount.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
                     ?: globalMin
@@ -317,6 +324,7 @@ class ProjectDetailsFragment :
                 ?: globalMax
             dlg.sliderAmount.values = listOf(low, high)
         }
+
         dlg.etMinAmount.doAfterTextChanged { syncSlider() }
         dlg.etMaxAmount.doAfterTextChanged { syncSlider() }
 
@@ -352,17 +360,17 @@ class ProjectDetailsFragment :
             }
 
             val applied = TransactionFilter(
-                category  = dlg.spinnerCategory.selectedItem.toString()
+                category = dlg.spinnerCategory.selectedItem.toString()
                     .takeIf { it != getString(R.string.all) },
-                type      = when (dlg.toggleType.checkedButtonId) {
-                    R.id.btnTypeIncome  -> TransactionEntity.TransactionType.INCOME
+                type = when (dlg.toggleType.checkedButtonId) {
+                    R.id.btnTypeIncome -> TransactionEntity.TransactionType.INCOME
                     R.id.btnTypeExpense -> TransactionEntity.TransactionType.EXPENSE
-                    else                -> null
+                    else -> null
                 },
-                userName  = dlg.spinnerUser.selectedItem.toString()
+                userName = dlg.spinnerUser.selectedItem.toString()
                     .takeIf { it != getString(R.string.all) },
                 startDate = pickedStart,
-                endDate   = pickedEnd,
+                endDate = pickedEnd,
                 minAmount = selMin,
                 maxAmount = selMax
             )
@@ -471,7 +479,8 @@ class ProjectDetailsFragment :
         findNavController().navigate(
             ProjectDetailsFragmentDirections.actionDetailsToParticipants(
                 projectId = args.projectId,
-                userRole = projectData?.currentRole?.name.orEmpty()
+                userRole = projectData?.currentRole?.name.orEmpty(),
+                projectStatus = projectData?.project?.status?.type ?: ProjectStatus.ACTIVE.type
             )
         )
 

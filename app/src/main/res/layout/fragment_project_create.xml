@@ -70,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_gravity="center"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:hint="@string/project_category_hint"
                     android:layout_marginStart="12dp">
 
@@ -83,8 +83,7 @@
                         android:focusableInTouchMode="true"
                         android:clickable="true"
                         android:minHeight="50dp"
-                        android:paddingStart="12dp"
-                        android:imeOptions="actionDone"/>
+                        android:paddingStart="12dp" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 

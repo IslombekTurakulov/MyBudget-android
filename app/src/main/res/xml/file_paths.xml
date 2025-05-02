@@ -16,4 +16,5 @@
         name="external_files"
         path="." />
 
+    <cache-path name="qr_images" path="images/"/>
 </paths>

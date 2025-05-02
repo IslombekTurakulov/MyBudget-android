@@ -38,7 +38,6 @@ class SettingsViewModel @Inject constructor(
             try {
                 val updatedSettings = repository.updateUserSettings(settings)
                 userSettings.value = updatedSettings
-                message.emit("Настройки успешно сохранены")
             } catch (e: Exception) {
                 message.emit("Ошибка сохранения настроек: ${e.localizedMessage}")
             }

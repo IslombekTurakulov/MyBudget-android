@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:textSize="24sp"
-    android:padding="@dimen/spacing_8"
+    android:paddingVertical="16dp"
+    android:paddingHorizontal="16dp"
     tools:text="🍕"
     xmlns:tools="http://schemas.android.com/tools"/>

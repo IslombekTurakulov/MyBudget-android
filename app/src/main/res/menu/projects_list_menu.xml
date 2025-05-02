@@ -5,12 +5,12 @@
     <item
         android:id="@+id/menuNotifications"
         android:icon="@drawable/baseline_all_inbox_24"
-        android:title="Уведомления"
+        android:title="@string/notifications"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/menuInviteCode"
         android:icon="@drawable/baseline_account_tree_24"
-        android:title="Присоединиться к проекту"
+        android:title="@string/join_project"
         app:showAsAction="never" />
 </menu>

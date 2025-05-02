@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.ui.projects.list
 
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -80,11 +81,9 @@ class ProjectFilterBottomSheet :
         // Если в списке только одно значение, задаём хоть какой-то «запас»
         val globalMin = rawMin
         val globalMax = if (rawMax > rawMin) rawMax else rawMin + 1f
+
+        var isSyncSliderDisabled = false
         binding.sliderBudget.apply {
-            // Если у вас нет ни одного проекта, лучше скрыть слайдер
-            if (globalMin == globalMax) {
-                isEnabled = false
-            }
             valueFrom = globalMin
             valueTo = globalMax
             stepSize = 1f
@@ -93,9 +92,11 @@ class ProjectFilterBottomSheet :
                 current.maxBudget?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax
             )
             addOnChangeListener { _, _, _ ->
+                isSyncSliderDisabled = true
                 // лочим текстовые поля при перетаскивании
                 binding.etMinBudget?.setText(values[0].toInt().toString())
                 binding.etMaxBudget?.setText(values[1].toInt().toString())
+                isSyncSliderDisabled = false
             }
         }
         binding.etMinBudget?.setText((current.minBudget ?: globalMin.toDouble()).toInt().toString())
@@ -103,6 +104,7 @@ class ProjectFilterBottomSheet :
 
         // Синхронизируем, если пользователь ввёл число руками
         fun syncSlider() {
+            if (isSyncSliderDisabled) return
             val low =
                 binding.etMinBudget?.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
                     ?: globalMin
@@ -111,6 +113,7 @@ class ProjectFilterBottomSheet :
                     ?: globalMax
             binding.sliderBudget.values = listOf(low, high)
         }
+
         binding.etMinBudget?.doAfterTextChanged { syncSlider() }
         binding.etMaxBudget?.doAfterTextChanged { syncSlider() }
 

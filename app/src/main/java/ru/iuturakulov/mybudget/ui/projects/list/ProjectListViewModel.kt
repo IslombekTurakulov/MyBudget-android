@@ -162,7 +162,8 @@ class ProjectListViewModel @Inject constructor(
      */
     fun List<ProjectEntity>.fuzzyFilterQuery(
         query: String,
-        threshold: Double = 0.30
+        thresholdTitle: Double = 0.50,
+        thresholdDesc: Double = 0.2,
     ): List<ProjectEntity> {
         if (query.isBlank()) return this
 
@@ -172,18 +173,15 @@ class ProjectListViewModel @Inject constructor(
                     (project.description?.subsequenceMatch(query) ?: false)
         }
 
+        if (quickCandidates.isNotEmpty()) {
+            return quickCandidates
+        }
+
         // фильтр по Jaro–Winkler
-        return quickCandidates.filter { project ->
-            // если прямо содержится — сразу выводим
-            if (project.name.contains(query, ignoreCase = true) ||
-                (project.description?.contains(query, ignoreCase = true) ?: false)
-            ) {
-                true
-            } else {
-                // иначе — по похожести
-                project.name.similarityTo(query) >= threshold ||
-                        (project.description?.similarityTo(query) ?: 0.0) >= threshold
-            }
+        return filter { project ->
+            // иначе — по похожести
+            project.name.split(" ").any { it.similarityTo(query) >= thresholdTitle } ||
+                    (project.description?.similarityTo(query) ?: 0.0) >= thresholdDesc
         }
     }
 

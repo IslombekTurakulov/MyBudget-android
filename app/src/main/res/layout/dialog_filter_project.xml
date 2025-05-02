@@ -99,6 +99,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:labelBehavior="visible"
+            style="@style/Widget.MaterialComponents.Slider"
             app:thumbRadius="12dp"
             app:trackThickness="4dp" />
 

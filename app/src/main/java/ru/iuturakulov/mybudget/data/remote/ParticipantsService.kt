@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import ru.iuturakulov.mybudget.data.remote.dto.InvitationDto
 import ru.iuturakulov.mybudget.data.remote.dto.InvitationRequest
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantDto
 
@@ -22,5 +23,5 @@ interface ParticipantsService {
     suspend fun deleteParticipant(@Path("projectId") projectId: String, @Path("participantId") participantId: String): Response<Unit>
 
     @POST("projects/{projectId}/invite")
-    suspend fun sendInvitation(@Path("projectId") projectId: String, @Body invitationRequest: InvitationRequest): Response<Unit>
+    suspend fun sendInvitation(@Path("projectId") projectId: String, @Body invitationRequest: InvitationRequest): Response<InvitationDto>
 }

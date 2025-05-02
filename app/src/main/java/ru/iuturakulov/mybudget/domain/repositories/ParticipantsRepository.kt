@@ -5,6 +5,7 @@ import ru.iuturakulov.mybudget.data.local.daos.ParticipantsDao
 import ru.iuturakulov.mybudget.data.local.entities.ParticipantEntity
 import ru.iuturakulov.mybudget.data.mappers.ParticipantMapper
 import ru.iuturakulov.mybudget.data.remote.ParticipantsService
+import ru.iuturakulov.mybudget.data.remote.dto.InvitationDto
 import ru.iuturakulov.mybudget.data.remote.dto.InvitationRequest
 import javax.inject.Inject
 
@@ -106,16 +107,17 @@ class ParticipantsRepository @Inject constructor(
      * Отправка приглашения
      * @throws InvitationException при ошибках
      */
-    suspend fun sendInvitation(projectId: String, email: String, role: String) {
+    suspend fun sendInvitation(request: InvitationRequest): InvitationDto? {
         try {
             val response = participantService.sendInvitation(
-                projectId,
-                InvitationRequest(projectId, email, role)
+                request.projectId,
+                request
             )
 
             if (!response.isSuccessful) {
                 throw InvitationException("Ошибка сервера: ${response.code()}")
             }
+            return response.body()
         } catch (e: Exception) {
             throw InvitationException(
                 "${e.localizedMessage}",

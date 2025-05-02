@@ -27,15 +27,6 @@ class ProjectAdapter(
     private val onProjectClicked: (ProjectEntity) -> Unit
 ) : ListAdapter<ProjectEntity, ProjectAdapter.ProjectViewHolder>(DiffCallback()) {
 
-    companion object {
-        private val currencyFormat = NumberFormat.getCurrencyInstance(Locale("ru", "RU")).apply {
-            currency = Currency.getInstance("RUB")
-            maximumFractionDigits = 2
-            minimumFractionDigits = 2
-        }
-        private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    }
-
 
     inner class ProjectViewHolder(
         private val binding: ItemProjectBinding
@@ -84,6 +75,12 @@ class ProjectAdapter(
                     setProgress((pct * 100).roundToInt(), true)
                 }
 
+                val currencyFormat = NumberFormat.getCurrencyInstance(Locale.getDefault()).apply {
+                    currency = Currency.getInstance("RUB")
+                    maximumFractionDigits = 2
+                    minimumFractionDigits = 2
+                }
+
                 tvBudgetInfo.text = getString(
                     R.string.project_budget_progress,
                     currencyFormat.format(spent),
@@ -95,7 +92,7 @@ class ProjectAdapter(
                 val strokeColor = statusColor
 
                 chipStatus.apply {
-                    text = project.status.getStatusText()
+                    text = project.status.getStatusText(context)
 
                     chipIcon = ContextCompat.getDrawable(this@with, project.status.getStatusIcon())
                     chipIconTint = ColorStateList.valueOf(statusColor)
@@ -122,18 +119,18 @@ class ProjectAdapter(
                 // )
 
                 root.setOnClickListener {
-                    if (project.status != ProjectStatus.DELETED) {
+//                    if (project.status != ProjectStatus.DELETED) {
                         onProjectClicked(project)
-                    } else {
-                        Snackbar.make(
-                            root,
-                            getString(
-                                R.string.cannot_open_project_due_to_deleted_status,
-                                project.name
-                            ),
-                            Snackbar.LENGTH_LONG
-                        ).show()
-                    }
+//                    } else {
+//                        Snackbar.make(
+//                            root,
+//                            getString(
+//                                R.string.cannot_open_project_due_to_deleted_status,
+//                                project.name
+//                            ),
+//                            Snackbar.LENGTH_LONG
+//                        ).show()
+//                    }
                 }
             }
         }

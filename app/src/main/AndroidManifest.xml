@@ -33,8 +33,12 @@
             android:theme="@style/Theme.MyBudget">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
+
+                <data
+                    android:scheme="mybudget"
+                    android:host="invite" />
             </intent-filter>
         </activity>
 
