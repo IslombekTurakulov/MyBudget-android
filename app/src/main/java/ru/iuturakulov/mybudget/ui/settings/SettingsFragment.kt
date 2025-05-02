@@ -32,6 +32,10 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     override fun setupViews() {
         setupLanguageSelector()
 
+        binding.tilNotifications.setOnClickListener {
+            binding.switchNotifications.isChecked = !binding.switchNotifications.isChecked
+        }
+
         binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
             viewModel.saveUserSettings(
                 settings = viewModel.userSettings.value!!.copy(
@@ -44,11 +48,11 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
             showChangeUsernameDialog()
         }
 
-        binding.btnChangePassword.setOnClickListener {
+        binding.tilChangePassword.setOnClickListener {
             showChangePasswordDialog()
         }
 
-        binding.btnLogout.setOnClickListener {
+        binding.tilLogout.setOnClickListener {
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.logout_confirm_title)
                 .setMessage(R.string.logout_confirm_message)
@@ -129,7 +133,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
     private fun setupLanguageSelector() {
         val languages = resources.getStringArray(R.array.languages)
-        binding.tvSelectedLanguage.setOnClickListener {
+        binding.tilChangeLanguage.setOnClickListener {
             showLanguageSelectionDialog(languages)
         }
     }
