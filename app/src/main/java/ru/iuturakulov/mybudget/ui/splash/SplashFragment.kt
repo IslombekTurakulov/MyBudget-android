@@ -1,10 +1,15 @@
 package ru.iuturakulov.mybudget.ui.splash
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.LottieCompositionFactory
+import com.airbnb.lottie.RenderMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
@@ -23,18 +28,41 @@ class SplashFragment : BaseFragment<FragmentSplashBinding>(R.layout.fragment_spl
         return FragmentSplashBinding.bind(view)
     }
 
-    override fun setupViews() {
-        lifecycleScope.launch {
-            tokenStorage.getAccessTokenFlow().collect { token ->
-                Handler(Looper.getMainLooper()).postDelayed({
-                    if (token != null) {
-                        findNavController().navigate(R.id.action_splash_to_projects)
-                    } else {
-                        findNavController().navigate(R.id.action_splash_to_login)
-                    }
-                }, 2000) // 2 секунды задержки для визуализации загрузки
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.lottieSplash.setCacheComposition(true)
+        LottieCompositionFactory
+            .fromRawRes(requireContext(), R.raw.lottie_safe_money)
+            .addListener { composition ->
+                binding.lottieSplash.apply {
+                    renderMode = RenderMode.HARDWARE
+                    setComposition(composition)
+                    playAnimation()
+                }
             }
-        }
+            .addFailureListener {
+                binding.lottieSplash.setAnimation(R.raw.lottie_safe_money)
+                binding.lottieSplash.playAnimation()
+            }
+
+        binding.lottieSplash.addAnimatorListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                lifecycleScope.launch {
+                    tokenStorage.getAccessTokenFlow().collect { token ->
+                        if (token != null) {
+                            findNavController().navigate(R.id.action_splash_to_projects)
+                        } else {
+                            findNavController().navigate(R.id.action_splash_to_login)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    override fun setupViews() {
+        // no-op
     }
 
     override fun setupObservers() {

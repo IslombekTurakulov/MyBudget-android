@@ -13,6 +13,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.iuturakulov.mybudget.data.local.AppDatabase
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -53,6 +54,25 @@ object AppModule {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
     }
+
+    @Provides
+    @Singleton
+    fun provideBaseUrl(
+        prefs: SharedPreferences
+    ): String {
+        val host = prefs.getString(API_HOST_PREF, DEFAULT_HOST) ?: DEFAULT_HOST
+        return if (host.endsWith("/")) host else "$host/"
+    }
+
+    @Provides
+    @Singleton
+    @Named("BaseUrl")
+    fun provideBaseUrlNamed(prefs: SharedPreferences): String =
+        provideBaseUrl(prefs)
+
+
+    private const val API_HOST_PREF = "api_host"
+    private const val DEFAULT_HOST = "http://localhost:8080/"
 
     @Provides
     fun provideProjectDao(database: AppDatabase) = database.projectDao()

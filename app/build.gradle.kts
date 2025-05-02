@@ -101,7 +101,6 @@ dependencies {
 
 
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
     // push-notifications
@@ -113,7 +112,7 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
     implementation("com.leinardi.android:speed-dial:3.3.0")
-    implementation("com.airbnb.android:lottie:6.0.0")
+    implementation("com.airbnb.android:lottie:6.6.0")
 
     implementation(libs.emoji.google)
     // Testing

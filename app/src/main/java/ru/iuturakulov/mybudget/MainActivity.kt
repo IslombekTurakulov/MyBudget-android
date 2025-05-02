@@ -1,6 +1,9 @@
 package ru.iuturakulov.mybudget
 
 import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -9,6 +12,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -21,6 +25,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
@@ -30,8 +35,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.auth.AuthEventBus
+import ru.iuturakulov.mybudget.auth.CodeTokenStorage
+import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.core.worker.ProjectSyncWorker
 import ru.iuturakulov.mybudget.databinding.ActivityMainBinding
+import ru.iuturakulov.mybudget.di.PreferencesEntryPoint
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -44,13 +53,39 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var authEventBus: AuthEventBus
 
+    @Inject
+    lateinit var codeTokenStorage: CodeTokenStorage
+
     private var hideJob: Job? = null
     private val connectivity by lazy { getSystemService<ConnectivityManager>()!! }
+
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = EntryPointAccessors.fromApplication(
+            newBase.applicationContext,
+            PreferencesEntryPoint::class.java
+        ).encryptedPrefs()
+
+        val languageCode = prefs.getString(
+            "locale",
+            Locale.getDefault().language
+        ) ?: Locale.getDefault().language
+
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+        val config = Configuration(newBase.resources.configuration).apply {
+            setLocale(locale)
+        }
+        val localizedContext = newBase.createConfigurationContext(config)
+        super.attachBaseContext(localizedContext)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        handleDeepLinkIntent(intent)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -101,6 +136,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDeepLinkIntent(intent)
+    }
+
+    private fun handleDeepLinkIntent(intent: Intent) {
+        if (intent.action == Intent.ACTION_VIEW) {
+            intent.data?.let { uri ->
+                if (uri.scheme == "mybudget" && uri.host == "invite") {
+                    val code = uri.getQueryParameter("code")
+                    if (!code.isNullOrBlank()) {
+                        codeTokenStorage.saveCodeToken(code)
+                    }
+                }
+            }
+        }
     }
 
     private fun updateNetworkStatus(isConnected: Boolean) {

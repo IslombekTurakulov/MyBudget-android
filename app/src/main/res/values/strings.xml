@@ -2,7 +2,7 @@
 <resources>
 
     <!-- App -->
-    <string name="app_name">Мой Бюджет</string>
+    <string name="app_name">My Budget</string>
     <string name="splash_tagline">Ваши финансы — под контролем</string>
     <string name="action_settings">Settings</string>
 
@@ -90,8 +90,25 @@
 
     <string name="qr_code">QR-код приглашения</string>
     <string name="invite_code_label">Код приглашения %1$s</string>
+    <string name="invite_code">Код приглашения</string>
 
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+
+    <string name="dialog_change_username_title">Сменить имя пользователя</string>
+    <string name="change">Сменить</string>
+    <string name="error_empty_username">Имя не может быть пустым</string>
+    <string name="error_username_too_short">Имя должно быть не менее 4 символов</string>
+
+    <string name="debug_panel_title">Панель отладки</string>
+    <string name="debug_send_test_notification">Отправить тестовое уведомление</string>
+    <string name="debug_change_host">Смена окружения</string>
+    <string name="error_empty_host">Адрес хоста не может быть пустым</string>
+    <string name="error_invalid_host">Ошибка в адресе хоста</string>
+    <string name="debug_host_changed">Хост поменят «%1$s»</string>
+    <string name="current_host_label">Текущий host: %1$s</string>
+    <string name="saving">Сохраняю...</string>
+
+    <string name="edit_profile">Редактировать профиль</string>
 
     <!-- Project details -->
     <string name="delete_project">Удалить проект</string>
@@ -348,7 +365,7 @@
     <string name="no_description">Описание отсутствует</string>
     <string name="no_category">Без категории</string>
     <string name="project_budget_progress">%1$s из %2$s\n Потрачено бюджета: %3$s</string>
-    <string name="label_owner_with_name">Владелец: %1$s</string>
+    <string name="label_owner_with_name">Владелец проекта: %1$s</string>
     <string name="cannot_open_project_due_to_deleted_status">Проект \"%1$s\" нельзя открыть так как он удален</string>
     <string name="label_category_project_with_name">Категория: %1$s</string>
 

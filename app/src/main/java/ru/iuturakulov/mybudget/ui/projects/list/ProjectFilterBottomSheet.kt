@@ -59,13 +59,18 @@ class ProjectFilterBottomSheet :
         val catSel = current.category ?: getString(R.string.all)
         binding.spinnerCategory.setText(catSel, false)
 
-        val owners = listOf(getString(R.string.all)) +
-                vm.projects.value.mapNotNull { it.ownerName }.distinct()
+        val owners = listOf(getString(R.string.all)) + vm.projects.value.map { it.ownerName }.distinct()
         binding.spinnerOwner.setAdapter(
             ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
-                owners
+                owners.map { owner ->
+                    if (owner.equals("Вы", ignoreCase = true)) {
+                        binding.root.context.getString(R.string.transaction_title_your)
+                    } else {
+                        owner
+                    }
+                }
             ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
         )
         val ownerSel = current.ownerName ?: getString(R.string.all)

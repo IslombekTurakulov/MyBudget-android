@@ -88,7 +88,25 @@
     <string name="invite_by_qr">Via QR code</string>
     <string name="qr_code">Invitation QR code</string>
     <string name="invite_code_label">Invitation code %1$s</string>
+    <string name="invite_code">Invitation code</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
+
+    <string name="dialog_change_username_title">Change Username</string>
+    <string name="change">Change</string>
+    <string name="error_empty_username">Name cannot be empty</string>
+    <string name="error_username_too_short">Name must be at least 4 characters long</string>
+
+    <string name="debug_panel_title">Debug Panel</string>
+    <string name="debug_send_test_notification">Send test notification</string>
+    <string name="debug_change_host">Change environment</string>
+    <string name="error_empty_host">Host cannot be empty</string>
+    <string name="error_invalid_host">Host is invalid</string>
+    <string name="debug_host_changed">Host changed to «%1$s»</string>
+    <string name="current_host_label">Current host: %1$s</string>
+
+    <string name="saving">Saving...</string>
+
+    <string name="edit_profile">Редактировать профиль</string>
 
     <!-- Project details -->
     <string name="delete_project">Delete project</string>
@@ -347,7 +365,7 @@
     <string name="no_description">No description</string>
     <string name="no_category">No category</string>
     <string name="project_budget_progress">%1$s of %2$s\nBudget spent: %3$s</string>
-    <string name="label_owner_with_name">Owner: %1$s</string>
+    <string name="label_owner_with_name">Project owner: %1$s</string>
     <string name="cannot_open_project_due_to_deleted_status">Project "%1$s" cannot be opened because it is deleted</string>
     <string name="label_category_project_with_name">Category: %1$s</string>
 

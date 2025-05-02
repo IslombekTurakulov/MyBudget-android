@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
     android:background="?attr/colorSurface"
+    android:fillViewport="true"
     android:padding="@dimen/spacing_16">
 
     <LinearLayout
@@ -24,52 +22,38 @@
             app:strokeColor="?attr/colorOutline"
             app:strokeWidth="@dimen/divider_thickness">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
                 android:padding="@dimen/spacing_16">
 
-<!--                <com.google.android.material.imageview.ShapeableImageView-->
-<!--                    android:layout_width="56dp"-->
-<!--                    android:layout_height="56dp"-->
-<!--                    android:src="@drawable/baseline_account_tree_24"-->
-<!--                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"-->
-<!--                    android:tint="?attr/colorPrimary"-->
-<!--                    android:contentDescription="@string/profile_image" />-->
-
-                <LinearLayout
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvUserName"
+                    style="?attr/textAppearanceHeadlineSmall"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_16"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:text="@string/username"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvUserName"
-                        style="?attr/textAppearanceHeadlineSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/username"
-                        tools:text="Islam" />
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvUserEmail"
+                    style="?attr/textAppearanceBodyMedium"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_4"
+                    android:text="@string/user_email"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvUserName" />
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvUserEmail"
-                        style="?attr/textAppearanceBodyMedium"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_4"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:text="@string/user_email"
-                        tools:text="spszakachbaby@yandex.ru" />
-                </LinearLayout>
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.material.card.MaterialCardView>
 
-
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/settingsCard"
             style="?attr/materialCardViewStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -97,41 +81,142 @@
                     android:layout_marginVertical="@dimen/spacing_8"
                     app:dividerColor="?attr/colorOutline" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/tvSelectedLanguage"
-                    style="?attr/textAppearanceBodyLarge"
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:gravity="center_vertical"
-                    android:paddingStart="@dimen/spacing_16"
-                    android:paddingEnd="@dimen/spacing_16"
                     android:background="?attr/selectableItemBackground"
-                    android:drawableEnd="@drawable/baseline_expand_more_24"
-                    android:text="@string/select_language" />
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingEnd="@dimen/spacing_16">
 
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchNotifications"
+                    <ImageView
+                        android:id="@+id/ivLanguageIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_language_24"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvSelectedLanguage"
+                        style="?attr/textAppearanceBodyLarge"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_16"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:text="@string/select_language"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/ivLanguageArrow"
+                        app:layout_constraintStart_toEndOf="@id/ivLanguageIcon"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/ivLanguageArrow"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/baseline_expand_more_24"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="?attr/textAppearanceBodyLarge"
+                    android:background="?attr/selectableItemBackground"
                     android:paddingStart="@dimen/spacing_16"
                     android:paddingTop="@dimen/spacing_8"
-                    android:paddingBottom="@dimen/spacing_8"
-                    android:text="@string/notifications" />
+                    android:paddingEnd="@dimen/spacing_16"
+                    android:paddingBottom="@dimen/spacing_8">
 
-<!--                <com.google.android.material.switchmaterial.SwitchMaterial-->
-<!--                    android:id="@+id/switchDarkTheme"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:paddingStart="@dimen/spacing_16"-->
-<!--                    android:paddingTop="@dimen/spacing_8"-->
-<!--                    android:paddingBottom="@dimen/spacing_16"-->
-<!--                    android:text="@string/dark_theme" />-->
+                    <ImageView
+                        android:id="@+id/ivNotificationsIcon"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_notifications_24"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvNotifications"
+                        style="?attr/textAppearanceBodyLarge"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_16"
+                        android:text="@string/notifications"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/switchNotifications"
+                        app:layout_constraintStart_toEndOf="@id/ivNotificationsIcon"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchNotifications"
+                        style="?attr/materialSwitchStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/securityCard"
+            style="?attr/materialCardViewStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_16"
+            app:cardCornerRadius="@dimen/corner_radius"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="@dimen/divider_thickness">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.textview.MaterialTextView
+                    style="?attr/textAppearanceTitleMedium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingTop="@dimen/spacing_16"
+                    android:text="@string/security" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="fill_horizontal"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/spacing_16">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnChangePassword"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/change_password" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLogout"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_8"
+                        android:text="@string/logout" />
+
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/debugCard"
             style="?attr/materialCardViewStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -150,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:paddingStart="@dimen/spacing_16"
                     android:paddingTop="@dimen/spacing_16"
-                    android:text="@string/security" />
+                    android:text="@string/debug_panel_title" />
 
                 <com.google.android.material.divider.MaterialDivider
                     android:layout_width="match_parent"
@@ -158,33 +243,27 @@
                     android:layout_marginVertical="@dimen/spacing_8"
                     app:dividerColor="?attr/colorOutline" />
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvDebugChangeHost"
+                    style="?attr/textAppearanceBodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingEnd="@dimen/spacing_16"
+                    android:text="@string/debug_change_host" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tvCurrentHost"
+                    style="?attr/textAppearanceBodySmall"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/spacing_16">
+                    android:paddingStart="@dimen/spacing_16"
+                    android:paddingBottom="@dimen/spacing_16"
+                    android:text="@string/current_host_label"
+                    />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnChangePassword"
-                        style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/change_password"
-                        app:layout_constraintEnd_toStartOf="@+id/btnLogout"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintWidth_percent="0.5" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnLogout"
-                        style="?attr/materialButtonToggleGroupStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/logout"
-                        app:layout_constraintStart_toEndOf="@id/btnChangePassword"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintWidth_percent="0.45" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

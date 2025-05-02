@@ -53,7 +53,6 @@ import com.google.android.material.timepicker.TimeFormat
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import com.vanniktech.emoji.EmojiPopup
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,7 +63,6 @@ import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
-import ru.iuturakulov.mybudget.ui.transactions.emoji.EmojiPickerBottomSheet
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -292,6 +290,9 @@ class AddTransactionDialogFragment : DialogFragment() {
                 btnSave.text = getString(R.string.add)
                 btnSave.setOnClickListener { processSaveButton(onTransactionAdded, arguments) }
                 toggleTransactionType.check(R.id.btnIncome)
+                binding.ivTransactionCategoryIcon.text = resources.getStringArray(
+                    R.array.emoji_list
+                ).toList().shuffled().first()
                 btnCancel.setOnClickListener { dismiss() }
             }
 

@@ -153,6 +153,7 @@ class ProjectParticipantsFragment :
             )
             .setPositiveButton(R.string.delete) { _, _ ->
                 viewModel.deleteParticipant(participant)
+                viewModel.syncParticipants(args.projectId)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

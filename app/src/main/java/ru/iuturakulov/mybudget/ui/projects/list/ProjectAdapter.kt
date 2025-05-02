@@ -109,7 +109,11 @@ class ProjectAdapter(
 
                 tvOwner.text = getString(
                     R.string.label_owner_with_name,
-                    project.ownerName
+                    if ( project.ownerName.equals("Вы", ignoreCase = true)) {
+                        binding.root.context.getString(R.string.transaction_title_your)
+                    } else {
+                        project.ownerName
+                    }
                 )
 
                 // Дата создания

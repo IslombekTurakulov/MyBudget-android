@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:hint="Код проекта">
+    android:hint="@string/invite_code">
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/etProjectCode"

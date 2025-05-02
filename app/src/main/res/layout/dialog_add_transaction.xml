@@ -161,12 +161,6 @@
                             android:contentDescription="@string/ic_category_placeholder_description"
                             android:gravity="center"
                             android:textSize="24sp" />
-
-                        <com.vanniktech.emoji.EmojiEditText
-                            android:id="@+id/etHiddenEmojiInput"
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:visibility="gone"/>
                     </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.textfield.TextInputLayout

@@ -178,9 +178,8 @@ class ProjectDetailsFragment :
     }
 
     private fun processUserRole(role: ParticipantRole?, status: ProjectStatus) = binding.apply {
-        val isViewer = role == ParticipantRole.VIEWER
         val isProjectDeleted = status == ProjectStatus.DELETED
-        toolbar.menu.findItem(R.id.menuEdit).isVisible = !isViewer && !isProjectDeleted
+        toolbar.menu.findItem(R.id.menuEdit).isVisible = role == ParticipantRole.OWNER && !isProjectDeleted
         toolbar.menu.setGroupVisible(
             R.id.group_editor,
             role == ParticipantRole.OWNER && !isProjectDeleted
@@ -249,7 +248,13 @@ class ProjectDetailsFragment :
         dlg.spinnerCategory.setSelection(cats.indexOf(catSel).coerceAtLeast(0))
 
         val users = listOf(getString(R.string.all)) + viewModel.transactions.value
-            .mapNotNull { it.userName.takeIf(String::isNotBlank) }
+            .mapNotNull { it.userName.takeIf(String::isNotBlank) }.map { name ->
+                if (name.equals("Вы", ignoreCase = true)) {
+                    getString(R.string.transaction_title_your)
+                } else {
+                    name
+                }
+            }
             .distinct()
         dlg.spinnerUser.adapter = ArrayAdapter(
             requireContext(),

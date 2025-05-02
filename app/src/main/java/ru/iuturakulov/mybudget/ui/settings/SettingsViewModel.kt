@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.domain.models.UserSettings
@@ -19,8 +20,21 @@ class SettingsViewModel @Inject constructor(
     private val encryptedSharedPreferences: SharedPreferences
 ) : ViewModel() {
 
+    companion object {
+        private const val DARK_THEME = "dark_theme"
+        private const val LOCALE = "locale"
+        private const val API_HOST = "api_host"
+        private const val DEFAULT_HOST = "http://localhost:8080/"
+    }
+
     val userSettings = MutableStateFlow<UserSettings?>(null)
     val message = MutableSharedFlow<String>()
+
+    private val _host = MutableStateFlow(
+        encryptedSharedPreferences.getString(API_HOST, DEFAULT_HOST)!!
+    )
+    val host: StateFlow<String> = _host
+
 
     fun fetchUserSettings() {
         viewModelScope.launch {
@@ -46,19 +60,17 @@ class SettingsViewModel @Inject constructor(
 
     fun toggleDarkTheme(isDarkTheme: Boolean) {
         viewModelScope.launch {
-            encryptedSharedPreferences.edit().putBoolean(
-                DARK_THEME,
-                isDarkTheme
-            ).apply()
+            encryptedSharedPreferences.edit()
+                .putBoolean(DARK_THEME, isDarkTheme)
+                .apply()
         }
     }
 
     fun saveCurrentLocale(locale: String) {
         viewModelScope.launch {
-            encryptedSharedPreferences.edit().putString(
-                LOCALE,
-                locale
-            ).apply()
+            encryptedSharedPreferences.edit()
+                .putString(LOCALE, locale)
+                .apply()
         }
     }
 
@@ -68,8 +80,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    companion object {
-        private const val DARK_THEME = "dark_theme"
-        private const val LOCALE = "locale"
+    /** Обновить API-host и сохранить его вprefs */
+    fun updateHost(newHost: String) {
+        viewModelScope.launch {
+            encryptedSharedPreferences.edit()
+                .putString(API_HOST, newHost)
+                .apply()
+            _host.value = newHost
+        }
     }
 }

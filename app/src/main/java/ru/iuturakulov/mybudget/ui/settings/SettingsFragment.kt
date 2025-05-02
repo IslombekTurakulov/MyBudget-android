@@ -2,9 +2,12 @@ package ru.iuturakulov.mybudget.ui.settings
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Patterns
 import android.view.View
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isGone
-import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -29,9 +32,13 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     override fun setupViews() {
         setupLanguageSelector()
 
-//        binding.switchDarkTheme.setOnCheckedChangeListener { _, isChecked ->
-//            viewModel.toggleDarkTheme(isChecked)
-//        }
+        binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.saveUserSettings(
+                settings = viewModel.userSettings.value!!.copy(
+                    notificationsEnabled = isChecked
+                )
+            )
+        }
 
         binding.profileCard.setOnClickListener {
             showChangeUsernameDialog()
@@ -52,6 +59,55 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                 .setNegativeButton(R.string.cancel, null)
                 .show()
         }
+
+        binding.tvCurrentHost.text = getString(R.string.current_host_label, viewModel.host.value)
+        binding.tvDebugChangeHost.setOnClickListener {
+            showChangeHostDialog()
+        }
+    }
+
+    private fun showChangeHostDialog() {
+        val dlgView = layoutInflater.inflate(R.layout.dialog_change_host, null)
+        val inputLayout = dlgView.findViewById<TextInputLayout>(R.id.inputLayoutHost)
+        val etHost = dlgView.findViewById<TextInputEditText>(R.id.etHost)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.debug_change_host)
+            .setView(dlgView)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val btnSave = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            btnSave.isEnabled = false
+
+            etHost.addTextChangedListener {
+                val url = it?.toString().orEmpty().trim()
+                val ok = Patterns.WEB_URL.matcher(url).matches()
+                inputLayout.error =
+                    if (!ok && url.isNotEmpty()) getString(R.string.error_invalid_host) else null
+                btnSave.isEnabled = ok
+            }
+
+            btnSave.setOnClickListener {
+                btnSave.text = getString(R.string.saving)
+                btnSave.isEnabled = false
+
+                val newHost = etHost.text!!.toString().trim()
+                viewModel.updateHost(newHost)
+
+                dialog.dismiss()
+                Snackbar.make(
+                    binding.root,
+                    getString(R.string.debug_host_changed, newHost),
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        etHost.setText(viewModel.host.value)
+        dialog.show()
     }
 
     override fun setupObservers() {
@@ -73,7 +129,6 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
     private fun setupLanguageSelector() {
         val languages = resources.getStringArray(R.array.languages)
-        updateSelectedLanguage(Locale.getDefault().language)
         binding.tvSelectedLanguage.setOnClickListener {
             showLanguageSelectionDialog(languages)
         }
@@ -109,14 +164,12 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                 updateSelectedLanguage(selectedLanguageCode)
                 dialog.dismiss()
 
-                // Здесь можно добавить смену языка приложения
                 setAppLocale(requireContext(), selectedLanguageCode)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
-    @SuppressLint("NewApi")
     private fun setAppLocale(context: Context, languageCode: String) {
         val locale = Locale(languageCode)
         Locale.setDefault(locale)
@@ -132,8 +185,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     }
 
     private fun updateUI(settings: UserSettings) {
-        binding.tvUserName.setText(settings.name)
-        binding.tvUserEmail.setText(settings.email)
+        binding.tvUserName.text = settings.name
+        binding.tvUserEmail.text = settings.email
         binding.switchNotifications.isChecked = settings.notificationsEnabled
 //        binding.switchDarkTheme.isChecked = settings.darkThemeEnabled
     }
@@ -147,52 +200,52 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
     private fun showChangeUsernameDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_change_username, null)
         val newUsername = dialogView.findViewById<TextInputEditText>(R.id.etNewUserName)
-        val etNameInputLayout = dialogView.findViewById<TextInputLayout>(R.id.etNewNameInputLayout)
+        val etNameInputLayout =
+            dialogView.findViewById<TextInputLayout>(R.id.etNewNameInputLayout)
 
         MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.dialog_change_username_title)
             .setView(dialogView)
-            .setPositiveButton("Сменить") { _, _ ->
+            .setPositiveButton(R.string.change) { _, _ ->
                 val name = newUsername.text?.trim().toString()
 
-                fun showError(inputLayout: TextInputLayout, error: String?): Boolean {
-                    inputLayout.error = error
-                    inputLayout.isErrorEnabled = error != null
-                    if (error != null) inputLayout.requestFocus()
-                    return error == null
+                fun showError(inputLayout: TextInputLayout, @StringRes errRes: Int?): Boolean {
+                    if (errRes != null) {
+                        inputLayout.error = getString(errRes)
+                        inputLayout.isErrorEnabled = true
+                        inputLayout.requestFocus()
+                        return false
+                    } else {
+                        inputLayout.error = null
+                        inputLayout.isErrorEnabled = false
+                        return true
+                    }
                 }
 
                 if (!showError(
-                        inputLayout = etNameInputLayout,
-                        error = "Имя не может быть пустым".takeIf { name.isBlank() }
+                        etNameInputLayout,
+                        if (name.isBlank()) R.string.error_empty_username else null
                     )
-                ) {
-                    return@setPositiveButton
-                }
+                ) return@setPositiveButton
 
                 if (!showError(
-                        inputLayout = etNameInputLayout,
-                        error = "Имя должен быть больше 4 символов!".takeIf { name.trim().length < 4 }
+                        etNameInputLayout,
+                        if (name.length < 4) R.string.error_username_too_short else null
                     )
-                ) {
-                    return@setPositiveButton
-                }
+                ) return@setPositiveButton
 
-                val languages = resources.getStringArray(R.array.languages)
-                val languageCodes = resources.getStringArray(R.array.language_codes)
-                val index = languages.indexOf(binding.tvSelectedLanguage.text?.toString())
-                val displayLanguage = if (index >= 0) languageCodes[index] else languageCodes[0]
-
+                val settings = viewModel.userSettings.value!!
                 viewModel.saveUserSettings(
-                    settings = UserSettings(
+                    settings.copy(
                         name = name,
-                        email = binding.tvUserEmail.text.toString(),
-                        language = displayLanguage,
-                        notificationsEnabled = binding.switchNotifications.isChecked,
-                        darkThemeEnabled = false // binding.switchDarkTheme.isChecked
+                        email = settings.email,
+                        language = settings.language,
+                        notificationsEnabled = settings.notificationsEnabled,
+                        darkThemeEnabled = false, // settings.darkThemeEnabled,
                     )
                 )
             }
-            .setNegativeButton(getString(R.string.cancel), null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 }

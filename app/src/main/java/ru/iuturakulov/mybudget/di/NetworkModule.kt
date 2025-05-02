@@ -12,6 +12,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ru.iuturakulov.mybudget.auth.AuthEventBus
+import ru.iuturakulov.mybudget.auth.CodeTokenStorage
 import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.data.remote.AnalyticsService
 import ru.iuturakulov.mybudget.data.remote.AuthInterceptor
@@ -41,6 +42,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideCodeStorage(sharedPreferences: SharedPreferences): CodeTokenStorage {
+        return CodeTokenStorage(sharedPreferences)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthEventBus(): AuthEventBus {
         return AuthEventBus()
     }
@@ -60,9 +67,12 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("AuthRetrofit")
-    fun provideAuthRetrofit(baseOkHttpClient: OkHttpClient): Retrofit {
+    fun provideAuthRetrofit(
+        baseOkHttpClient: OkHttpClient,
+        @Named("BaseUrl") baseUrl: String
+    ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(baseOkHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -99,10 +109,11 @@ object NetworkModule {
     @Singleton
     @Named("AuthenticatedRetrofit")
     fun provideAuthenticatedRetrofit(
-        @Named("AuthenticatedOkHttp") okHttpClient: OkHttpClient
+        @Named("AuthenticatedOkHttp") okHttpClient: OkHttpClient,
+        @Named("BaseUrl") baseUrl: String
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -149,8 +160,6 @@ object NetworkModule {
     fun provideChangePasswordAuthService(@Named("AuthenticatedRetrofit") retrofit: Retrofit): ChangePasswordAuthService {
         return retrofit.create(ChangePasswordAuthService::class.java)
     }
-
-    private const val BASE_URL = "http://localhost:8080/"
 
     // Interceptor для логирования
     private fun getLoggingInterceptor(): HttpLoggingInterceptor {

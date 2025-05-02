@@ -1,7 +1,10 @@
 package ru.iuturakulov.mybudget.ui.projects.list
 
+import android.content.DialogInterface
+import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.viewModels
@@ -14,16 +17,17 @@ import com.google.android.material.textfield.TextInputLayout
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.auth.CodeTokenStorage
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.databinding.FragmentProjectListBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
 import ru.iuturakulov.mybudget.ui.projects.create.CreateProjectFragment
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ProjectListFragment :
@@ -31,6 +35,10 @@ class ProjectListFragment :
 
     private val viewModel: ProjectListViewModel by viewModels()
     private lateinit var adapter: ProjectAdapter
+    private var joinDialog: AlertDialog? = null
+
+    @Inject
+    lateinit var codeTokenStorage: CodeTokenStorage
 
     override fun getViewBinding(view: View) = FragmentProjectListBinding.bind(view)
 
@@ -86,10 +94,12 @@ class ProjectListFragment :
                         navigateToAddProject()
                         true
                     }
+
                     R.id.fab_filter -> {
                         showFilterDialog()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -104,6 +114,14 @@ class ProjectListFragment :
     }
 
     override fun setupObservers() {
+        lifecycleScope.launchWhenStarted {
+            codeTokenStorage.getCodeTokenFlow().collect { code ->
+                code ?: return@collect
+                viewModel.joinProjectByCode(code)
+                codeTokenStorage.clearCodeToken()
+            }
+        }
+
         lifecycleScope.launchWhenStarted {
             viewModel.filteredProjects.collect { projects ->
                 binding.swipeRefreshLayout.isRefreshing = false
@@ -129,17 +147,30 @@ class ProjectListFragment :
         }
 
         // Ответ на приглашение по коду
-        lifecycleScope.launchWhenStarted {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.inviteCodeEvent.collect { event ->
                 when (event) {
                     is UiState.Success -> {
-                        Snackbar.make(binding.root, event.data ?: getString(R.string.success), Snackbar.LENGTH_SHORT)
-                            .show()
+                        Snackbar.make(
+                            binding.root,
+                            event.data ?: getString(R.string.success),
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                        viewModel.syncProjects()
+                        joinDialog?.dismiss()
                     }
+
                     is UiState.Error -> {
-                        Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(
+                            binding.root,
+                            event.message,
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                        joinDialog?.getButton(DialogInterface.BUTTON_POSITIVE)
+                            ?.isEnabled = true
                     }
-                    else -> {}
+
+                    else -> Unit
                 }
             }
         }
@@ -163,10 +194,12 @@ class ProjectListFragment :
                     showJoinByCodeDialog()
                     true
                 }
+
                 R.id.menuNotifications -> {
                     findNavController().navigate(R.id.action_projects_to_notifications)
                     true
                 }
+
                 else -> false
             }
         }
@@ -177,22 +210,26 @@ class ProjectListFragment :
         val inputLayout = dialogView.findViewById<TextInputLayout>(R.id.inputLayoutProjectCode)
         val editText = dialogView.findViewById<TextInputEditText>(R.id.etProjectCode)
 
-        MaterialAlertDialogBuilder(requireContext())
+        joinDialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.join_project)
             .setView(dialogView)
-            .setPositiveButton(R.string.join) { dialog, _ ->
+            .setPositiveButton(R.string.join, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+        joinDialog?.show()
+
+        joinDialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.let { positiveButton ->
+            positiveButton.setOnClickListener {
                 val code = editText.text?.toString().orEmpty()
                 if (code.isBlank()) {
                     inputLayout.error = getString(R.string.error_empty_code)
                 } else {
                     inputLayout.error = null
+                    positiveButton.isEnabled = false
                     viewModel.joinProjectByCode(code)
-                    viewModel.syncProjects()
-                    dialog.dismiss()
                 }
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        }
     }
 }
 
