@@ -53,10 +53,11 @@ jobs:
   provenance:
     needs: build-artifacts
     permissions:
-      actions: read     # читаем workflow
-      id-token: write   # нужен для подписи provenance
-      contents: write   # чтобы загрузить в релиз артефакты
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: "${{ needs.build-artifacts.outputs.digests }}"
       upload-assets: true
+
