@@ -1,0 +1,65 @@
+name: Android CI & SLSA Provenance
+
+on:
+  push:
+    branches: [main]            # собираем при пушах в main
+  workflow_dispatch:            # и вручную
+  release:
+    types: [created]            # и при создании релиза
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    outputs:
+      digests: ${{ steps.hash.outputs.digests }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Android SDK
+        uses: google-github-actions/setup-android@v2
+        with:
+          api-level: 33            # Android API level
+          build-tools: 33.0.0      # Build-tools version
+
+      - name: Build Release APK
+        run: ./gradlew clean assembleRelease
+
+      - name: Generate subject for provenance
+        id: hash
+        run: |
+          set -euo pipefail
+          # Путь к собранным APK
+          files=$(ls app/build/outputs/apk/release/*.apk)
+          if [ -z "$files" ]; then
+            echo "No APKs found!" >&2
+            exit 1
+          fi
+          # sha256 + base64
+          echo "digests=$(sha256sum $files | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+  provenance:
+    needs: build-artifacts
+    permissions:
+      actions: read     # читаем workflow
+      id-token: write   # нужен для подписи provenance
+      contents: write   # чтобы загрузить в релиз артефакты
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+    with:
+      base64-subjects: "${{ needs.build-artifacts.outputs.digests }}"
+      upload-assets: true
