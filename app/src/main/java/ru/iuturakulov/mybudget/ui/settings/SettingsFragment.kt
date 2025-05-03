@@ -6,6 +6,8 @@ import android.util.Patterns
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.isGone
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
@@ -17,9 +19,11 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.setOnDebounceClick
 import ru.iuturakulov.mybudget.databinding.FragmentSettingsBinding
 import ru.iuturakulov.mybudget.domain.models.UserSettings
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import timber.log.Timber
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -63,6 +67,8 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                 .setNegativeButton(R.string.cancel, null)
                 .show()
         }
+
+        updateSelectedLanguage(Locale.getDefault().language)
 
         binding.tvCurrentHost.text = getString(R.string.current_host_label, viewModel.host.value)
         binding.tvDebugChangeHost.setOnClickListener {
@@ -127,13 +133,12 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                 Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
             }
         }
-
         viewModel.fetchUserSettings()
     }
 
     private fun setupLanguageSelector() {
         val languages = resources.getStringArray(R.array.languages)
-        binding.tilChangeLanguage.setOnClickListener {
+        binding.tilChangeLanguage.setOnDebounceClick(intervalMs = 300) {
             showLanguageSelectionDialog(languages)
         }
     }
@@ -165,10 +170,10 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
                         darkThemeEnabled = false, // binding.switchDarkTheme.isChecked
                     )
                 )
-                updateSelectedLanguage(selectedLanguageCode)
+                val localeList = LocaleListCompat.forLanguageTags(selectedLanguageCode)
+                AppCompatDelegate.setApplicationLocales(localeList)
                 dialog.dismiss()
 
-                setAppLocale(requireContext(), selectedLanguageCode)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

@@ -12,6 +12,7 @@ import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.domain.models.UserSettings
 import ru.iuturakulov.mybudget.domain.repositories.SettingsRepository
 import javax.inject.Inject
+import androidx.core.content.edit
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
