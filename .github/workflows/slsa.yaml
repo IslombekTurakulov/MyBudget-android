@@ -11,8 +11,7 @@ jobs:
   build-artifacts:
     runs-on: ubuntu-latest
     outputs:
-      digests: ${{ steps.hash.outputs.digests }}
-
+      hashes: ${{ steps.hash.outputs.digests }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,7 +47,7 @@ jobs:
             exit 1
           fi
           # sha256 + base64
-          echo "digests=$(sha256sum $files | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hashes=$(sha256sum $files | base64 -w0)" >> "$GITHUB_OUTPUT"
           
       - name: Create Base64 subjects from APK
         id: make-subjects
@@ -64,7 +63,8 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
-      base64-subjects: ${{ needs.build-artifacts.outputs.subjects }}
-      upload-assets: true
-      private-repository: true
-      compile-generator: true
+        base64-subjects: ${{ needs.build-artifacts.outputs.hashes }}
+        upload-assets: true
+        private-repository: true
+        compile-generator: true
+
