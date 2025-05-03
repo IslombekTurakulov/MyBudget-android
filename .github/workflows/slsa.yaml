@@ -38,6 +38,9 @@ jobs:
           # Если нужны дополнительные пакеты, можно переопределить:
           # packages: "build-tools;33.0.0 platforms;android-33"
           accept-android-sdk-licenses: yes
+          packages: |
+            build-tools;33.0.0
+            platforms;android-33
 
       - name: Build Release APK
         run: ./gradlew clean assembleRelease
