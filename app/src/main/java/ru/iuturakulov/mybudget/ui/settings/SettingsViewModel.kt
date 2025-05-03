@@ -13,12 +13,18 @@ import ru.iuturakulov.mybudget.domain.models.UserSettings
 import ru.iuturakulov.mybudget.domain.repositories.SettingsRepository
 import javax.inject.Inject
 import androidx.core.content.edit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import ru.iuturakulov.mybudget.auth.CodeTokenStorage
+import ru.iuturakulov.mybudget.data.local.AppDatabase
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val repository: SettingsRepository,
     private val tokenStorage: TokenStorage,
-    private val encryptedSharedPreferences: SharedPreferences
+    private val codeTokenStorage: CodeTokenStorage,
+    private val encryptedSharedPreferences: SharedPreferences,
+    private val db: AppDatabase,
 ) : ViewModel() {
 
     companion object {
@@ -78,6 +84,10 @@ class SettingsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             tokenStorage.clearTokens()
+            codeTokenStorage.clearCodeToken()
+            withContext(Dispatchers.IO) {
+                db.clearAllTables()
+            }
         }
     }
 

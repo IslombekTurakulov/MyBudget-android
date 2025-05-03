@@ -3,6 +3,7 @@ package ru.iuturakulov.mybudget.ui.projects.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -11,8 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.text.similarity.JaroWinklerSimilarity
 import org.apache.commons.text.similarity.LevenshteinDistance
 import ru.iuturakulov.mybudget.core.UiState
@@ -55,14 +58,19 @@ class ProjectListViewModel @Inject constructor(
     )
     val projectFilter: StateFlow<ProjectFilter> = _filterStatuses
 
-    val filteredProjects = combine(_projects, _searchQuery, _filterStatuses) { projects, query, filter ->
-        projects
-            .fuzzyFilterQuery(query)
-            .filterByStatuses(filter.statuses)
-            .filterByCategory(filter.category)
-            .filterByOwner(filter.ownerName)
-            .filterByBudget(filter.minBudget, filter.maxBudget)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(1_000), emptyList())
+    val filteredProjects =
+        combine(_projects, _searchQuery, _filterStatuses) { projects, query, filter ->
+            projects
+                .fuzzyFilterQuery(query)
+                .filterByStatuses(filter.statuses)
+                .filterByCategory(filter.category)
+                .filterByOwner(filter.ownerName)
+                .filterByBudget(filter.minBudget, filter.maxBudget)
+        }.flowOn(Dispatchers.Default).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(1_000),
+            emptyList()
+        )
 
     init {
         loadProjects()
@@ -155,34 +163,48 @@ class ProjectListViewModel @Inject constructor(
         jw.apply(this, other)
 
     /**
-     * Двухшаговый fuzzy-фильтр:
-     * 1) subsequenceMatch — чтобы быстро отбросить ~90%,
-     * 2) Jaro–Winkler — чтобы отбирать реально похожие.
-     * src https://www.geeksforgeeks.org/jaro-and-jaro-winkler-similarity/
+     * Двухэтапный fuzzy-фильтр:
+     * 1) subsequenceMatch — быстрый отбор кандидатов,
+     * 2) Jaro–Winkler — точная проверка по порогам.
      */
     fun List<ProjectEntity>.fuzzyFilterQuery(
         query: String,
         thresholdTitle: Double = 0.50,
-        thresholdDesc: Double = 0.2,
+        thresholdDesc: Double = 0.70,
     ): List<ProjectEntity> {
-        if (query.isBlank()) return this
+        val q = query.trim().lowercase()
+        if (q.isBlank()) return this
 
-        // быстрый subsequence-фильтр сдлано в рамках оптимизации
+        // Быстрый subsequence-фильтр
         val quickCandidates = filter { project ->
-            project.name.subsequenceMatch(query) ||
-                    (project.description?.subsequenceMatch(query) ?: false)
+            project.name.lowercase().subsequenceMatch(q) ||
+                    (project.description?.lowercase()?.subsequenceMatch(q) ?: false)
         }
 
-        if (quickCandidates.isNotEmpty()) {
-            return quickCandidates
+        // подходит ли проект по порогам
+        fun ProjectEntity.matchesBySimilarity(): Boolean {
+            // title: любой “кусок” (слово) должен быть похож
+            val titleOk = name
+                .lowercase()
+                .split("\\s+".toRegex())
+                .any { it.similarityTo(q) >= thresholdTitle }
+
+            // description: проверяем по словам, а не по всей строке
+            val descOk = description
+                ?.lowercase()
+                ?.split("\\s+".toRegex())
+                ?.any { it.similarityTo(q) >= thresholdDesc }
+                ?: false
+
+            return titleOk || descOk
         }
 
-        // фильтр по Jaro–Winkler
-        return filter { project ->
-            // иначе — по похожести
-            project.name.split(" ").any { it.similarityTo(query) >= thresholdTitle } ||
-                    (project.description?.similarityTo(query) ?: 0.0) >= thresholdDesc
-        }
+        // Применяем Jaro–Winkler к быстрым кандидатам
+        val refined = quickCandidates.filter { it.matchesBySimilarity() }
+        if (refined.isNotEmpty()) return refined
+
+        // Если в быстрых не нашлось — пробуем по всей коллекции
+        return filter { it.matchesBySimilarity() }
     }
 
     fun setProjectFilter(filter: ProjectFilter) {
@@ -193,7 +215,9 @@ class ProjectListViewModel @Inject constructor(
         if (cat.isNullOrBlank()) this else filter { it.category.equals(cat, ignoreCase = true) }
 
     private fun List<ProjectEntity>.filterByOwner(owner: String?) =
-        if (owner.isNullOrBlank()) this else filter { it.ownerName == owner }
+        if (owner.isNullOrBlank()) this else filter {
+            if (owner == "Вы" || owner == "You") it.ownerName == "Вы" else it.ownerName == owner
+        }
 
     private fun List<ProjectEntity>.filterByBudget(min: Double?, max: Double?) =
         filter {

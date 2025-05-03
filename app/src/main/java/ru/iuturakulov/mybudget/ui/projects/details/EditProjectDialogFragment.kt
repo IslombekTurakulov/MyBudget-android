@@ -34,6 +34,7 @@ class EditProjectDialogFragment(
     private val vm: ProjectDetailsViewModel by activityViewModels()
     private var projectTemp: ProjectEntity? = null
     private lateinit var emojiDialog: BottomSheetDialog
+    private var onProjectEdited: (() -> Unit)? = null
 
     override fun getViewBinding(view: View) = DialogEditProjectBinding.bind(view)
 
@@ -138,7 +139,10 @@ class EditProjectDialogFragment(
                 vm.updateState.collect { state ->
                     when (state) {
                         is UiState.Loading -> binding.btnSave.isEnabled = false
-                        is UiState.Success -> dismiss()
+                        is UiState.Success -> {
+                            dismiss()
+                            onProjectEdited?.invoke()
+                        }
                         is UiState.Error -> {
                             binding.btnSave.isEnabled = true
                             showSnackbar(state.message)
@@ -197,5 +201,13 @@ class EditProjectDialogFragment(
 
     private fun showSnackbar(msg: String) {
         Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
+    }
+
+    fun setOnProjectEdited(listener: () -> Unit) {
+        onProjectEdited = listener
+    }
+
+    companion object {
+        const val TAG = "EditProjectDialogFragment"
     }
 }

@@ -145,7 +145,9 @@
     <string name="project_transaction_filters">Фильтры</string>
 
     <string name="confirm_delete_transaction_title">Удаление транзакции</string>
+    <string name="confirm_delete_notification_title">Удаление уведомления</string>
     <string name="confirm_delete_transaction_message">Вы уверены, что хотите удалить транзакцию?</string>
+    <string name="confirm_delete_notification_message">Вы уверены, что хотите удалить уведомление?</string>
 
     <!-- Transaction item samples -->
     <string name="sample_date">01.12.2024</string>
@@ -377,7 +379,7 @@
 
     <string name="error_empty_name">Введите название проекта</string>
     <string name="error_empty_budget">Введите лимит бюджета</string>
-    <string name="error_empty_budget_limit">Лимит бюджета должна быть больше 0</string>
+    <string name="error_empty_budget_limit">Лимит бюджета должен быть больше 0</string>
     <string name="error_empty_category">Выберите категорию</string>
     <string name="error_empty_icon">Выберите иконку</string>
 

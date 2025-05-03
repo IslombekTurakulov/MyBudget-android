@@ -113,6 +113,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                     withContext(Dispatchers.Main) {
                         selectedImages.add(processed)
                         receiptImageAdapter.updateImages(selectedImages.toList())
+                        receiptImageAdapter.notifyDataSetChanged()
                     }
                     withContext(Dispatchers.IO) {
                         recognizeTextFromImage(processed)
@@ -516,6 +517,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                     val processed = withContext(Dispatchers.Default) { preprocessBitmap(bitmap) }
                     selectedImages.add(processed)
                     receiptImageAdapter.updateImages(selectedImages.toList())
+                    receiptImageAdapter.notifyDataSetChanged()
                     withContext(Dispatchers.IO) {
                         recognizeTextFromImage(processed)
                     }

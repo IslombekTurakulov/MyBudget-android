@@ -48,6 +48,7 @@ class ProjectListFragment :
                 ProjectListFragmentDirections.actionProjectsToDetails(projectId = project.id)
             findNavController().navigate(action)
         }
+        binding.recyclerViewProjects.adapter?.setHasStableIds(true)
         binding.recyclerViewProjects.adapter = adapter
 
         binding.swipeRefreshLayout.setOnRefreshListener {

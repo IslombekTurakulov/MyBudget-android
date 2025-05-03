@@ -128,6 +128,9 @@
         Are you sure you want to delete participant %1$s?
     </string>
 
+    <string name="confirm_delete_notification_title">Delete notification</string>
+    <string name="confirm_delete_notification_message"> Are you sure you want to delete notification?</string>
+
     <string name="report_actions_title">What would you like to do with the report?</string>
     <string name="report_action_save_as">Save as…</string>
     <string name="report_action_share">Share</string>

@@ -25,7 +25,7 @@ class ProjectDetailsViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UiState<ProjectWithTransactions>>(UiState.Loading)
+    private val _uiState = MutableStateFlow<UiState<ProjectWithTransactions>>(UiState.Idle)
     val uiState: StateFlow<UiState<ProjectWithTransactions>> = _uiState.asStateFlow()
 
     private val _updateState = MutableStateFlow<UiState<Unit>>(UiState.Idle)

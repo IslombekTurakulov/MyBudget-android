@@ -116,7 +116,7 @@ class ProjectParticipantsFragment :
         binding.fabAddParticipant.isVisible = args.projectStatus.equals(
             other = ProjectStatus.DELETED.type,
             ignoreCase = true
-        ).not()
+        ).not() && args.userRole == ParticipantRole.OWNER.name
         adapter.submitList(participants)
     }
 

@@ -11,6 +11,7 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.filter
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.CurrencyFormatter.roundTo
 import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.databinding.DialogFilterProjectBinding
 import ru.iuturakulov.mybudget.domain.models.ProjectFilter
@@ -80,42 +81,44 @@ class ProjectFilterBottomSheet :
         }
 
         val budgets = vm.projects.value.map { it.budgetLimit.toFloat() }
-        val rawMin = budgets.minOrNull() ?: 0f
-        val rawMax = budgets.maxOrNull() ?: 0f
+        val rawMin = (budgets.minOrNull() ?: 0f).roundTo(2)
+        val rawMax = (budgets.maxOrNull() ?: 0f).roundTo(2)
 
         // Если в списке только одно значение, задаём хоть какой-то «запас»
         val globalMin = rawMin
         val globalMax = if (rawMax > rawMin) rawMax else rawMin + 1f
 
         var isSyncSliderDisabled = false
+        val curMin = (current.minBudget?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin).roundTo(2)
+        val curMax = (current.maxBudget?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax).roundTo(2)
         binding.sliderBudget.apply {
             valueFrom = globalMin
             valueTo = globalMax
-            stepSize = 1f
+            stepSize = 0f
             values = listOf(
-                current.minBudget?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin,
-                current.maxBudget?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax
+                curMin,
+                curMax
             )
             addOnChangeListener { _, _, _ ->
                 isSyncSliderDisabled = true
                 // лочим текстовые поля при перетаскивании
-                binding.etMinBudget?.setText(values[0].toInt().toString())
-                binding.etMaxBudget?.setText(values[1].toInt().toString())
+                binding.etMinBudget?.setText(values[0]?.roundTo(2).toString())
+                binding.etMaxBudget?.setText(values[1]?.roundTo(2).toString())
                 isSyncSliderDisabled = false
             }
         }
-        binding.etMinBudget?.setText((current.minBudget ?: globalMin.toDouble()).toInt().toString())
-        binding.etMaxBudget?.setText((current.maxBudget ?: globalMax.toDouble()).toInt().toString())
+        binding.etMinBudget?.setText(curMin.toString())
+        binding.etMaxBudget?.setText(curMax.toString())
 
         // Синхронизируем, если пользователь ввёл число руками
         fun syncSlider() {
             if (isSyncSliderDisabled) return
             val low =
-                binding.etMinBudget?.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
-                    ?: globalMin
+                (binding.etMinBudget?.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
+                    ?: globalMin).roundTo(2)
             val high =
-                binding.etMaxBudget?.text.toString().toFloatOrNull()?.coerceIn(low, globalMax)
-                    ?: globalMax
+                (binding.etMaxBudget?.text.toString().toFloatOrNull()?.coerceIn(low, globalMax)
+                    ?: globalMax).roundTo(2)
             binding.sliderBudget.values = listOf(low, high)
         }
 
@@ -147,8 +150,8 @@ class ProjectFilterBottomSheet :
             val selOwner = binding.spinnerOwner.text?.toString()
                 ?.takeIf { it.equals(getString(R.string.all), ignoreCase = true).not() }
             val range = binding.sliderBudget.values
-            val minB = range.getOrNull(0)?.toDouble()
-            val maxB = range.getOrNull(1)?.toDouble()
+            val minB = range.getOrNull(0)?.toDouble()?.roundTo(2)
+            val maxB = range.getOrNull(1)?.toDouble()?.roundTo(2)
 
             vm.setProjectFilter(
                 ProjectFilter(

@@ -26,6 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.CurrencyFormatter.roundTo
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.data.local.entities.ProjectWithTransactions
@@ -297,11 +298,11 @@ class ProjectDetailsFragment :
                 TransactionEntity.TransactionType.EXPENSE -> -t.amount.toFloat()
             }
         }
-        val globalMin = signedList.minOrNull() ?: -1000f
-        val globalMax = signedList.maxOrNull() ?: 1000f
+        val globalMin = (signedList.minOrNull() ?: 0f).roundTo(2)
+        val globalMax = (signedList.maxOrNull()?.plus(1f) ?: 1f).roundTo(2)
 
-        val curMin = currentF.minAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin
-        val curMax = currentF.maxAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax
+        val curMin = (currentF.minAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin).roundTo(2)
+        val curMax = (currentF.maxAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax).roundTo(2)
 
         var isSyncSliderDisabled = false
 
@@ -316,17 +317,17 @@ class ProjectDetailsFragment :
 
         dlg.sliderAmount.addOnChangeListener { _, _, _ ->
             isSyncSliderDisabled = true
-            dlg.etMinAmount.setText(dlg.sliderAmount.values[0].toString())
-            dlg.etMaxAmount.setText(dlg.sliderAmount.values[1].toString())
+            dlg.etMinAmount.setText(dlg.sliderAmount.values[0].roundTo(2).toString())
+            dlg.etMaxAmount.setText(dlg.sliderAmount.values[1].roundTo(2).toString())
             isSyncSliderDisabled = false
         }
         fun syncSlider() {
             if (isSyncSliderDisabled) return
             val low =
-                dlg.etMinAmount.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
-                    ?: globalMin
-            val high = dlg.etMaxAmount.text.toString().toFloatOrNull()?.coerceIn(low, globalMax)
-                ?: globalMax
+                (dlg.etMinAmount.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
+                    ?: globalMin).roundTo(2)
+            val high = (dlg.etMaxAmount.text.toString().toFloatOrNull()?.coerceIn(low, globalMax)
+                ?: globalMax).roundTo(2)
             dlg.sliderAmount.values = listOf(low, high)
         }
 
@@ -354,8 +355,8 @@ class ProjectDetailsFragment :
                 dlg.etStartDateLayout.error = null
             }
 
-            val selMin = dlg.etMinAmount.text.toString().toDoubleOrNull()
-            val selMax = dlg.etMaxAmount.text.toString().toDoubleOrNull()
+            val selMin = dlg.etMinAmount.text.toString().toDoubleOrNull()?.roundTo(2)
+            val selMax = dlg.etMaxAmount.text.toString().toDoubleOrNull()?.roundTo(2)
             if (selMin != null && selMax != null && selMin > selMax) {
                 dlg.etMinAmountLayout.error = getString(R.string.error_min_max_amount)
                 Snackbar.make(dlg.root, R.string.error_min_max_amount, Snackbar.LENGTH_SHORT).show()
@@ -396,7 +397,11 @@ class ProjectDetailsFragment :
     private fun onTransactionClicked(transaction: TransactionEntity) {
         val dialog = AddTransactionDialogFragment.newInstance(
             projectId = args.projectId,
-            currentRole = projectData?.currentRole?.name.orEmpty(),
+            currentRole = if (projectData?.project?.status == ProjectStatus.DELETED) {
+                ParticipantRole.VIEWER.name
+            } else {
+                projectData?.currentRole?.name.orEmpty()
+            },
             transactionId = transaction.id
         )
 
@@ -464,7 +469,10 @@ class ProjectDetailsFragment :
 
     private fun navigateToEdit() {
         val bottomSheet = EditProjectDialogFragment(args.projectId)
-        bottomSheet.show(childFragmentManager, ProjectFilterBottomSheet.TAG)
+        bottomSheet.setOnProjectEdited {
+            viewModel.syncProjectDetails(args.projectId)
+        }
+        bottomSheet.show(childFragmentManager, EditProjectDialogFragment.TAG)
     }
 
     private fun confirmDelete() {

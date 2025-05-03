@@ -20,6 +20,9 @@ class ProjectAdapter(
     private val onProjectClicked: (ProjectEntity) -> Unit
 ) : ListAdapter<ProjectEntity, ProjectAdapter.ProjectViewHolder>(DiffCallback()) {
 
+    init {
+        setHasStableIds(true)
+    }
 
     inner class ProjectViewHolder(
         private val binding: ItemProjectBinding
@@ -96,7 +99,7 @@ class ProjectAdapter(
 
                 tvOwner.text = getString(
                     R.string.label_owner_with_name,
-                    if ( project.ownerName.equals("Вы", ignoreCase = true)) {
+                    if (project.ownerName.equals("Вы", ignoreCase = true)) {
                         binding.root.context.getString(R.string.transaction_title_your)
                     } else {
                         project.ownerName
@@ -110,18 +113,7 @@ class ProjectAdapter(
                 // )
 
                 root.setOnClickListener {
-//                    if (project.status != ProjectStatus.DELETED) {
-                        onProjectClicked(project)
-//                    } else {
-//                        Snackbar.make(
-//                            root,
-//                            getString(
-//                                R.string.cannot_open_project_due_to_deleted_status,
-//                                project.name
-//                            ),
-//                            Snackbar.LENGTH_LONG
-//                        ).show()
-//                    }
+                    onProjectClicked(project)
                 }
             }
         }
@@ -139,6 +131,10 @@ class ProjectAdapter(
     override fun onBindViewHolder(holder: ProjectViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
+
+    override fun getItemId(position: Int): Long =
+        getItem(position).id.hashCode().toLong()
+
 
     class DiffCallback : DiffUtil.ItemCallback<ProjectEntity>() {
         override fun areItemsTheSame(a: ProjectEntity, b: ProjectEntity) = a.id == b.id

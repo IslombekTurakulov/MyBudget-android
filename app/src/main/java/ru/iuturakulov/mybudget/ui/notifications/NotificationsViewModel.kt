@@ -37,31 +37,25 @@ class NotificationsViewModel @Inject constructor(
 
     fun markRead(id: String) = viewModelScope.launch {
         val current = (_state.value as? UiState.Success)?.data.orEmpty()
-        // локально ставим прочитано
         val updated = current.map { if (it.id == id) it.copy(isRead = true) else it }
         _state.value = UiState.Success(updated)
 
         try {
             repo.markRead(id)
         } catch (e: Exception) {
-            // при ошибке откатываем назад
             _state.value = UiState.Success(current)
-            // здесь можно залогировать или показать тост
         }
     }
 
     fun remove(id: String) = viewModelScope.launch {
         val current = (_state.value as? UiState.Success)?.data.orEmpty()
-        // локально убираем уведомление
         val updated = current.filterNot { it.id == id }
         _state.value = UiState.Success(updated)
 
         try {
             repo.removeNotification(id)
         } catch (e: Exception) {
-            // при ошибке можно вернуть назад
             _state.value = UiState.Success(current)
-            // и уведомить пользователя об ошибке
         }
     }
 }
