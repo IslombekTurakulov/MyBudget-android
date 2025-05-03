@@ -33,14 +33,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          # По умолчанию ставит cmdline-tools 16.0 + platform-tools.
-          # Если нужны дополнительные пакеты, можно переопределить:
-          # packages: "build-tools;33.0.0 platforms;android-33"
-          accept-android-sdk-licenses: yes
-          packages: |
-            build-tools;33.0.0
-            platforms;android-33
 
       - name: Build Release APK
         run: ./gradlew clean assembleRelease
