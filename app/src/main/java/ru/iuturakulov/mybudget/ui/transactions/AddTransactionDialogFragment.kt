@@ -1,10 +1,8 @@
 package ru.iuturakulov.mybudget.ui.transactions
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -22,19 +20,17 @@ import android.os.Environment
 import android.os.Parcel
 import android.os.Parcelable
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -96,6 +92,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     private lateinit var dateFormatter: SimpleDateFormat
 
     private enum class PendingAction { SHARE, SAVE }
+
     private var pendingAction: PendingAction? = null
     private var pendingBitmap: Bitmap? = null
 
@@ -125,15 +122,20 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-    // Лаунчер для запроса разрешений
     private val requestPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions.values.all { it }) {
             showImageSourceDialog()
         } else {
-            Snackbar.make(binding.root, "Необходимо предоставить разрешения", Snackbar.LENGTH_SHORT)
-                .show()
+            Snackbar.make(binding.root, R.string.no_permissions, Snackbar.LENGTH_LONG)
+                .setAction(R.string.open_settings) {
+                    startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", requireContext().packageName, null)
+                        }
+                    )
+                }.show()
         }
     }
 
@@ -333,8 +335,11 @@ class AddTransactionDialogFragment : DialogFragment() {
                 else -> TransactionEntity.TransactionType.INCOME
             }
             val category =
-                if (binding.spinnerCategory.text?.trim().toString().equals("Другое", ignoreCase = true))
-                    binding.etCustomCategory.text?.trim().toString() else binding.spinnerCategory.text.trim().toString()
+                if (binding.spinnerCategory.text?.trim().toString()
+                        .equals("Другое", ignoreCase = true)
+                )
+                    binding.etCustomCategory.text?.trim()
+                        .toString() else binding.spinnerCategory.text.trim().toString()
             val temporaryTransaction = TemporaryTransaction(
                 id = transaction?.id ?: "${argument.projectId}-${System.currentTimeMillis()}",
                 name = binding.etTransactionName.text.toString().trim(),
@@ -471,9 +476,11 @@ class AddTransactionDialogFragment : DialogFragment() {
             requestPermissionsLauncher.launch(
                 arrayOf(
                     Manifest.permission.CAMERA,
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                         Manifest.permission.READ_EXTERNAL_STORAGE
-                    else Manifest.permission.READ_MEDIA_IMAGES
+                    } else {
+                        Manifest.permission.READ_MEDIA_IMAGES
+                    }
                 )
             )
         }
@@ -524,7 +531,10 @@ class AddTransactionDialogFragment : DialogFragment() {
                     selectedImages.removeAt(position)
                     receiptImageAdapter.updateImages(selectedImages)
                     receiptImageAdapter.notifyItemRemoved(position)
-                    receiptImageAdapter.notifyItemRangeChanged(position, selectedImages.size - position)
+                    receiptImageAdapter.notifyItemRangeChanged(
+                        position,
+                        selectedImages.size - position
+                    )
                 } else {
                     Timber.w("Попытка удалить по несуществующей позиции: $position")
                 }
@@ -577,10 +587,12 @@ class AddTransactionDialogFragment : DialogFragment() {
                             shareImage(bitmap)
                             true
                         }
+
                         R.id.action_save -> {
                             saveImageToGallery(bitmap)
                             true
                         }
+
                         else -> false
                     }
                 }
@@ -662,7 +674,10 @@ class AddTransactionDialogFragment : DialogFragment() {
     // Оригинальные методы переименованы в Internal
     private fun shareImageInternal(bitmap: Bitmap) {
         try {
-            val cachePath = File(requireContext().externalCacheDir, "shared_image_${System.currentTimeMillis()}.jpg")
+            val cachePath = File(
+                requireContext().externalCacheDir,
+                "shared_image_${System.currentTimeMillis()}.jpg"
+            )
             FileOutputStream(cachePath).use { stream ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
             }
@@ -709,7 +724,10 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun saveImageToGalleryApi29Plus(bitmap: Bitmap) {
         val resolver = requireContext().contentResolver
         val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "receipt_${transaction?.name}_${transaction?.category}_${System.currentTimeMillis()}.jpg")
+            put(
+                MediaStore.Images.Media.DISPLAY_NAME,
+                "receipt_${transaction?.name}_${transaction?.category}_${System.currentTimeMillis()}.jpg"
+            )
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MyBudget")
             put(MediaStore.Images.Media.IS_PENDING, 1)
@@ -736,7 +754,8 @@ class AddTransactionDialogFragment : DialogFragment() {
     }
 
     private fun saveImageToGalleryLegacy(bitmap: Bitmap) {
-        val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        val imagesDir =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
         // TODO: сохранять чеки в рамках проекта и не хранить в общей папке
         val appDir = File(imagesDir, "MyBudget")
         if (!appDir.exists()) appDir.mkdirs()
@@ -770,7 +789,8 @@ class AddTransactionDialogFragment : DialogFragment() {
         actionText: String? = null,
         action: (() -> Unit)? = null
     ) {
-        val rootView = this.requireActivity().window?.decorView?.findViewById<ViewGroup>(android.R.id.content)
+        val rootView =
+            this.requireActivity().window?.decorView?.findViewById<ViewGroup>(android.R.id.content)
         rootView?.let {
             Snackbar.make(it, message, Snackbar.LENGTH_LONG)
                 .setAnimationMode(Snackbar.ANIMATION_MODE_FADE)
@@ -827,7 +847,10 @@ class AddTransactionDialogFragment : DialogFragment() {
                 val processedText = preprocessText(visionText.text)
                 val totalAmount = extractTotalAmount(processedText)
                 binding.tvRecognizedAmount.text =
-                    getString(R.string.recognized_amount_template, totalAmount.toDoubleOrNull() ?: 0.0)
+                    getString(
+                        R.string.recognized_amount_template,
+                        totalAmount.toDoubleOrNull() ?: 0.0
+                    )
                 updateTransactionAmount(totalAmount)
                 val duration = System.currentTimeMillis() - startTime
                 Snackbar.make(
@@ -958,7 +981,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             .setEnd(todayStartUtcMillis)
             .setValidator(object : CalendarConstraints.DateValidator {
                 override fun describeContents(): Int {
-                   return 0
+                    return 0
                 }
 
                 override fun writeToParcel(p0: Parcel, p1: Int) {
@@ -1041,7 +1064,6 @@ class AddTransactionDialogFragment : DialogFragment() {
     fun getSelectedDateMillis(): Long {
         return currentDateMillis
     }
-
 
 
     companion object {

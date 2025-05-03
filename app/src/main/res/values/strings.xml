@@ -446,4 +446,7 @@
     <!-- Формат для BarChart: метка (период) и сумма -->
     <string name="marker_bar_format">%1$s: %2$s</string>
     <string name="marker_bar_default_label">Значение</string>
+    <string name="close">Закрыть</string>
+    <string name="no_permissions">Необходимо предоставить разрешения</string>
+    <string name="open_settings">Открыть настройки</string>
 </resources>

@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.setOnDebounceClick
 import ru.iuturakulov.mybudget.data.remote.dto.InvitationRequest
 import ru.iuturakulov.mybudget.data.remote.dto.InvitationRequest.InvitationType
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
@@ -268,7 +269,12 @@ class AddParticipantDialogFragment : DialogFragment() {
         dialog.setContentView(R.layout.dialog_qr_fullscreen)
 
         val iv = dialog.findViewById<ImageView>(R.id.ivFullscreenQr)
+        val btnClose = dialog.findViewById<MaterialButton>(R.id.btnClose)
         val btnShare = dialog.findViewById<MaterialButton>(R.id.btnShareQr)
+
+        btnClose.setOnDebounceClick(300) {
+            dialog.dismiss()
+        }
 
         iv.setImageBitmap(bitmap)
         btnShare.setOnClickListener {

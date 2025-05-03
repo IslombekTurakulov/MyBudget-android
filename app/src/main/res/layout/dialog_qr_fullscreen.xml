@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
@@ -9,15 +10,30 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        android:contentDescription="@string/qr_code" />
+        android:contentDescription="@string/qr_code"
+        android:scaleType="fitCenter" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnClose"
+        style="@style/Widget.Material3.Button.IconButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:backgroundTint="?attr/colorSurfaceVariant"
+        android:contentDescription="@string/close"
+        android:tooltipText="@string/close"
+        app:icon="@drawable/baseline_close_24"
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:iconSize="24dp" />
+
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnShareQr"
         style="@style/Widget.Material3.Button.ElevatedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/share_qr"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp" />
+        android:layout_margin="16dp"
+        android:text="@string/share_qr" />
 </FrameLayout>
