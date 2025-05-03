@@ -146,7 +146,6 @@ abstract class BaseAnalyticsFragment<
         val periodBarChart = binding.root.findViewById<BarChart>(R.id.periodBarChart)
         val projectBarChart = binding.root.findViewById<BarChart?>(R.id.projectComparisonChart)
 
-        // PieChart категорий
         pieChart.apply {
             description.isEnabled = false
             isRotationEnabled = true
@@ -155,34 +154,28 @@ abstract class BaseAnalyticsFragment<
             setNoDataText(noDataText)
             setNoDataTextColor(noDataColor)
 
-            // Жесты
             setTouchEnabled(true)
             isHighlightPerTapEnabled = true
 
-            // Легенда
             legend.isEnabled = true
             configureLegendAndOffsets(Legend.LegendForm.CIRCLE)
 
-            // Анимации
             animateX(600, Easing.EaseInOutQuad)
             animateY(600, Easing.EaseInOutQuad)
         }
 
-        // BarChart периодов
         periodBarChart.apply {
             description.isEnabled = false
             setFitBars(true)
             setNoDataText(noDataText)
             setNoDataTextColor(noDataColor)
 
-            // Ось X
             xAxis.apply {
                 granularity = 1f
                 setDrawGridLines(false)
                 position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM
             }
 
-            // Ось Y (с форматированием валюты)
             axisLeft.apply {
                 axisMinimum = 0f
                 granularity = 1f
@@ -193,21 +186,16 @@ abstract class BaseAnalyticsFragment<
             }
             axisRight.isEnabled = false
 
-            // Жесты
             setTouchEnabled(true)
             setPinchZoom(true)
             isDragEnabled = true
 
-            // Легенда
-            legend.isEnabled = true
             configureLegendAndOffsets(Legend.LegendForm.LINE)
 
-            // Анимации
             animateX(600, Easing.EaseInOutQuad)
             animateY(600, Easing.EaseInOutQuad)
         }
 
-        // BarChart сравнения проектов (если есть)
         projectBarChart?.apply {
             description.isEnabled = false
             setFitBars(true)
@@ -233,7 +221,6 @@ abstract class BaseAnalyticsFragment<
             setPinchZoom(true)
             isDragEnabled = true
 
-            // Можно не рисовать легенду, если используется отдельный Chip-контейнер
             legend.isEnabled = false
             configureLegendAndOffsets(Legend.LegendForm.LINE)
 
@@ -241,9 +228,7 @@ abstract class BaseAnalyticsFragment<
             animateY(600, Easing.EaseInOutQuad)
         }
 
-        // Подключаем MarkerView
         val marker = AnalyticsMarkerView(requireContext(), R.layout.view_marker).apply {
-            // передаём метки для BarChart, если они нужны:
             tag = viewModel.currentPeriodLabels
         }
         pieChart.marker = marker
@@ -710,7 +695,6 @@ abstract class BaseAnalyticsFragment<
             formToTextSpace = resources.getDimension(R.dimen.chart_legend_form_to_text_space)
 
             setDrawInside(false)
-            // Опционально, задать ориентацию и выравнивание
             orientation = Legend.LegendOrientation.HORIZONTAL
             verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
             horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
