@@ -49,6 +49,12 @@ jobs:
           fi
           # sha256 + base64
           echo "digests=$(sha256sum $files | base64 -w0)" >> "$GITHUB_OUTPUT"
+          
+      - name: Create Base64 subjects from APK
+        id: make-subjects
+        uses: slsa-framework/slsa-github-generator/actions/generator/generic/create-base64-subjects-from-file@v2.1.0
+        with:
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
 
   provenance:
     needs: build-artifacts
@@ -58,8 +64,7 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
-      path: 'app/build/outputs/apk/release/app-release-unsigned.apk'
-      base64-subjects: "${{ needs.build-artifacts.outputs.digests }}"
+      base64-subjects: ${{ needs.build-artifacts.outputs.subjects }}
       upload-assets: true
       private-repository: true
       compile-generator: true
