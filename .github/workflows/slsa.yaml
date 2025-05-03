@@ -60,4 +60,5 @@ jobs:
     with:
       base64-subjects: "${{ needs.build-artifacts.outputs.digests }}"
       upload-assets: true
+      private-repository: true
 
