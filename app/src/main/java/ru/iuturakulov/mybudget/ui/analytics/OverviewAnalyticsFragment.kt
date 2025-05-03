@@ -75,8 +75,17 @@ class OverviewAnalyticsFragment : BaseAnalyticsFragment<
             chipGroup = chipGroup,
             categories = initialCategories,
             preselect = viewModel.appliedFilter.value.categories
-                ?: initialCategories
-        )
+                ?: initialCategories,
+            clearCharts = {
+                binding.categoryPieChart.highlightValues(null)
+                binding.periodBarChart.highlightValues(null)
+                binding.projectComparisonChart?.highlightValues(null)
+            }
+        )  { selectedCategories ->
+            viewModel.applyFilter(
+                viewModel.appliedFilter.value.copy(categories = selectedCategories)
+            )
+        }
     }
 
     override fun bindHeader(dto: OverviewAnalyticsDto) {

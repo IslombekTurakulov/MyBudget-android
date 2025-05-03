@@ -553,7 +553,9 @@ abstract class BaseAnalyticsFragment<
     protected fun initCategoryChips(
         chipGroup: ChipGroup,
         categories: List<String>,
-        preselect: List<String>
+        preselect: List<String>,
+        clearCharts: () -> Unit,
+        onSelectionChanged: (selectedCategories: List<String>?) -> Unit
     ) {
         chipGroup.removeAllViews()
         categories.forEach { cat ->
@@ -564,19 +566,17 @@ abstract class BaseAnalyticsFragment<
                     isCheckable = true
                     isClickable = true
                     isChecked = preselect.contains(cat)
-                    setOnCheckedChangeListener { _, isChecked ->
+
+                    setOnCheckedChangeListener { _, _ ->
+                        clearCharts()
                         val selCats = chipGroup.checkedChipIds.map { id ->
                             chipGroup.findViewById<Chip>(id).text.toString()
                         }
                         val cats = selCats.takeIf { it.size != categories.size }
-
-                        viewModel.applyFilter(
-                            viewModel.appliedFilter.value.copy(
-                                categories = cats
-                            )
-                        )
+                        onSelectionChanged(cats)
                     }
-                })
+                }
+            )
         }
     }
 
