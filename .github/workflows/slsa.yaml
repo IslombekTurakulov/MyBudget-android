@@ -58,7 +58,8 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
+      path: 'app/build/outputs/apk/release/app-release-unsigned.apk'
       base64-subjects: "${{ needs.build-artifacts.outputs.digests }}"
       upload-assets: true
       private-repository: true
-
+      compile-generator: true
