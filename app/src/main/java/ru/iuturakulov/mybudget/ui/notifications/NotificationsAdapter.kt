@@ -56,22 +56,22 @@ class NotificationsAdapter(
             // Иконка по типу уведомления
             ivIcon.setImageResource(
                 when (item.type) {
-                    NotificationType.PROJECT_INVITE   -> R.drawable.ic_invite
-                    NotificationType.ROLE_CHANGE      -> R.drawable.ic_role_change
-                    NotificationType.TRANSACTION_ADDED   -> R.drawable.ic_tx_added
+                    NotificationType.PROJECT_INVITE -> R.drawable.ic_invite
+                    NotificationType.ROLE_CHANGE -> R.drawable.ic_role_change
+                    NotificationType.TRANSACTION_ADDED -> R.drawable.ic_tx_added
                     NotificationType.TRANSACTION_UPDATED -> R.drawable.ic_tx_updated
                     NotificationType.TRANSACTION_REMOVED -> R.drawable.ic_tx_removed
-                    NotificationType.PROJECT_EDITED   -> R.drawable.ic_project_edit
-                    NotificationType.PROJECT_REMOVED  -> R.drawable.ic_project_remove
-                    NotificationType.SYSTEM_ALERT     -> R.drawable.ic_system
+                    NotificationType.PROJECT_EDITED -> R.drawable.ic_project_edit
+                    NotificationType.PROJECT_REMOVED -> R.drawable.ic_project_remove
+                    NotificationType.SYSTEM_ALERT -> R.drawable.ic_system
                     NotificationType.BUDGET_THRESHOLD -> R.drawable.ic_project_budget_limit
                 }
             )
 
 //            tvProject.text = item.projectName
             val before = item.beforeSpent
-            val after  = item.afterSpent
-            val limit  = item.limit
+            val after = item.afterSpent
+            val limit = item.limit
             // tvBudgetLine.text = budgetLine(before, after, limit)
             // рассчитываем процент для индикатора (0..100)
 //            val pct = if (limit == 0.0) 0 else ((after / limit) * 100).toInt().coerceIn(0, 100)

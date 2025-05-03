@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="?attr/colorSurface">
 
-    <!-- AppBar для заголовка и действий -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -13,14 +13,14 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
+            app:menu="@menu/base_analytics_menu"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/overview_analytics"
-            app:menu="@menu/project_analytics_menu"
-            app:titleCentered="true" />
+            app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:titleCentered="true"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- SwipeRefreshLayout оборачивает основной контент -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
@@ -30,39 +30,41 @@
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="16dp"
-            android:paddingHorizontal="16dp"
+            android:padding="16dp"
             android:fillViewport="true">
 
             <LinearLayout
-                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="16dp">
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tvOverviewSubtitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/tvSubtitle"
                     style="@style/TextAppearance.Material3.BodyMedium"
-                    android:text="Аналитика по всем проектам" />
-
-                <TextView
-                    android:id="@+id/tvOverviewTotal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    tools:text="Аналитика по всем проектам" />
+
+                <TextView
+                    android:id="@+id/tvTotal"
                     style="@style/TextAppearance.Material3.TitleLarge"
                     android:textStyle="bold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     tools:text="Всего потрачено: 0 ₽" />
 
-                <!-- Блок: Распределение по категориям -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupCategories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="false"
+                    android:padding="8dp"/>
+
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
@@ -72,27 +74,22 @@
                         android:padding="16dp">
 
                         <TextView
+                            style="@style/TextAppearance.Material3.TitleMedium"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Распределение по категориям"
-                            style="@style/TextAppearance.Material3.TitleMedium"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="8dp" />
+                            android:text="@string/categories_distribution"
+                            android:layout_marginBottom="8dp"/>
 
                         <com.github.mikephil.charting.charts.PieChart
                             android:id="@+id/categoryPieChart"
                             android:layout_width="match_parent"
-                            android:layout_height="300dp"
-                            android:layout_margin="8dp"/>
+                            android:layout_height="280dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Блок: Распределение по периодам -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
@@ -102,26 +99,24 @@
                         android:padding="16dp">
 
                         <TextView
+                            style="@style/TextAppearance.Material3.TitleMedium"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Распределение по периодам"
-                            style="@style/TextAppearance.Material3.TitleMedium"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="8dp" />
+                            android:text="@string/periods_distribution"
+                            android:layout_marginBottom="8dp"/>
 
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/periodBarChart"
                             android:layout_width="match_parent"
-                            android:layout_height="200dp" />
+                            android:layout_height="280dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Блок: Сравнение проектов -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/projectCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="8dp"
-                    app:cardElevation="4dp"
+                    android:visibility="gone"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
@@ -131,17 +126,16 @@
                         android:padding="16dp">
 
                         <TextView
+                            style="@style/TextAppearance.Material3.TitleMedium"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Сравнение проектов"
-                            style="@style/TextAppearance.Material3.TitleMedium"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="8dp" />
+                            android:text="@string/projects_comparison"
+                            android:layout_marginBottom="8dp"/>
 
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/projectComparisonChart"
                             android:layout_width="match_parent"
-                            android:layout_height="200dp" />
+                            android:layout_height="280dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -149,11 +143,10 @@
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Прогресс-бар по центру экрана -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

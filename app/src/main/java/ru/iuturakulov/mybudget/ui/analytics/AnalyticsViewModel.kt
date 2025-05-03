@@ -1,19 +1,14 @@
 package ru.iuturakulov.mybudget.ui.analytics
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.remote.dto.AnalyticsExportFormat
@@ -61,6 +56,9 @@ class AnalyticsViewModel @Inject constructor(
     private val _exportState = MutableSharedFlow<UiState<File>>(replay = 0)
     val exportState: SharedFlow<UiState<File>> = _exportState
 
+    private var _currentPeriodLabels: List<String> = emptyList()
+    val currentPeriodLabels: List<String> get() = _currentPeriodLabels
+
     init {
         fetchInitialOverviewAnalytics()
         fetchFilteredOverviewAnalytics()
@@ -84,6 +82,8 @@ class AnalyticsViewModel @Inject constructor(
                 .getOverviewAnalytics(AnalyticsFilter())   // без фильтра
                 .body()!!
             _initialOverviewAnalytics.value = UiState.Success(dto)
+
+            updatePeriodLabels(dto.periodDistribution.map { it.period })
         } catch (e: Exception) {
             _initialOverviewAnalytics.value = UiState.Error(e.message ?: "Error")
         }
@@ -96,6 +96,8 @@ class AnalyticsViewModel @Inject constructor(
                 .getOverviewAnalytics(_appliedFilter.value) // с текущим фильтром
                 .body()!!
             _filteredOverviewAnalytics.value = UiState.Success(dto)
+
+            updatePeriodLabels(dto.periodDistribution.map { it.period })
         } catch (e: Exception) {
             _filteredOverviewAnalytics.value = UiState.Error(e.message ?: "Error")
         }
@@ -160,5 +162,12 @@ class AnalyticsViewModel @Inject constructor(
         } catch (e: Exception) {
             _exportState.emit(UiState.Error(e.localizedMessage ?: "Неизвестная ошибка"))
         }
+    }
+
+    /**
+     * Сохраняет список меток периодов для BarChart drill-down.
+     */
+    fun updatePeriodLabels(labels: List<String>) {
+        _currentPeriodLabels = labels
     }
 }

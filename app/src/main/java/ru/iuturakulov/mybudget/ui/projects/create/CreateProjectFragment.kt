@@ -164,7 +164,6 @@ class CreateProjectFragment :
                         binding.progressBar.isVisible = false
                         binding.btnCreate.isEnabled = true
 
-                        // НАША ПРАВКА: вызываем колбэк и закрываем только когда реально успешно создалось
                         onProjectAdded?.invoke()
                         dismiss()
                     }

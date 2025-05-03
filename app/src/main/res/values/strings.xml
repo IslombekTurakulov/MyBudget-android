@@ -412,4 +412,38 @@
     <string name="error_empty_confirm">Подтвердите пароль</string>
     <string name="error_password_mismatch">Пароли не совпадают</string>
     <string name="error_policy_required">Нужно принять политику конфиденциальности</string>
+    <string name="analytics_period_subtitle">Аналитика за период: %1$s — %2$s</string>
+    <string name="total_analytics_amount_format">Всего потрачено: %1$s</string>
+    <string name="export_title">Экспорт</string>
+    <string name="export_progress_message">Формируем файл…</string>
+    <string name="share_report_chooser">Поделиться отчётом</string>
+    <string-array name="export_formats">
+        <item>CSV</item>
+        <item>PDF</item>
+    </string-array>
+
+    <string name="no_data">Нет данных</string>
+
+    <string name="file_unavailable_save">Файл недоступен для сохранения</string>
+    <string name="file_saved">Файл сохранён</string>
+    <string name="file_unavailable_share">Файл недоступен для шаринга</string>
+
+    <string name="categories_distribution">Распределение по категориям</string>
+    <string name="periods_distribution">Распределение по периодам</string>
+    <string name="projects_comparison">Сравнение проектов</string>
+
+    <string name="action_filter">Фильтр</string>
+    <string name="action_export_analytics">Экспорт аналитики</string>
+
+    <!-- Формат детализации категории: %1$s — категория, %2$s — сумма, %3$.1f — процент -->
+    <string name="detail_category_format">%1$s: %2$s (%3$.1f%%)</string>
+
+    <!-- Описание периода: %1$s – период, %2$s – сумма с символом -->
+    <string name="detail_period_format">%1$s: %2$s</string>
+
+    <string name="marker_pie_format">%1$s: %2$s</string>
+
+    <!-- Формат для BarChart: метка (период) и сумма -->
+    <string name="marker_bar_format">%1$s: %2$s</string>
+    <string name="marker_bar_default_label">Значение</string>
 </resources>

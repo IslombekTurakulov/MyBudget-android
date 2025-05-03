@@ -17,12 +17,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.CurrencyFormatter
 import ru.iuturakulov.mybudget.core.DateTimeExtension.toIso8601Date
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.databinding.ItemTransactionBinding
-import java.text.NumberFormat
-import java.util.Currency
-import java.util.Locale
 
 class TransactionAdapter(
     private val onTransactionClicked: (TransactionEntity) -> Unit
@@ -131,11 +129,7 @@ class TransactionAdapter(
             transaction: TransactionEntity,
             type: TransactionEntity.TransactionType
         ): String {
-            val formattedAmount = NumberFormat.getCurrencyInstance(Locale.getDefault()).apply {
-                currency = Currency.getInstance("RUB")
-                maximumFractionDigits = 2
-                minimumFractionDigits = 2
-            }.format(transaction.amount)
+            val formattedAmount = CurrencyFormatter.format(transaction.amount)
             return when (type) {
                 TransactionEntity.TransactionType.EXPENSE -> "-$formattedAmount"
                 TransactionEntity.TransactionType.INCOME -> "+$formattedAmount"

@@ -11,4 +11,17 @@
     <dimen name="divider_thickness">1dp</dimen>
     <dimen name="emoji_spacing">8dp</dimen>
     <dimen name="emoji_sheet_peek">200dp</dimen>
+
+    <!-- Отступ между элементами легенды по горизонтали -->
+    <dimen name="chart_legend_x_entry_space">8dp</dimen>
+    <!-- Отступ между элементами легенды по вертикали -->
+    <dimen name="chart_legend_y_entry_space">4dp</dimen>
+    <!-- Смещение легенды от границ чарта -->
+    <dimen name="chart_legend_x_offset">12dp</dimen>
+    <dimen name="chart_legend_y_offset">8dp</dimen>
+    <!-- Внешние отступы всего чарта -->
+    <dimen name="chart_extra_offset">16dp</dimen>
+
+    <dimen name="chart_legend_form_size">2dp</dimen>
+    <dimen name="chart_legend_form_to_text_space">4dp</dimen>
 </resources>

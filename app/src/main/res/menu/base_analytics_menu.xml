@@ -3,12 +3,13 @@
     <item
         android:id="@+id/action_filter"
         android:icon="@drawable/baseline_filter_list_24"
-        android:title="Фильтр"
+        android:title="@string/action_filter"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_export_analytics"
         android:icon="@drawable/baseline_share_24"
-        android:title="Экспорт аналитики"
+        android:title="@string/action_export_analytics"
         app:showAsAction="ifRoom" />
 </menu>
+

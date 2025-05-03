@@ -3,24 +3,17 @@ package ru.iuturakulov.mybudget.ui.projects.list
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.compose.material3.Snackbar
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.isGone
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.CurrencyFormatter
 import ru.iuturakulov.mybudget.data.local.entities.ProjectEntity
-import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
 import ru.iuturakulov.mybudget.databinding.ItemProjectBinding
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.Currency
-import java.util.Locale
 import kotlin.math.roundToInt
 
 class ProjectAdapter(
@@ -75,16 +68,10 @@ class ProjectAdapter(
                     setProgress((pct * 100).roundToInt(), true)
                 }
 
-                val currencyFormat = NumberFormat.getCurrencyInstance(Locale.getDefault()).apply {
-                    currency = Currency.getInstance("RUB")
-                    maximumFractionDigits = 2
-                    minimumFractionDigits = 2
-                }
-
                 tvBudgetInfo.text = getString(
                     R.string.project_budget_progress,
-                    currencyFormat.format(spent),
-                    currencyFormat.format(limit),
+                    CurrencyFormatter.format(spent),
+                    CurrencyFormatter.format(limit),
                     "${(pct * 100).roundToInt()}%"
                 )
 
