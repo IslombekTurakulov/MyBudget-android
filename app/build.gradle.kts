@@ -114,6 +114,14 @@ dependencies {
     implementation("com.leinardi.android:speed-dial:3.3.0")
     implementation("com.airbnb.android:lottie:6.6.0")
 
+    // Firebase BOM + Messaging
+    implementation(platform("com.google.firebase:firebase-bom:32.2.0"))
+    implementation("com.google.firebase:firebase-messaging")
+
+    // Ktor HTTP client
+    implementation("io.ktor:ktor-client-okhttp:2.3.1")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.1")
+
     implementation(libs.emoji.google)
     // Testing
     testImplementation(libs.junit)

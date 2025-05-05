@@ -21,10 +21,13 @@ import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
 import ru.iuturakulov.mybudget.data.remote.SettingsService
 import ru.iuturakulov.mybudget.auth.TokenAuthenticator
+import ru.iuturakulov.mybudget.data.remote.FCMService
 import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import ru.iuturakulov.mybudget.data.remote.auth.ChangePasswordAuthService
 import ru.iuturakulov.mybudget.data.remote.auth.RefreshAuthService
+import ru.iuturakulov.mybudget.firebase.DeviceTokenRegistratiom
 import timber.log.Timber
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -38,6 +41,12 @@ object NetworkModule {
     @Singleton
     fun provideTokenStorage(sharedPreferences: SharedPreferences): TokenStorage {
         return TokenStorage(sharedPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeviceTokenRegistratiom(fcmService: FCMService): DeviceTokenRegistratiom {
+        return DeviceTokenRegistratiom(fcmService)
     }
 
     @Provides
@@ -151,6 +160,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideFCMService(@Named("AuthenticatedRetrofit") retrofit: Retrofit): FCMService {
+        return retrofit.create(FCMService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideParticipantsService(@Named("AuthenticatedRetrofit") retrofit: Retrofit): ParticipantsService {
         return retrofit.create(ParticipantsService::class.java)
     }
@@ -181,10 +196,13 @@ object NetworkModule {
             val requestId = originalRequest.header("X-Request-ID") ?: UUID.randomUUID().toString()
             val correlationId = originalRequest.header("X-Correlation-ID") ?: requestId
 
+            val locale = Locale.getDefault()
+
             val newRequest = originalRequest.newBuilder()
                 // Стандартные заголовки
                 .addHeader("Accept", "application/json")
                 .addHeader("Content-Type", "application/json")
+                .addHeader("X-Language", locale.language)
 
                 // ID для трейсинга
                 .addHeader("X-Request-ID", requestId)

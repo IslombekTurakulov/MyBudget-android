@@ -45,4 +45,10 @@
         android:title="@string/menu_analytics"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/menuProjectNotifications"
+        android:icon="@drawable/ic_notifications_24"
+        android:title="@string/notifications"
+        app:showAsAction="ifRoom" />
+
 </menu>

@@ -12,6 +12,7 @@ import ru.iuturakulov.mybudget.data.local.daos.ProjectDao
 import ru.iuturakulov.mybudget.data.local.daos.TransactionDao
 import ru.iuturakulov.mybudget.data.local.daos.UserSettingsDao
 import ru.iuturakulov.mybudget.data.remote.AnalyticsService
+import ru.iuturakulov.mybudget.data.remote.FCMService
 import ru.iuturakulov.mybudget.data.remote.NotificationsService
 import ru.iuturakulov.mybudget.data.remote.ParticipantsService
 import ru.iuturakulov.mybudget.data.remote.ProjectService
@@ -69,9 +70,10 @@ object RepositoryModule {
     @Singleton
     fun provideNotificationsRepository(
         notificationsDao: NotificationsDao,
-        notificationsService: NotificationsService
+        notificationsService: NotificationsService,
+        fcmService: FCMService,
     ): NotificationsRepository {
-        return NotificationsRepository(notificationsService, notificationsDao)
+        return NotificationsRepository(notificationsService, notificationsDao, fcmService)
     }
 
     @Provides

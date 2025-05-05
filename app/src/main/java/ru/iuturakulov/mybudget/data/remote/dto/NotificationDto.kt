@@ -15,17 +15,27 @@ data class NotificationDto(
     val type: NotificationType,
     val beforeSpent: Double = 0.0,
     val afterSpent: Double = 0.0,
-    val limit: Double = 0.0
+    val limit: Double = 0.0,
 )
 
 enum class NotificationType {
-    PROJECT_INVITE,
-    ROLE_CHANGE,
+    PROJECT_INVITE_SEND,
+    PROJECT_INVITE_ACCEPTED,
+    PARTICIPANT_ROLE_CHANGE,
     TRANSACTION_ADDED,
     TRANSACTION_UPDATED,
     TRANSACTION_REMOVED,
     PROJECT_EDITED,
-    BUDGET_THRESHOLD,
     PROJECT_REMOVED,
-    SYSTEM_ALERT
+    PROJECT_ARCHIVED,
+    PROJECT_UNARCHIVED,
+    BUDGET_THRESHOLD,
+    SYSTEM_ALERT,
+    UNKNOWN;
+
+    companion object {
+        fun from(type: String): NotificationType {
+            return entries.find { it.name.equals(type, ignoreCase = true) } ?: NotificationType.UNKNOWN
+        }
+    }
 }

@@ -56,8 +56,8 @@ class NotificationsAdapter(
             // Иконка по типу уведомления
             ivIcon.setImageResource(
                 when (item.type) {
-                    NotificationType.PROJECT_INVITE -> R.drawable.ic_invite
-                    NotificationType.ROLE_CHANGE -> R.drawable.ic_role_change
+                    NotificationType.PROJECT_INVITE_SEND -> R.drawable.ic_invite
+                    NotificationType.PARTICIPANT_ROLE_CHANGE -> R.drawable.ic_role_change
                     NotificationType.TRANSACTION_ADDED -> R.drawable.ic_tx_added
                     NotificationType.TRANSACTION_UPDATED -> R.drawable.ic_tx_updated
                     NotificationType.TRANSACTION_REMOVED -> R.drawable.ic_tx_removed
@@ -65,6 +65,7 @@ class NotificationsAdapter(
                     NotificationType.PROJECT_REMOVED -> R.drawable.ic_project_remove
                     NotificationType.SYSTEM_ALERT -> R.drawable.ic_system
                     NotificationType.BUDGET_THRESHOLD -> R.drawable.ic_project_budget_limit
+                    else ->  R.drawable.ic_app_logo
                 }
             )
 
@@ -90,7 +91,7 @@ class NotificationsAdapter(
 //                unreadIndicator.alpha = if (item.isRead) 0f else 1f
 //            }
 
-            root.setOnClickListener { onClick(item) }
+//            root.setOnClickListener { onClick(item) }
             root.setOnLongClickListener { onLong(item); true }
         }
     }

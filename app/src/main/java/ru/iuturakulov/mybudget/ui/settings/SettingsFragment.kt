@@ -42,8 +42,14 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
         binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
             viewModel.saveUserSettings(
-                settings = viewModel.userSettings.value!!.copy(
+                settings = viewModel.userSettings.value?.copy(
                     notificationsEnabled = isChecked
+                ) ?: UserSettings(
+                    name = binding.tvUserName.text.toString(),
+                    email = binding.tvUserEmail.text.toString(),
+                    language = Locale.getDefault().language,
+                    notificationsEnabled = isChecked,
+                    darkThemeEnabled = false, // binding.switchDarkTheme.isChecked
                 )
             )
         }

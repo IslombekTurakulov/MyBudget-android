@@ -38,6 +38,7 @@ import ru.iuturakulov.mybudget.databinding.FragmentProjectDetailsBinding
 import ru.iuturakulov.mybudget.domain.models.TransactionFilter
 import ru.iuturakulov.mybudget.ui.BaseFragment
 import ru.iuturakulov.mybudget.ui.projects.list.ProjectFilterBottomSheet
+import ru.iuturakulov.mybudget.ui.projects.notifications.ProjectNotificationsBottomSheet
 import ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment
 import ru.iuturakulov.mybudget.ui.transactions.TransactionAdapter
 import java.text.SimpleDateFormat
@@ -194,6 +195,7 @@ class ProjectDetailsFragment :
                 role == ParticipantRole.OWNER && status != ProjectStatus.ARCHIVED && status != ProjectStatus.DELETED
             menu.findItem(R.id.menuUnarchiveProject).isVisible =
                 role == ParticipantRole.OWNER && status == ProjectStatus.ARCHIVED && status != ProjectStatus.DELETED
+            menu.findItem(R.id.menuProjectNotifications).isVisible = true
         }
 
     private fun updateTransactions(list: List<TransactionEntity>) = binding.apply {
@@ -440,6 +442,10 @@ class ProjectDetailsFragment :
                 navigateToAnalytics(); true
             }
 
+            R.id.menuProjectNotifications -> {
+                navigateToProjectNotificaitons(); true
+            }
+
             else -> false
         }
 
@@ -501,6 +507,14 @@ class ProjectDetailsFragment :
         findNavController().navigate(
             ProjectDetailsFragmentDirections.actionDetailsToAnalytics(args.projectId)
         )
+
+    private fun navigateToProjectNotificaitons() {
+        val bottomSheet = ProjectNotificationsBottomSheet(
+            userRole = projectData?.currentRole ?: ParticipantRole.VIEWER,
+            projectId = args.projectId
+        )
+        bottomSheet.show(childFragmentManager, ProjectNotificationsBottomSheet.TAG)
+    }
 
     companion object {
         private const val KEY_TEXT_EXPANDED = "KEY_TEXT_EXPANDED"

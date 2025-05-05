@@ -82,6 +82,7 @@
     <string name="no_participants">Empty participants :(</string>
     <string name="role_hint">Participant role</string>
     <string name="send_invitation">Send invitation</string>
+
     <string name="generate_qr">Generate QR code</string>
     <string name="share_qr">Share QR</string>
     <string name="invite_by_email">By Email</string>
@@ -186,6 +187,7 @@
     <string name="app_language">App language</string>
     <string name="select_language">Select language</string>
     <string name="notifications">Notifications</string>
+    <string name="project_notifications">Project notifications</string>
     <string name="no_notifications">No notifications :(</string>
     <string name="dark_theme">Dark theme</string>
     <string name="security">Security</string>
@@ -452,4 +454,41 @@
     <string name="close">Close</string>
     <string name="no_permissions">Permissions must be granted</string>
     <string name="open_settings">Open settings</string>
+
+    <string name="notifications_settings_title">Notification Settings</string>
+
+    <!-- Projects -->
+    <string name="notif_proj_edited">Project Edited</string>
+    <string name="notif_proj_edited_sub">(name, description, etc.)</string>
+    <string name="notif_proj_removed">Project Deleted</string>
+    <string name="notif_proj_removed_sub">(by whom and when)</string>
+    <string name="notif_proj_archived">Project Archived</string>
+    <string name="notif_proj_archived_sub">(can be restored)</string>
+    <string name="notif_proj_unarchived">Project Unarchived</string>
+    <string name="notif_proj_unarchived_sub">(from archive)</string>
+
+    <!-- Invites & roles -->
+    <string name="notif_project_invite_send">Invitation Sent</string>
+    <string name="notif_project_invite_send_sub">(new member)</string>
+    <string name="notif_project_invite_accepted">Invitation Accepted</string>
+    <string name="notif_project_invite_accepted_sub">(member joined)</string>
+    <string name="notif_role_change">Participant Role Changed</string>
+    <string name="notif_role_change_sub">(who and to what role)</string>
+
+    <!-- Transactions -->
+    <string name="notif_tx_added">New Transaction</string>
+    <string name="notif_tx_added_sub">(amount, category)</string>
+    <string name="notif_tx_updated">Transaction Updated</string>
+    <string name="notif_tx_updated_sub">(amount/type updated)</string>
+    <string name="notif_tx_removed">Transaction Removed</string>
+    <string name="notif_tx_removed_sub">(by whom)</string>
+    <string name="notif_budget_threshold">Budget Almost Reached</string>
+    <string name="notif_budget_threshold_sub">(≥ 90% of limit)</string>
+
+    <!-- System alerts -->
+    <string name="notif_system_alert">System Alert</string>
+    <string name="notif_system_alert_sub">(important information)</string>
+
+    <!-- Fallback -->
+    <string name="notif_unknown">Unknown Notification</string>
 </resources>

@@ -185,6 +185,7 @@
     <string name="app_language">Язык приложения</string>
     <string name="select_language">Выберите язык</string>
     <string name="notifications">Уведомления</string>
+    <string name="project_notifications">Уведомления проекта</string>
     <string name="no_notifications">Нет уведомлений :(</string>
     <string name="dark_theme">Тёмная тема</string>
     <string name="security">Безопасность</string>
@@ -451,4 +452,40 @@
     <string name="close">Закрыть</string>
     <string name="no_permissions">Необходимо предоставить разрешения</string>
     <string name="open_settings">Открыть настройки</string>
+
+    <!-- Проекты -->
+    <string name="notif_proj_edited">Проект изменён</string>
+    <string name="notif_proj_edited_sub">(название, описание и др.)</string>
+    <string name="notif_proj_removed">Проект удалён</string>
+    <string name="notif_proj_removed_sub">(кем и когда)</string>
+    <string name="notif_proj_archived">Проект в архиве</string>
+    <string name="notif_proj_archived_sub">(можно восстановить)</string>
+    <string name="notif_proj_unarchived">Проект восстановлен</string>
+    <string name="notif_proj_unarchived_sub">(из архива)</string>
+
+    <!-- Приглашения и роли -->
+    <string name="notif_project_invite_send">Приглашение отправлено</string>
+    <string name="notif_project_invite_send_sub">(новый участник)</string>
+    <string name="notif_project_invite_accepted">Приглашение принято</string>
+    <string name="notif_project_invite_accepted_sub">(участник присоединился)</string>
+    <string name="notif_role_change">Роль участника изменена</string>
+    <string name="notif_role_change_sub">(кто, на какую роль)</string>
+
+    <!-- Транзакции -->
+    <string name="notif_tx_added">Новая транзакция</string>
+    <string name="notif_tx_added_sub">(сумма, категория)</string>
+    <string name="notif_tx_updated">Транзакция изменена</string>
+    <string name="notif_tx_updated_sub">(сумма/тип обновлены)</string>
+    <string name="notif_tx_removed">Транзакция удалена</string>
+    <string name="notif_tx_removed_sub">(кем удалена)</string>
+    <string name="notif_budget_threshold">Бюджет почти исчерпан</string>
+    <string name="notif_budget_threshold_sub">(≥ 90%)</string>
+
+    <!-- Системные оповещения -->
+    <string name="notif_system_alert">Системное уведомление</string>
+    <string name="notif_system_alert_sub">(важная информация)</string>
+
+    <!-- Остальное -->
+    <string name="notif_unknown">Неизвестное уведомление</string>
+    <string name="notifications_settings_title">Настройки уведомлений</string>
 </resources>
