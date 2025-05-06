@@ -163,7 +163,18 @@
     <string name="delete_transaction">Удалить транзакцию</string>
     <string name="delete_transaction_confirmation">Вы уверены, что хотите удалить эту транзакцию?</string>
     <string name="receipt_preview">Предпросмотр чека</string>
-    <string name="recognized_amount_template">Распознанная сумма: %1$.2f</string>
+    <string name="recognized_amount_template">Распознанная сумма: %1$s</string>
+    <string name="recognized_amount_not_found">Не смог распознать цену</string>
+    <string name="image_saved_in_gallery">Изображение сохранено в галерею</string>
+    <string name="permission_storage_required">
+        Для этого действия необходимо разрешение на доступ к хранилищу
+    </string>
+    <string name="permission_required_title">Требуется разрешение</string>
+    <string name="permission_storage_explanation">
+        Для сохранения и отправки изображений необходимо разрешение на доступ к хранилищу
+    </string>
+    <string name="allow">Разрешить</string>
+    <string name="error_time_in_future">Нельзя выбрать время в будущем</string>
     <string name="transaction_name">Название транзакции</string>
     <string name="transaction_amount">Сумма</string>
     <string name="transaction_date">Дата транзакции</string>

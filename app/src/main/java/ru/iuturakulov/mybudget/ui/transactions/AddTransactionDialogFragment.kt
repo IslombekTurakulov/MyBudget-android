@@ -47,8 +47,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,6 +71,13 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.Date
 import java.util.Locale
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
+import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.extractTotalAmount
+import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessBitmap
+import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessText
+import java.text.NumberFormat
+import java.text.ParseException
 
 @AndroidEntryPoint
 class AddTransactionDialogFragment : DialogFragment() {
@@ -108,17 +113,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     ) { uri: Uri? ->
         uri?.let {
             getBitmapFromUri(it)?.let { bitmap ->
-                lifecycleScope.launch {
-                    val processed = withContext(Dispatchers.Default) { preprocessBitmap(bitmap) }
-                    withContext(Dispatchers.Main) {
-                        selectedImages.add(processed)
-                        receiptImageAdapter.updateImages(selectedImages.toList())
-                        receiptImageAdapter.notifyDataSetChanged()
-                    }
-                    withContext(Dispatchers.IO) {
-                        recognizeTextFromImage(processed)
-                    }
-                }
+                handlePickedBitmap(bitmap)
             }
         }
     }
@@ -337,7 +332,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             }
             val category =
                 if (binding.spinnerCategory.text?.trim().toString()
-                        .equals("Другое", ignoreCase = true)
+                        .equals(getString(R.string.other), ignoreCase = true)
                 )
                     binding.etCustomCategory.text?.trim()
                         .toString() else binding.spinnerCategory.text.trim().toString()
@@ -502,8 +497,6 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun openCamera() {
         takePicturePreview.launch(null)
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
     }
 
     private fun openGallery() {
@@ -512,17 +505,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private val takePicturePreview =
         registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-            bitmap?.let {
-                lifecycleScope.launch {
-                    val processed = withContext(Dispatchers.Default) { preprocessBitmap(bitmap) }
-                    selectedImages.add(processed)
-                    receiptImageAdapter.updateImages(selectedImages.toList())
-                    receiptImageAdapter.notifyDataSetChanged()
-                    withContext(Dispatchers.IO) {
-                        recognizeTextFromImage(processed)
-                    }
-                }
-            }
+            bitmap?.let { handlePickedBitmap(bitmap) }
         }
 
     private fun setupReceiptImagesRecyclerView() {
@@ -618,7 +601,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                 }
             }
         } else {
-            showMaterialSnackbar("Для этого действия необходимо разрешение на доступ к хранилищу")
+            showMaterialSnackbar(getString(R.string.permission_storage_required))
         }
     }
 
@@ -664,12 +647,12 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun showPermissionExplanationDialog() {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Требуется разрешение")
-            .setMessage("Для сохранения и отправки изображений необходимо разрешение на доступ к хранилищу")
-            .setPositiveButton("Разрешить") { _, _ ->
+            .setTitle(getString(R.string.permission_required_title))
+            .setMessage(getString(R.string.permission_storage_explanation))
+            .setPositiveButton(R.string.allow) { _, _ ->
                 storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
@@ -678,7 +661,7 @@ class AddTransactionDialogFragment : DialogFragment() {
         try {
             val cachePath = File(
                 requireContext().externalCacheDir,
-                "shared_image_${System.currentTimeMillis()}.jpg"
+                "shared_image_transaction_${viewModel.transaction.value?.name}_author_${viewModel.transaction.value?.userName}_id_${viewModel.transaction.value?.id}.jpg"
             )
             FileOutputStream(cachePath).use { stream ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
@@ -707,8 +690,8 @@ class AddTransactionDialogFragment : DialogFragment() {
 
         } catch (e: Exception) {
             showMaterialSnackbar(
-                message = "Ошибка при отправке изображения: ${e.localizedMessage}",
-                actionText = "Повторить",
+                message = "${getString(R.string.error_loading_data)}: ${e.localizedMessage}",
+                actionText = getString(R.string.retry),
                 action = { shareImage(bitmap) }
             )
         }
@@ -742,14 +725,14 @@ class AddTransactionDialogFragment : DialogFragment() {
                     if (bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream ?: return)) {
                         contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
                         resolver.update(uri, contentValues, null, null)
-                        showMaterialSnackbar("Изображение сохранено в галерею")
+                        showMaterialSnackbar(getString(R.string.image_saved_in_gallery))
                     }
                 }
             }
         } catch (e: Exception) {
             showMaterialSnackbar(
-                message = "Ошибка сохранения: ${e.localizedMessage}",
-                actionText = "Повторить",
+                message = "${getString(R.string.error_loading_data)}: ${e.localizedMessage}",
+                actionText = getString(R.string.retry),
                 action = { saveImageToGallery(bitmap) }
             )
         }
@@ -774,13 +757,13 @@ class AddTransactionDialogFragment : DialogFragment() {
                         arrayOf("image/jpeg"),
                         null
                     )
-                    showMaterialSnackbar("Изображение сохранено в галерею")
+                    showMaterialSnackbar(getString(R.string.image_saved_in_gallery))
                 }
             }
         } catch (e: Exception) {
             showMaterialSnackbar(
-                message = "Ошибка сохранения: ${e.localizedMessage}",
-                actionText = "Повторить",
+                message = "${getString(R.string.error_loading_data)}: ${e.localizedMessage}",
+                actionText = getString(R.string.retry),
                 action = { saveImageToGallery(bitmap) }
             )
         }
@@ -807,9 +790,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     private fun getBitmapFromUri(uri: Uri): Bitmap? {
         return try {
-            requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
-                BitmapFactory.decodeStream(inputStream)
-            }
+            MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
         } catch (e: Exception) {
             Snackbar.make(
                 binding.root,
@@ -820,80 +801,28 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-    // Применение предобработки: преобразование в Ч/Б и изменение размера
-    private fun preprocessBitmap(bitmap: Bitmap): Bitmap {
-        val grayscale = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(grayscale)
-        val paint = Paint().apply {
-            colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
-        }
-        canvas.drawBitmap(bitmap, 0f, 0f, paint)
-        return resizeBitmap(grayscale, 512, 512)
-    }
-
-    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
-        val (width, height) = if (bitmap.width > maxWidth || bitmap.height > maxHeight) {
-            val aspectRatio = bitmap.width.toFloat() / bitmap.height
-            if (aspectRatio > 1) maxWidth to (maxWidth / aspectRatio).toInt()
-            else (maxHeight * aspectRatio).toInt() to maxHeight
-        } else bitmap.width to bitmap.height
-        return Bitmap.createScaledBitmap(bitmap, width, height, true).apply { setHasAlpha(false) }
-    }
-
-    private fun recognizeTextFromImage(bitmap: Bitmap) {
-        val startTime = System.currentTimeMillis()
-        val inputImage = InputImage.fromBitmap(bitmap, 0)
-        val recognizer = TextRecognition.getClient(TextRecognizerOptions.Builder().build())
-        recognizer.process(inputImage)
+    fun recognizeTextFromImage(bitmap: Bitmap, rotationDegrees: Int = 0) {
+        val inputImage = InputImage.fromBitmap(bitmap, rotationDegrees)
+        viewModel.recognizer.process(inputImage)
             .addOnSuccessListener { visionText ->
-                val processedText = preprocessText(visionText.text)
-                val totalAmount = extractTotalAmount(processedText)
-                binding.tvRecognizedAmount.text =
-                    getString(
-                        R.string.recognized_amount_template,
-                        totalAmount.toDoubleOrNull() ?: 0.0
-                    )
-                updateTransactionAmount(totalAmount)
-                val duration = System.currentTimeMillis() - startTime
-                Snackbar.make(
-                    binding.root,
-                    "Распознавание завершено за ${duration}ms",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                val cleaned = preprocessText(visionText.text)
+                val amount = extractTotalAmount(cleaned)
+                if (amount != null) {
+                    binding.tvRecognizedAmount.text =
+                        getString(R.string.recognized_amount_template, amount)
+                    updateTransactionAmount(amount)
+                } else {
+                    binding.tvRecognizedAmount.text =
+                        getString(R.string.recognized_amount_not_found)
+                }
             }
             .addOnFailureListener { e ->
                 Snackbar.make(
                     binding.root,
-                    "Ошибка распознавания: ${e.localizedMessage}",
+                    "${getString(R.string.error_loading_data)}: ${e.localizedMessage}",
                     Snackbar.LENGTH_SHORT
                 ).show()
             }
-    }
-
-    private fun preprocessText(text: String): String {
-        return text.replace(Regex("[©®™•§]"), "")
-            .replace(Regex("\\s+"), " ")
-            .replace(Regex("(?<=\\d) (?=\\d)"), "")
-            .replace(Regex("o", RegexOption.IGNORE_CASE), "0")
-            .replace(Regex("[`´‘’′]"), "'")
-    }
-
-    private fun extractTotalAmount(text: String): String {
-        val patterns = listOf(
-            Regex(
-                """(итого|всего|сумма|к\s+оплате|total)\s*[:-]?\s*([\d\s]+[.,]\d{2})\b""",
-                RegexOption.IGNORE_CASE
-            ),
-            Regex("""([€$₽])\s*([\d\s]+[.,]\d{2})\b"""),
-            Regex("""\b(\d{1,3}(?:[ ,]\d{3})*[.,]\d{2})(?=\s*(?:руб|р|usd|€|\$))"""),
-            Regex("""\b(\d+[.,]\d{2})\b""")
-        )
-        patterns.forEach { regex ->
-            regex.findAll(text).lastOrNull()?.let {
-                return it.groupValues.last().replace(Regex("""[ ,]"""), "").replace(',', '.')
-            }
-        }
-        return "0.00"
     }
 
     private fun updateTransactionAmount(totalAmount: String) {
@@ -918,7 +847,7 @@ class AddTransactionDialogFragment : DialogFragment() {
             return false
         }
         if (binding.spinnerCategory.text.toString()
-                .equals("Другое", ignoreCase = true) && customCategory.isBlank()
+                .equals(getString(R.string.other), ignoreCase = true) && customCategory.isBlank()
         ) {
             Snackbar.make(
                 binding.root,
@@ -1047,7 +976,7 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun showTimeErrorSnackbar() {
         Snackbar.make(
             binding.root,
-            "Нельзя выбрать время в будущем",
+            getString(R.string.error_time_in_future),
             Snackbar.LENGTH_LONG
         ).setAction("OK") { /* Закрыть снэкбар */ }
             .show()
@@ -1067,9 +996,17 @@ class AddTransactionDialogFragment : DialogFragment() {
         return currentDateMillis
     }
 
+    private fun handlePickedBitmap(bitmap: Bitmap) = lifecycleScope.launch {
+        val processed = withContext(Dispatchers.Default) { preprocessBitmap(bitmap) }
+        selectedImages.add(processed)
+        receiptImageAdapter.updateImages(selectedImages.toList())
+        receiptImageAdapter.notifyDataSetChanged()
+        withContext(Dispatchers.IO) {
+            recognizeTextFromImage(processed)
+        }
+    }
 
     companion object {
-        private const val REQUEST_IMAGE_CAPTURE = 1
         private const val ARG_TRANSACTION = "arg_transaction"
 
         @kotlinx.parcelize.Parcelize

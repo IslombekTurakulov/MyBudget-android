@@ -169,7 +169,18 @@
     <string name="delete_transaction">Delete transaction</string>
     <string name="delete_transaction_confirmation">Are you sure you want to delete this transaction?</string>
     <string name="receipt_preview">Receipt preview</string>
-    <string name="recognized_amount_template">Recognized amount: %1$.2f</string>
+    <string name="recognized_amount_template">Recognized amount: %1$s</string>
+    <string name="recognized_amount_not_found">Recognized nothing</string>
+    <string name="image_saved_in_gallery">Image saved in gallery</string>
+    <string name="permission_storage_required">
+        This action requires storage permission
+    </string>
+    <string name="permission_required_title">Permission Required</string>
+    <string name="permission_storage_explanation">
+        Saving and sharing images requires storage access permission
+    </string>
+    <string name="error_time_in_future">Cannot select a future time</string>
+    <string name="allow">Allow</string>
     <string name="transaction_name">Transaction name</string>
     <string name="transaction_amount">Amount</string>
     <string name="transaction_author">Author: %1$s</string>

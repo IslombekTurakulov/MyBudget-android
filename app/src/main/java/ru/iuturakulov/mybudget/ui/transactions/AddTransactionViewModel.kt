@@ -2,6 +2,8 @@ package ru.iuturakulov.mybudget.ui.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +21,10 @@ class AddTransactionViewModel @Inject constructor(
 
     private val _transaction = MutableStateFlow<TemporaryTransaction?>(null)
     val transaction: StateFlow<TemporaryTransaction?> = _transaction
+
+    val recognizer by lazy {
+        TextRecognition.getClient(TextRecognizerOptions.Builder().build())
+    }
 
     fun loadTransaction(projectId: String, transactionId: String) {
         viewModelScope.launch {
