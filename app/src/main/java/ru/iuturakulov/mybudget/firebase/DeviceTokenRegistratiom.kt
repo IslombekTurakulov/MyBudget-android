@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.firebase
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.*
+import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.data.remote.FCMService
 import ru.iuturakulov.mybudget.data.remote.dto.RegisterDeviceRequest
 import timber.log.Timber
@@ -10,7 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class DeviceTokenRegistratiom @Inject constructor(
-    private val fcmService: FCMService
+    private val fcmService: FCMService,
+    private val tokenStorage: TokenStorage,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var lastToken: String? = null
@@ -22,9 +24,10 @@ class DeviceTokenRegistratiom @Inject constructor(
 
         scope.launch {
             try {
+                tokenStorage.getAccessToken() ?: return@launch
                 val response = fcmService.registerDevice(RegisterDeviceRequest(token, language = languageCode))
                 if (!response.isSuccessful) {
-                    throw Exception(response.errorBody().toString())
+                    throw Exception(response.errorBody()?.string())
                 }
                 Timber.i("Device registered successfully with token $lastToken")
             } catch (e: Exception) {

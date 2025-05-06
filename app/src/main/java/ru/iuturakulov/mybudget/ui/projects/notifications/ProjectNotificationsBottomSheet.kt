@@ -59,16 +59,7 @@ class ProjectNotificationsBottomSheet(
         }
 
         // Фильтруем в зависимости от роли
-        val allowedTypes = when (userRole) {
-            ParticipantRole.OWNER -> allNotificationTypes
-
-            ParticipantRole.EDITOR ->
-                allNotificationTypes.filter { it.category() != NotificationCategory.SYSTEM }
-
-            ParticipantRole.VIEWER ->
-                allNotificationTypes.filter { it.category() == NotificationCategory.TRANSACTION }
-        }
-
+        val allowedTypes = permissionsByRole[userRole]!!.toList()
         adapter?.updateItems(allowedTypes)
     }
 

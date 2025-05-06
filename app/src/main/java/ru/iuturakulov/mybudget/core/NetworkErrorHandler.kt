@@ -8,7 +8,6 @@ object NetworkErrorHandler {
     fun getErrorMessage(throwable: Throwable): String {
         Timber.e(throwable, "Ошибка выполнения запроса")
         return when (throwable) {
-            is IOException -> "Проблема с подключением к сети. Проверьте соединение."
             is HttpException -> {
                 when (throwable.code()) {
                     400 -> "Некорректный запрос."

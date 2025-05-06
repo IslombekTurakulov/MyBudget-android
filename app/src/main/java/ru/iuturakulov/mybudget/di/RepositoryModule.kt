@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import ru.iuturakulov.mybudget.data.local.AppDatabase
 import ru.iuturakulov.mybudget.data.local.daos.NotificationsDao
 import ru.iuturakulov.mybudget.data.local.daos.ParticipantsDao
 import ru.iuturakulov.mybudget.data.local.daos.ProjectDao
@@ -81,7 +82,8 @@ object RepositoryModule {
     fun provideSettingsRepository(
         userSettingsDao: UserSettingsDao,
         settingsService: SettingsService,
+        appDatabase: AppDatabase,
     ): SettingsRepository {
-        return SettingsRepository(settingsService, userSettingsDao)
+        return SettingsRepository(settingsService, userSettingsDao, appDatabase)
     }
 }

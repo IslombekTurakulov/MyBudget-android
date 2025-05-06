@@ -1,5 +1,5 @@
 package ru.iuturakulov.mybudget.data.remote.auth
 
-data class ResetPasswordRequest(
+data class EmailRequest(
     val email: String
 )

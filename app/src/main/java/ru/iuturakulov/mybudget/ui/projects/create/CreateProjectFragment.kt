@@ -123,7 +123,7 @@ class CreateProjectFragment :
         var ok = true
 
         if (binding.etProjectName.text?.trim().isNullOrBlank()) {
-            binding.tilProjectName.error = getString(R.string.error_empty_name)
+            binding.tilProjectName.error = getString(R.string.error_empty_project_name)
             ok = false
         } else binding.tilProjectName.error = null
 

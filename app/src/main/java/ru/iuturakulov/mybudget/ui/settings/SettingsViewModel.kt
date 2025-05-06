@@ -24,7 +24,6 @@ class SettingsViewModel @Inject constructor(
     private val tokenStorage: TokenStorage,
     private val codeTokenStorage: CodeTokenStorage,
     private val encryptedSharedPreferences: SharedPreferences,
-    private val db: AppDatabase,
 ) : ViewModel() {
 
     companion object {
@@ -85,9 +84,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             tokenStorage.clearTokens()
             codeTokenStorage.clearCodeToken()
-            withContext(Dispatchers.IO) {
-                db.clearAllTables()
-            }
+            repository.clearDatabase()
         }
     }
 

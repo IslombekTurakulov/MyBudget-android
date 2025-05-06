@@ -1,16 +1,22 @@
 package ru.iuturakulov.mybudget.domain.usecases.auth
 
+import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ru.iuturakulov.mybudget.auth.TokenStorage
 import ru.iuturakulov.mybudget.data.remote.auth.AuthService
 import ru.iuturakulov.mybudget.data.remote.auth.LoginRequest
+import ru.iuturakulov.mybudget.di.PreferencesEntryPoint
+import ru.iuturakulov.mybudget.firebase.DeviceTokenRegistratiom
 import timber.log.Timber
+import java.util.Locale
 import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(
     private val authService: AuthService,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: TokenStorage,
+    private val deviceTokenRegistratiom: DeviceTokenRegistratiom,
 ) {
 
     /**
@@ -29,6 +35,9 @@ class LoginUseCase @Inject constructor(
                 val refreshToken = body.refreshToken
                 tokenStorage.saveAccessTokenAsync(accessToken)
                 tokenStorage.saveRefreshTokenAsync(refreshToken)
+                FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                    deviceTokenRegistratiom.enqueue(token, Locale.getDefault().language)
+                }
                 true
             } else {
                 val errorResponse = response.errorBody()?.string()

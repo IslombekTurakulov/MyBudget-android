@@ -1,5 +1,8 @@
 package ru.iuturakulov.mybudget.domain.repositories
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import ru.iuturakulov.mybudget.data.local.AppDatabase
 import ru.iuturakulov.mybudget.data.local.daos.UserSettingsDao
 import ru.iuturakulov.mybudget.data.local.entities.UserSettingsEntity
 import ru.iuturakulov.mybudget.data.remote.SettingsService
@@ -9,7 +12,8 @@ import javax.inject.Inject
 
 class SettingsRepository @Inject constructor(
     private val settingsService: SettingsService,
-    private val userSettingsDao: UserSettingsDao
+    private val userSettingsDao: UserSettingsDao,
+    private val db: AppDatabase,
 ) {
 
     suspend fun getUserSettings(): UserSettings {
@@ -27,6 +31,12 @@ class SettingsRepository @Inject constructor(
         val dto = settingsService.getUserSettings()
         userSettingsDao.insertUserSettings(dto.toEntity())
         return dto
+    }
+
+    suspend fun clearDatabase() {
+        withContext(Dispatchers.IO) {
+            db.clearAllTables()
+        }
     }
 
     private fun UserSettingsDto.toDomain() = UserSettings(

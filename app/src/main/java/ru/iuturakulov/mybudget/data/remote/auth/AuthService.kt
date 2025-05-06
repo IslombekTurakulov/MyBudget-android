@@ -10,13 +10,17 @@ interface AuthService {
     @POST("auth/login")
     suspend fun login(@Body request: LoginRequest): Response<TokenData>
 
-    // Регистрация пользователя
-    @POST("auth/register")
-    suspend fun register(@Body request: RegisterRequest): Response<Void>
+    @POST("auth/verify-email-registration")
+    suspend fun withVerifyRegistrationWithCode(@Body request: RegisterRequest): Response<Unit>
 
-    // Восстановление пароля
-    @POST("auth/reset-password")
-    suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<Void>
+    @POST("auth/verify-reset-code")
+    suspend fun withVerifyResetPasswordWithCode(@Body request: VerifyEmailRequest): Response<Unit>
+
+    @POST("auth/request-reset-password-code")
+    suspend fun sendPasswordResetVerifyCode(@Body request: EmailRequest): Response<Unit>
+
+    @POST("auth/request-register-code")
+    suspend fun sendRegisterResetVerifyCode(@Body request: EmailRequest): Response<Unit>
 }
 
 interface ChangePasswordAuthService {

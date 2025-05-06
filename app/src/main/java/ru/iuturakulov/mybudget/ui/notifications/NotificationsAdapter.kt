@@ -64,8 +64,7 @@ class NotificationsAdapter(
                     NotificationType.PROJECT_EDITED -> R.drawable.ic_project_edit
                     NotificationType.PROJECT_REMOVED -> R.drawable.ic_project_remove
                     NotificationType.SYSTEM_ALERT -> R.drawable.ic_system
-                    NotificationType.BUDGET_THRESHOLD -> R.drawable.ic_project_budget_limit
-                    else ->  R.drawable.ic_app_logo
+                    else -> R.drawable.ic_app_logo
                 }
             )
 

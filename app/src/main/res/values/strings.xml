@@ -30,12 +30,13 @@
     <!-- Common UI -->
     <string name="show_more">Показать больше</string>
     <string name="show_less">Показать меньше</string>
-    <string name="cancel">Отмена</string>
     <string name="save">Сохранить</string>
     <string name="add">Добавить</string>
     <string name="delete">Удалить</string>
     <string name="filters">Фильтры</string>
     <string name="select_date">Выберите дату</string>
+
+    <string name="verification_code_sent_success">Код отправлен на почту. Введите код в показанном окне</string>
 
     <string name="change_password_title">Сменить пароль</string>
     <string name="email_hint">Email</string>
@@ -378,7 +379,14 @@
     <string name="project_description">Описание проекта</string>
     <string name="budget_limit">Лимит бюджета (₽)</string>
 
-    <string name="error_empty_name">Введите название проекта</string>
+    <string name="enter_verification_code">Введите код подтверждения</string>
+    <string name="submit">Подтвердить</string>
+    <string name="cancel">Отмена</string>
+    <string name="code_hint">Код подтверждения</string>
+    <string name="code_error">Пожалуйста, введите правильный код</string>
+
+    <string name="error_empty_name">Введите имя</string>
+    <string name="error_empty_project_name">Введите название проекта</string>
     <string name="error_empty_budget">Введите лимит бюджета</string>
     <string name="error_empty_budget_limit">Лимит бюджета должен быть больше 0</string>
     <string name="error_empty_category">Выберите категорию</string>
@@ -470,6 +478,8 @@
     <string name="notif_project_invite_accepted_sub">(участник присоединился)</string>
     <string name="notif_role_change">Роль участника изменена</string>
     <string name="notif_role_change_sub">(кто, на какую роль)</string>
+    <string name="notif_participant_removed">Участник удален</string>
+    <string name="notif_participant_removed_sub">(кем удалена)</string>
 
     <!-- Транзакции -->
     <string name="notif_tx_added">Новая транзакция</string>

@@ -8,13 +8,13 @@
     android:paddingEnd="@dimen/spacing_16"
     android:paddingVertical="@dimen/spacing_8">
 
-    <ImageView
-        android:id="@+id/ivIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+<!--    <ImageView-->
+<!--        android:id="@+id/ivIcon"-->
+<!--        android:layout_width="24dp"-->
+<!--        android:layout_height="24dp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"/>-->
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvTitle"
@@ -22,7 +22,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_16"
-        app:layout_constraintStart_toEndOf="@id/ivIcon"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@id/switchToggle"/>
 
@@ -32,7 +32,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/spacing_16"
-        app:layout_constraintStart_toEndOf="@id/ivIcon"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintEnd_toStartOf="@id/switchToggle"/>
 

@@ -1,7 +1,6 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
 import kotlinx.serialization.Serializable
-import ru.iuturakulov.mybudget.data.local.entities.NotificationEntity
 
 @Serializable
 data class NotificationDto(
@@ -20,8 +19,9 @@ data class NotificationDto(
 
 enum class NotificationType {
     PROJECT_INVITE_SEND,
-    PROJECT_INVITE_ACCEPTED,
+    PROJECT_INVITE_ACCEPT,
     PARTICIPANT_ROLE_CHANGE,
+    PARTICIPANT_REMOVED,
     TRANSACTION_ADDED,
     TRANSACTION_UPDATED,
     TRANSACTION_REMOVED,
@@ -29,7 +29,6 @@ enum class NotificationType {
     PROJECT_REMOVED,
     PROJECT_ARCHIVED,
     PROJECT_UNARCHIVED,
-    BUDGET_THRESHOLD,
     SYSTEM_ALERT,
     UNKNOWN;
 

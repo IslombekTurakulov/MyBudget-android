@@ -2,6 +2,7 @@ package ru.iuturakulov.mybudget.di
 
 import android.content.SharedPreferences
 import android.os.Build
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,8 +46,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideDeviceTokenRegistratiom(fcmService: FCMService): DeviceTokenRegistratiom {
-        return DeviceTokenRegistratiom(fcmService)
+    fun provideDeviceTokenRegistratiom(
+        fcmService: FCMService,
+        tokenStorage: TokenStorage
+    ): DeviceTokenRegistratiom {
+        return DeviceTokenRegistratiom(fcmService, tokenStorage)
     }
 
     @Provides
@@ -83,7 +87,13 @@ object NetworkModule {
         return Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(baseOkHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(
+                GsonConverterFactory.create(
+                    GsonBuilder()
+                        .setLenient()
+                        .create()
+                )
+            )
             .build()
     }
 
@@ -218,13 +228,14 @@ object NetworkModule {
                 )
                 .build()
 
-            Timber.i("""
+            val requestLogging = """
                 Sending request:
                 URL: ${newRequest.url}
                 Headers: ${newRequest.headers}
                 Call ID: $requestId
-            """.trimIndent())
+            """.trim()
 
+            Timber.i(requestLogging)
             chain.proceed(newRequest)
         }
     }

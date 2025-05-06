@@ -301,7 +301,7 @@ class ProjectDetailsFragment :
             }
         }
         val globalMin = (signedList.minOrNull() ?: 0f).roundTo(2)
-        val globalMax = (signedList.maxOrNull()?.plus(1f) ?: 1f).roundTo(2)
+        val globalMax = (signedList.maxOrNull() ?: 1f).roundTo(2)
 
         val curMin = (currentF.minAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin).roundTo(2)
         val curMax = (currentF.maxAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax).roundTo(2)
@@ -311,7 +311,7 @@ class ProjectDetailsFragment :
         dlg.sliderAmount.apply {
             valueFrom = globalMin
             valueTo = globalMax
-            stepSize = 1f
+            stepSize = 0f
             values = listOf(curMin, curMax)
         }
         dlg.etMinAmount.setText(curMin.toString())

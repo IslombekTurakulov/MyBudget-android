@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.data.remote.dto.NotificationType
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 
 /**
  * Категории уведомлений — для будущей секционированной UI-логики
@@ -35,7 +36,7 @@ val metas = mapOf(
         iconRes = R.drawable.ic_project_invite_send,
         category = NotificationCategory.PARTICIPANT
     ),
-    NotificationType.PROJECT_INVITE_ACCEPTED to NotificationMeta(
+    NotificationType.PROJECT_INVITE_ACCEPT to NotificationMeta(
         titleRes = R.string.notif_project_invite_accepted,
         subtitleRes = R.string.notif_project_invite_accepted_sub,
         iconRes = R.drawable.ic_project_invite_accepted,
@@ -44,6 +45,12 @@ val metas = mapOf(
     NotificationType.PARTICIPANT_ROLE_CHANGE to NotificationMeta(
         titleRes = R.string.notif_role_change,
         subtitleRes = R.string.notif_role_change_sub,
+        iconRes = R.drawable.ic_role_change,
+        category = NotificationCategory.PARTICIPANT
+    ),
+    NotificationType.PARTICIPANT_REMOVED to NotificationMeta(
+        titleRes = R.string.notif_participant_removed,
+        subtitleRes = R.string.notif_participant_removed_sub,
         iconRes = R.drawable.ic_role_change,
         category = NotificationCategory.PARTICIPANT
     ),
@@ -89,12 +96,6 @@ val metas = mapOf(
         iconRes = R.drawable.ic_proj_unarchive,
         category = NotificationCategory.PROJECT
     ),
-    NotificationType.BUDGET_THRESHOLD to NotificationMeta(
-        titleRes = R.string.notif_budget_threshold,
-        subtitleRes = R.string.notif_budget_threshold_sub,
-        iconRes = R.drawable.ic_warning_24,
-        category = NotificationCategory.TRANSACTION
-    ),
     NotificationType.SYSTEM_ALERT to NotificationMeta(
         titleRes = R.string.notif_system_alert,
         subtitleRes = R.string.notif_system_alert_sub,
@@ -116,3 +117,25 @@ inline fun NotificationType.titleRes() = meta().titleRes
 inline fun NotificationType.subtitleRes() = meta().subtitleRes
 inline fun NotificationType.iconRes() = meta().iconRes
 inline fun NotificationType.category() = meta().category
+
+val permissionsByRole: Map<ParticipantRole, Set<NotificationType>> = mapOf(
+    ParticipantRole.OWNER to NotificationType.entries.toSet(),
+    ParticipantRole.EDITOR to setOf(
+        NotificationType.TRANSACTION_ADDED,
+        NotificationType.TRANSACTION_UPDATED,
+        NotificationType.TRANSACTION_REMOVED,
+        NotificationType.PROJECT_EDITED,
+        NotificationType.PROJECT_REMOVED,
+        NotificationType.PROJECT_ARCHIVED,
+        NotificationType.PROJECT_UNARCHIVED,
+        NotificationType.PARTICIPANT_ROLE_CHANGE,
+    ),
+    ParticipantRole.VIEWER to setOf(
+        NotificationType.TRANSACTION_ADDED,
+        NotificationType.PROJECT_EDITED,
+        NotificationType.PROJECT_REMOVED,
+        NotificationType.PROJECT_ARCHIVED,
+        NotificationType.PROJECT_UNARCHIVED,
+        NotificationType.SYSTEM_ALERT
+    )
+)

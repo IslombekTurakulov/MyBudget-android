@@ -123,6 +123,8 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:2.3.1")
 
     implementation(libs.emoji.google)
+
+    implementation("io.github.chaosleung:pinview:1.4.4")
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

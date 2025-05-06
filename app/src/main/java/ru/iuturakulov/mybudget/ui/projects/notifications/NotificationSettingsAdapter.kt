@@ -52,7 +52,7 @@ class NotificationSettingsAdapter(
         /** Привязывает данные типа уведомления к элементу строки */
         fun bind(type: NotificationType, isEnabled: Boolean) {
             // Иконка и заголовок/подзаголовок из метаданных
-            binding.ivIcon.setImageResource(type.iconRes())
+//            binding.ivIcon.setImageResource(type.iconRes())
             binding.tvTitle.setText(type.titleRes())
             type.subtitleRes()?.let { res ->
                 binding.tvSubtitle.setText(res)

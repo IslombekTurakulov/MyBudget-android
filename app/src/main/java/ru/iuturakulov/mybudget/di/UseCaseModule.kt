@@ -11,6 +11,7 @@ import ru.iuturakulov.mybudget.domain.repositories.TransactionRepository
 import ru.iuturakulov.mybudget.domain.usecases.auth.LoginUseCase
 import ru.iuturakulov.mybudget.domain.usecases.project.FetchProjectsUseCase
 import ru.iuturakulov.mybudget.domain.usecases.project.SyncProjectsUseCase
+import ru.iuturakulov.mybudget.firebase.DeviceTokenRegistratiom
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -33,8 +34,9 @@ object UseCaseModule {
     @Provides
     fun provideLoginUseCase(
         authService: AuthService,
-        tokenStorage: TokenStorage
+        tokenStorage: TokenStorage,
+        deviceTokenRegistratiom: DeviceTokenRegistratiom,
     ): LoginUseCase {
-        return LoginUseCase(authService, tokenStorage)
+        return LoginUseCase(authService, tokenStorage, deviceTokenRegistratiom)
     }
 }

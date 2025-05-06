@@ -18,6 +18,11 @@
         <item>Editor</item>
     </string-array>
 
+    <string name="enter_verification_code">Enter the verification code</string>
+    <string name="submit">Submit</string>
+    <string name="code_hint">Verification Code</string>
+    <string name="code_error">Please enter a valid code</string>
+
     <!-- Navigation & status -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -75,6 +80,7 @@
 
     <!-- Invitations -->
     <string name="invitation_sent_success">Invitation sent successfully</string>
+    <string name="verification_code_sent_success">The code has been sent to your email. Enter the code in the window shown</string>
     <string name="invitation_sent_error">%s</string>
     <string name="invitation_processing">Sending invitation…</string>
     <string name="add_participant_title">Add participant</string>
@@ -378,7 +384,8 @@
     <string name="project_name">Project name</string>
     <string name="project_description">Project description</string>
     <string name="budget_limit">Budget limit (₽)</string>
-    <string name="error_empty_name">Enter project name</string>
+    <string name="error_empty_name">Enter name</string>
+    <string name="error_empty_project_name">Enter project name</string>
     <string name="error_empty_budget">Enter budget limit</string>
     <string name="error_empty_budget_limit">Budget limit must be greater than 0</string>
     <string name="error_empty_category">Select a category</string>
@@ -474,6 +481,8 @@
     <string name="notif_project_invite_accepted_sub">(member joined)</string>
     <string name="notif_role_change">Participant Role Changed</string>
     <string name="notif_role_change_sub">(who and to what role)</string>
+    <string name="notif_participant_removed">Participant Removed</string>
+    <string name="notif_participant_removed_sub">(by whom)</string>
 
     <!-- Transactions -->
     <string name="notif_tx_added">New Transaction</string>
