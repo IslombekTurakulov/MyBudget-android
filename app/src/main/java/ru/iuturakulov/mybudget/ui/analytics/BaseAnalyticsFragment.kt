@@ -54,14 +54,23 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.CurrencyFormatter
+import ru.iuturakulov.mybudget.core.DateTimeExtension.toIso8601Date
 import ru.iuturakulov.mybudget.core.UiState
+import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
+import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
+import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity.TransactionType.Companion.getDisplayRes
 import ru.iuturakulov.mybudget.data.remote.dto.AnalyticsExportFormat
 import ru.iuturakulov.mybudget.data.remote.dto.CategoryStats
 import ru.iuturakulov.mybudget.data.remote.dto.OverviewCategoryStats
 import ru.iuturakulov.mybudget.data.remote.dto.OverviewPeriodStats
+import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.data.remote.dto.PeriodStats
 import ru.iuturakulov.mybudget.ui.BaseFragment
+import ru.iuturakulov.mybudget.ui.transactions.AddTransactionDialogFragment
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Общая логика для обоих экранов аналитики.
@@ -498,24 +507,41 @@ abstract class BaseAnalyticsFragment<
         val pieChart = binding.root.findViewById<PieChart>(R.id.categoryPieChart)
         val periodBarChart = binding.root.findViewById<BarChart>(R.id.periodBarChart)
 
-        pieChart.bindDrillDown(
+        pieChart.bindDrillDownList(
             overviewCategoryStats,
             label = { it.category },
-            detailText = { stat ->
-                getString(
-                    R.string.detail_category_format,
-                    stat.category,
-                    CurrencyFormatter.format(stat.amount),
-                    stat.percentage
-                )
+            detailItems = { it.transactionInfo },
+            detailText = { tx ->
+                val formattedAmount = CurrencyFormatter.format(tx.amount)
+                val transactionType = TransactionEntity.TransactionType.fromString(tx.type)
+                val amount = when (transactionType) {
+                    TransactionEntity.TransactionType.EXPENSE -> "-$formattedAmount"
+                    TransactionEntity.TransactionType.INCOME -> "+$formattedAmount"
+                }
+                val projectName = if (tx.projectName != null) {
+                    "\n${getString(R.string.project)}: ${tx.projectName}"
+                } else {
+                    ""
+                }
+                // например: "12 500 ₽ — Покупка кофе — 2025-04-10"
+                "$amount — \"${tx.name}\" — ${tx.date}$projectName"
+            },
+            clickToDetail = { tx ->
+                tx.projectId?.let {
+                    AddTransactionDialogFragment.newInstance(
+                        projectId = it,
+                        currentRole = ParticipantRole.VIEWER.name,
+                        transactionId = tx.id
+                    ).show(childFragmentManager, "TransactionDetails")
+                }
             },
             sheetTag = "sheet_overview_category"
         )
 
         periodBarChart.bindDrillDown(
             overviewPeriodStats,
-            label    = { it.period },
-            value    = { it.amount },
+            label = { it.period },
+            value = { it.amount },
             sheetTag = "sheet_overview_period"
         )
     }
@@ -527,24 +553,31 @@ abstract class BaseAnalyticsFragment<
         val pieChart = binding.root.findViewById<PieChart>(R.id.categoryPieChart)
         val periodBarChart = binding.root.findViewById<BarChart>(R.id.periodBarChart)
 
-        pieChart.bindDrillDown(
+        pieChart.bindDrillDownList(
             categoryStats,
             label = { it.category },
-            detailText = { stat ->
-                getString(
-                    R.string.detail_category_format,
-                    stat.category,
-                    CurrencyFormatter.format(stat.amount),
-                    stat.percentage
-                )
+            detailItems = { it.transactionInfo },
+            detailText = { tx ->
+                val formattedAmount = CurrencyFormatter.format(tx.amount)
+                val transactionType = TransactionEntity.TransactionType.fromString(tx.type)
+                val amount = when (transactionType) {
+                    TransactionEntity.TransactionType.EXPENSE -> "-$formattedAmount"
+                    TransactionEntity.TransactionType.INCOME -> "+$formattedAmount"
+                }
+                val typeName = transactionType.getDisplayRes(context = requireContext())
+                // например: "12 500 ₽ — Покупка кофе — 2025-04-10"
+                "$typeName — $amount — \"${tx.name}\" — ${tx.date}"
+            },
+            clickToDetail = { tx ->
+               // Считаем, что пользователь и так находится в проекте, ему не надо смотреть на детализацию
             },
             sheetTag = "sheet_project_category"
         )
 
         periodBarChart.bindDrillDown(
             periodStats,
-            label    = { it.period },
-            value    = { it.totalAmount },
+            label = { it.period },
+            value = { it.totalAmount },
             sheetTag = "sheet_project_period"
         )
     }
@@ -596,6 +629,7 @@ abstract class BaseAnalyticsFragment<
                         CurrencyFormatter.format(e.value.toDouble())
                     )
                 }
+
                 is BarEntry -> {
                     val xLabel = (tag as? List<String>)?.getOrNull(e.x.toInt())
                         ?: context.getString(R.string.marker_bar_default_label)
@@ -605,6 +639,7 @@ abstract class BaseAnalyticsFragment<
                         CurrencyFormatter.format(e.y.toDouble())
                     )
                 }
+
                 else -> ""
             }
             tvContent.text = text
@@ -618,29 +653,37 @@ abstract class BaseAnalyticsFragment<
 
 
     /**
-     * Универсальная обработка клика на секторе PieChart.
+     * Универсальная обработка клика на секторе PieChart с выводом списка
      *
-     * @param items        список ваших моделей
-     * @param label        как из модели получить label (категорию)
-     * @param detailText   как из модели собрать подробный текст
-     * @param sheetTag     тег для BottomSheet
+     * @param items         исходные модели (например, OverviewCategoryStats)
+     * @param label         как из модели получить label (категорию)
+     * @param detailItems   как из модели получить список деталей (например, transactionInfo)
+     * @param detailText    как из модели-детали собрать текст для каждой строки
+     * @param sheetTag      тег для BottomSheet
      */
-    protected inline fun <T> PieChart.bindDrillDown(
-        items: List<T>,
-        crossinline label: (T) -> String,
-        crossinline detailText: (T) -> String,
+    protected inline fun <Seg, Tx : Any> PieChart.bindDrillDownList(
+        items: List<Seg>,
+        crossinline label: (Seg) -> String,
+        crossinline detailItems: (Seg) -> List<Tx>?,
+        crossinline detailText: (Tx) -> String,
+        crossinline clickToDetail: (Tx) -> Unit,
         sheetTag: String
     ) {
         setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
             override fun onValueSelected(e: Entry?, h: Highlight?) {
                 val pe = e as? PieEntry ?: return
-                // находим модель по лейблу
-                val item = items.firstOrNull { label(it) == pe.label } ?: return
-                DetailListBottomSheet(
+                val stat = items.firstOrNull { label(it) == pe.label } ?: return
+                val list = detailItems(stat).orEmpty()
+                if (list.isEmpty()) return
+
+                // здесь мы говорим: DetailListBottomSheet< Tx >
+                DetailListBottomSheet<Tx>(
                     title = pe.label,
-                    items = listOf(item)
-                ) { itemView, model ->
-                    itemView.findViewById<TextView>(R.id.tvItemText).text = detailText(model)
+                    items = list
+                ) { itemView, tx ->
+                    val textView = itemView.findViewById<TextView>(R.id.tvItemText)
+                    textView.text = detailText(tx)
+                    textView.setOnClickListener { clickToDetail(tx) }
                 }.show(childFragmentManager, sheetTag)
             }
 
@@ -678,6 +721,7 @@ abstract class BaseAnalyticsFragment<
                     )
                 }.show(childFragmentManager, sheetTag)
             }
+
             override fun onNothingSelected() {}
         })
     }

@@ -1,11 +1,14 @@
 package ru.iuturakulov.mybudget.data.local.entities
 
+import android.content.Context
 import android.os.Parcelable
+import androidx.core.content.ContextCompat
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
+import ru.iuturakulov.mybudget.R
 
 @Entity(
     tableName = "transactions",
@@ -38,6 +41,14 @@ data class TransactionEntity(
         EXPENSE("expense");
 
         companion object {
+
+            fun TransactionType.getDisplayRes(context: Context): String {
+                return when (this) {
+                    INCOME -> ContextCompat.getString(context, R.string.income)
+                    EXPENSE -> ContextCompat.getString(context, R.string.expense)
+                }
+            }
+
             fun fromString(value: String): TransactionType {
                 return entries.firstOrNull {
                     it.typeName.lowercase().trim() == value

@@ -1,5 +1,7 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
+import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
+
 /**
  * Детальная аналитика по конкретному проекту
  */
@@ -15,7 +17,8 @@ data class ProjectAnalyticsDto(
 data class CategoryStats(
     val category: String,      // имя категории
     val amount: Double,        // сумма
-    val percentage: Double     // % от totalAmount (0..100)
+    val percentage: Double,     // % от totalAmount (0..100),
+    val transactionInfo: List<TransactionInfo>? = null,
 )
 
 /** Статистика по периодам (месяцам) в рамках одного проекта */

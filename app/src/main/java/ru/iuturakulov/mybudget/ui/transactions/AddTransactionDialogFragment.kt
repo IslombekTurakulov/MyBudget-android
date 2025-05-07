@@ -73,6 +73,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
+import androidx.core.view.isGone
 import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.extractTotalAmount
 import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessBitmap
 import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessText
@@ -263,7 +264,8 @@ class AddTransactionDialogFragment : DialogFragment() {
     private fun setupCommonViews(arguments: AddTransactionArgs) {
         binding.apply {
             if (transaction != null) {
-                toolbar.subtitle = ""
+                toolbar.title = ""
+                dividerTransaction.isGone = true
                 // Режим редактирования/просмотра существующей транзакции
                 etTransactionName.setText(transaction?.name)
                 etTransactionAmount.setText(transaction?.amount.toString())
@@ -282,6 +284,7 @@ class AddTransactionDialogFragment : DialogFragment() {
                 }
                 btnDeleteTransaction.setOnClickListener { showDeleteConfirmationDialog() }
             } else {
+                dividerTransaction.isGone = false
                 // Режим добавления новой транзакции
                 removeTransactionLayout.visibility = View.GONE
                 addTransactionLayout.visibility = View.VISIBLE
@@ -406,7 +409,6 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
 
         val categories = buildList {
-            add(allText)
             addAll(filtered)
             currentCategory?.takeIf { it.isNotBlank() }?.let { add(it) }
             add(otherText)

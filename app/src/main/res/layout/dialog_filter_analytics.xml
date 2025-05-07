@@ -10,7 +10,7 @@
         style="@style/TextAppearance.Material3.TitleMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Период" />
+        android:text="@string/period_label" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -25,8 +25,9 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_weight="1"
             android:layout_width="0dp"
+            android:textSize="13sp"
             android:layout_height="wrap_content"
-            android:text="С: не выбрано"
+            android:text="@string/from_not_selected"
             app:icon="@drawable/baseline_calendar_month_24"
             app:iconPadding="8dp" />
 
@@ -36,8 +37,9 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:layout_width="0dp"
+            android:textSize="13sp"
             android:layout_height="wrap_content"
-            android:text="По: не выбрано"
+            android:text="@string/to_not_selected"
             app:icon="@drawable/baseline_calendar_month_24"
             app:iconPadding="8dp" />
     </LinearLayout>
@@ -47,7 +49,7 @@
         android:layout_marginTop="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Категории" />
+        android:text="@string/categories_label" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupCats"
@@ -63,7 +65,7 @@
         android:layout_marginTop="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Гранулярность" />
+        android:text="@string/granularity_label" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilGranularity"
@@ -72,7 +74,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <AutoCompleteTextView
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/acGranularity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

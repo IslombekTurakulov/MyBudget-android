@@ -4,39 +4,76 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.databinding.AnalyticsItemInfoBinding
+import ru.iuturakulov.mybudget.databinding.SheetAnalyticsDetailListBinding
 
-class DetailListBottomSheet<T : Any>(
+class DetailListBottomSheet<U : Any>(
     private val title: String,
-    private val items: List<T>,
-    private val binder: (View, T) -> Unit
+    private val items: List<U>,
+    private val binder: (View, U) -> Unit,
 ) : BottomSheetDialogFragment() {
+
+    private var _binding: SheetAnalyticsDetailListBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View = inflater.inflate(R.layout.sheet_analytics_detail_list, container, false)
+    ): View {
+        _binding = SheetAnalyticsDetailListBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val tvTitle = view.findViewById<TextView>(R.id.tvSheetTitle)
-        val rv = view.findViewById<RecyclerView>(R.id.rvSheetList)
+        binding.tvSheetTitle.text = title
 
-        tvTitle.text = title
-        rv.layoutManager = LinearLayoutManager(requireContext())
-        rv.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-                object : RecyclerView.ViewHolder(
-                    layoutInflater.inflate(R.layout.analytics_item_info, parent, false)
-                ) {}
+        // Пустое состояние
+        if (items.isEmpty()) {
+            binding.rvSheetList.isVisible = false
+            binding.tvEmpty.isVisible = true
+            return
+        }
 
-            override fun getItemCount() = items.size
+        binding.tvEmpty.isVisible = false
+        binding.rvSheetList.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            addItemDecoration(
+                DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
+            )
+            adapter = object : ListAdapter<U, DetailViewHolder>(
+                object : DiffUtil.ItemCallback<U>() {
+                    override fun areItemsTheSame(oldItem: U, newItem: U): Boolean =
+                        oldItem === newItem
 
-            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-                binder(holder.itemView, items[position])
-            }
+                    override fun areContentsTheSame(oldItem: U, newItem: U): Boolean =
+                        oldItem === newItem
+                }
+            ) {
+                override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetailViewHolder {
+                    val itemBinding = AnalyticsItemInfoBinding
+                        .inflate(layoutInflater, parent, false)
+                    return DetailViewHolder(itemBinding)
+                }
+
+                override fun onBindViewHolder(holder: DetailViewHolder, position: Int) {
+                    binder(holder.binding.root, getItem(position))
+                }
+            }.also { it.submitList(items) }
+
         }
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private class DetailViewHolder(val binding: AnalyticsItemInfoBinding) :
+        RecyclerView.ViewHolder(binding.root)
 }

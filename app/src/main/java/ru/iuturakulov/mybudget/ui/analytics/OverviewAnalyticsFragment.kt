@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.button.MaterialButton
@@ -16,7 +14,6 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.core.CurrencyFormatter
 import ru.iuturakulov.mybudget.core.UiState
@@ -26,9 +23,9 @@ import ru.iuturakulov.mybudget.data.remote.dto.OverviewAnalyticsDto
 import ru.iuturakulov.mybudget.data.remote.dto.OverviewCategoryStats
 import ru.iuturakulov.mybudget.data.remote.dto.OverviewPeriodStats
 import ru.iuturakulov.mybudget.databinding.FragmentBaseAnalyticsBinding
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class OverviewAnalyticsFragment : BaseAnalyticsFragment<

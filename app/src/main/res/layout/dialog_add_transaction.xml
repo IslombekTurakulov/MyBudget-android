@@ -19,7 +19,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             app:navigationContentDescription="@string/cancel"
             app:navigationIcon="@drawable/baseline_close_24"
             app:popupTheme="@style/ThemeOverlay.Material3"
@@ -28,6 +28,7 @@
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium" />
 
         <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/dividerTransaction"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="8dp"

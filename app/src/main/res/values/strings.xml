@@ -113,6 +113,7 @@
 
     <!-- Project details -->
     <string name="delete_project">Удалить проект</string>
+    <string name="project">Проект</string>
     <string name="delete_project_confirmation">Вы уверены, что хотите удалить этот проект?</string>
     <string name="project_archived">Проект архивирован</string>
     <string name="project_unarchived">Проект разархивирован</string>
@@ -509,4 +510,10 @@
     <!-- Остальное -->
     <string name="notif_unknown">Неизвестное уведомление</string>
     <string name="notifications_settings_title">Настройки уведомлений</string>
+
+    <string name="period_label">Период</string>
+    <string name="from_not_selected">С: не выбрано</string>
+    <string name="to_not_selected">По: не выбрано</string>
+    <string name="categories_label">Категории</string>
+    <string name="granularity_label">Гранулярность</string>
 </resources>

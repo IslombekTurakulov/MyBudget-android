@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvSheetTitle"
         style="@style/TextAppearance.Material3.HeadlineSmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="?attr/colorOnSurface" />
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvEmpty"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_data"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSheetList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp"
+        android:overScrollMode="never"/>
 </LinearLayout>

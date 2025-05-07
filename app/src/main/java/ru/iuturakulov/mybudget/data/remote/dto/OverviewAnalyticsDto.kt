@@ -1,5 +1,7 @@
 package ru.iuturakulov.mybudget.data.remote.dto
 
+import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
+
 data class OverviewAnalyticsDto(
     val totalAmount: Double,
     val categoryDistribution: List<OverviewCategoryStats>,
@@ -11,7 +13,8 @@ data class OverviewAnalyticsDto(
 data class OverviewCategoryStats(
     val category: String,    // имя категории
     val amount: Double,      // сумма в этой категории
-    val percentage: Double   // % от totalAmount (0..100)
+    val percentage: Double,   // % от totalAmount (0..100)
+    val transactionInfo: List<TransactionInfo>? = null,
 )
 
 /** Статистика для одного шага в bar‑chart по периодам */
