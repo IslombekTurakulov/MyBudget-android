@@ -1,6 +1,5 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
-    <dimen name="fab_elevation">6dp</dimen>
     <dimen name="spacing_4">4dp</dimen>
     <dimen name="spacing_8">8dp</dimen>
     <dimen name="spacing_12">12dp</dimen>
@@ -17,10 +16,7 @@
     <!-- Отступ между элементами легенды по вертикали -->
     <dimen name="chart_legend_y_entry_space">4dp</dimen>
     <!-- Смещение легенды от границ чарта -->
-    <dimen name="chart_legend_x_offset">12dp</dimen>
-    <dimen name="chart_legend_y_offset">8dp</dimen>
     <!-- Внешние отступы всего чарта -->
-    <dimen name="chart_extra_offset">16dp</dimen>
 
     <dimen name="chart_legend_form_size">2dp</dimen>
     <dimen name="chart_legend_form_to_text_space">4dp</dimen>
