@@ -30,7 +30,7 @@ class SettingsViewModel @Inject constructor(
         private const val DARK_THEME = "dark_theme"
         private const val LOCALE = "locale"
         private const val API_HOST = "api_host"
-        private const val DEFAULT_HOST = "http://localhost:8080/"
+        private const val DEFAULT_HOST = "http://51.250.65.154/"
     }
 
     val userSettings = MutableStateFlow<UserSettings?>(null)

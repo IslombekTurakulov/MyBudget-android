@@ -72,7 +72,7 @@ object AppModule {
 
 
     private const val API_HOST_PREF = "api_host"
-    private const val DEFAULT_HOST = "http://localhost:8080/"
+    private const val DEFAULT_HOST = "http://51.250.65.154/"
 
     @Provides
     fun provideProjectDao(database: AppDatabase) = database.projectDao()

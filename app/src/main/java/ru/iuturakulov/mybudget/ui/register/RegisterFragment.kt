@@ -76,6 +76,7 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
                 }
 
                 is RegisterViewModel.RegisterState.Success -> {
+                    resetDialog?.dismiss()
                     Snackbar.make(binding.root,  getString(R.string.success), Snackbar.LENGTH_LONG).show()
                     findNavController().navigate(R.id.action_register_to_login)
                 }

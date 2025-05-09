@@ -18,3 +18,5 @@ local.properties
 /build/
 /captures/
 *.apk
+/certificate.pem
+/pepk_out.zip
