@@ -1,18 +1,14 @@
 package ru.iuturakulov.mybudget.ui.resetPassword
 
-import android.content.Context
 import android.content.DialogInterface
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.databinding.DialogVerificationCodeBinding
@@ -56,6 +52,7 @@ class ResetPasswordFragment : BaseFragment<FragmentResetPasswordBinding>(R.layou
                 is ResetPasswordViewModel.ResetPasswordState.PasswordReset -> {
                     // Переход на экран смены пароля
                     resetDialog?.dismiss()
+                    resetDialog = null
                     Snackbar.make(binding.root, getString(R.string.password_change_success), Snackbar.LENGTH_LONG).show()
                     findNavController().navigateUp()
                 }
@@ -83,33 +80,36 @@ class ResetPasswordFragment : BaseFragment<FragmentResetPasswordBinding>(R.layou
         val dialogBinding = DialogVerificationCodeBinding.inflate(layoutInflater)
 
         resetDialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.enter_verification_code))  // Локализованный заголовок
+            .setTitle(getString(R.string.enter_verification_code))
             .setView(dialogBinding.root)
             .setCancelable(false)
             .setPositiveButton(getString(R.string.submit), null)
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.dismiss()
+            .setNegativeButton(getString(R.string.cancel)) { dlg, _ ->
+                dlg.dismiss()
+                resetDialog = null
+                // Восстанавливаем доступность полей
                 binding.etEmailInputLayout.isEnabled = true
                 binding.btnResetPassword.isEnabled = true
             }
-            .show()
+            .create()
 
-        val pinView = dialogBinding.pinView
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        resetDialog?.setOnShowListener {
+            val pinView = dialogBinding.pinView
 
-        pinView.requestFocus()
-        imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT)
-
-        resetDialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.let { positiveButton ->
-            positiveButton.setOnClickListener {
-                val code = pinView.text.toString().trim()
-                if (code.isNotBlank()) {
-                    // Вызываем сброс пароля с кодом
-                    viewModel.resetPassword(binding.etEmail.text.toString().trim(), code)
-                } else {
-                    pinView.error = getString(R.string.code_error)
+            resetDialog?.getButton(DialogInterface.BUTTON_POSITIVE)
+                ?.setOnClickListener {
+                    val code = pinView.text.toString().trim()
+                    if (code.isNotBlank()) {
+                        viewModel.resetPassword(
+                            binding.etEmail.text.toString().trim(),
+                            code
+                        )
+                    } else {
+                        pinView.error = getString(R.string.code_error)
+                    }
                 }
-            }
         }
+
+        resetDialog?.show()
     }
 }

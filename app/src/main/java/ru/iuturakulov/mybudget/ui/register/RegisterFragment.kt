@@ -1,10 +1,8 @@
 package ru.iuturakulov.mybudget.ui.register
 
-import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
 import android.text.SpannableString
-import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
@@ -12,13 +10,11 @@ import android.text.style.ClickableSpan
 import android.util.Patterns
 import android.view.MotionEvent
 import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.text.HtmlCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -27,7 +23,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import ru.iuturakulov.mybudget.R
-import ru.iuturakulov.mybudget.data.remote.auth.EmailRequest
 import ru.iuturakulov.mybudget.databinding.DialogVerificationCodeBinding
 import ru.iuturakulov.mybudget.databinding.FragmentRegisterBinding
 import ru.iuturakulov.mybudget.ui.BaseFragment
@@ -77,6 +72,7 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
 
                 is RegisterViewModel.RegisterState.Success -> {
                     resetDialog?.dismiss()
+                    resetDialog = null
                     Snackbar.make(binding.root,  getString(R.string.success), Snackbar.LENGTH_LONG).show()
                     findNavController().navigate(R.id.action_register_to_login)
                 }
@@ -209,27 +205,21 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
 
     private fun showVerificationDialog(name: String, email: String, password: String) {
         val dialogBinding = DialogVerificationCodeBinding.inflate(layoutInflater)
-
         resetDialog = MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.enter_verification_code))  // Локализованный заголовок
+            .setTitle(getString(R.string.enter_verification_code))
             .setView(dialogBinding.root)
             .setCancelable(false)
             .setPositiveButton(getString(R.string.submit), null)
-            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                dialog.dismiss()
+            .setNegativeButton(getString(R.string.cancel)) { dlg, _ ->
+                dlg.dismiss()
+                resetDialog = null
             }
-            .show()
+            .create()
 
-        val pinView = dialogBinding.pinView
+        resetDialog?.setOnShowListener {
+            val pinView = dialogBinding.pinView
 
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
-        pinView.requestFocus()
-        imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT)
-
-
-        resetDialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.let { positiveButton ->
-            positiveButton.setOnClickListener {
+            resetDialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
                 val code = pinView.text.toString().trim()
                 if (code.isNotBlank()) {
                     viewModel.register(name, email, password, verificationCode = code)
@@ -238,5 +228,7 @@ class RegisterFragment : BaseFragment<FragmentRegisterBinding>(R.layout.fragment
                 }
             }
         }
+
+        resetDialog?.show()
     }
 }
