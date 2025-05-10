@@ -19,8 +19,22 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Run ktlint
+        continue-on-error: true
+        run: ./gradlew ktlintCheck
 
       - name: Run tests
         run: ./gradlew test
@@ -31,6 +45,10 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
+      - name: Get version name
+        id: get_version
+        run: echo "VERSION=$(./gradlew properties -q | grep 'versionName:' | awk '{print $2}')" >> $GITHUB_OUTPUT
+
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -40,10 +58,6 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Get version name
-        id: get_version
-        run: echo "VERSION=$(./gradlew properties -q | grep 'versionName:' | awk '{print $2}')" >> $GITHUB_OUTPUT
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
@@ -103,28 +117,23 @@ jobs:
 
             ## 🚀 New Release v${{ steps.get_version.outputs.VERSION }}
 
-            ### 📦 What's New
-            - New features and improvements
-            - Bug fixes
-            - Performance optimizations
+            ### 📱 Способы установки
+            #### Официальные магазины
+            - [RuStore](https://www.rustore.ru/catalog/app/ru.iuturakulov.mybudget) - Уже доступно!
+            - Google Play - Скоро!
 
-            ### 📱 Download Options
-            #### Official Stores
-            - [RuStore](https://www.rustore.ru/catalog/app/ru.iuturakulov.mybudget) - Available now! 🎉
-            - Google Play - Coming soon! ⏳
+            #### Прямая установка
+            Вы также можете установить APK напрямую из этого релиза:
+            1. Скачайте APK из раздела "Assets" ниже
+            2. Установите на ваше Android-устройство
+            3. Наслаждайтесь новой версией!
 
-            #### Direct Download
-            You can also download the APK directly from this release:
-            1. Download the APK from the "Assets" section below
-            2. Install on your Android device
-            3. Enjoy the new version!
+            ### 🔍 Информация о версии
+            - Версия: ${{ steps.get_version.outputs.VERSION }}
+            - Дата сборки: ${{ github.event.repository.updated_at }}
+            - Коммит: ${{ github.sha }}
 
-            ### 🔍 Version Details
-            - Version: ${{ steps.get_version.outputs.VERSION }}
-            - Build Date: ${{ github.event.repository.updated_at }}
-            - Commit: ${{ github.sha }}
-
-            ### 📝 Release Notes
+            ### 📝 Примечания к релизу
             ${{ github.event.head_commit.message }}
           files: app-release-signed.apk
           draft: false
