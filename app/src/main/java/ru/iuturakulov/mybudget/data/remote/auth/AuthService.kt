@@ -11,13 +11,13 @@ interface AuthService {
     suspend fun login(@Body request: LoginRequest): Response<TokenData>
 
     @POST("auth/verify-email-registration")
-    suspend fun withVerifyRegistrationWithCode(@Body request: RegisterRequest): Response<Any>
+    suspend fun withVerifyRegistrationWithCode(@Body request: RegisterRequest): Response<Unit>
 
     @POST("auth/verify-reset-code")
-    suspend fun withVerifyResetPasswordWithCode(@Body request: VerifyEmailRequest): Response<Any>
+    suspend fun withVerifyResetPasswordWithCode(@Body request: VerifyEmailRequest): Response<Unit>
 
     @POST("auth/request-reset-password-code")
-    suspend fun sendPasswordResetVerifyCode(@Body request: EmailRequest): Response<String>
+    suspend fun sendPasswordResetVerifyCode(@Body request: EmailRequest): Response<Unit>
 
     @POST("auth/request-register-code")
     suspend fun sendRegisterResetVerifyCode(@Body request: EmailRequest): Response<Unit>
