@@ -30,7 +30,7 @@ class ResetPasswordViewModel @Inject constructor(
                     if (response.isSuccessful) {
                         _resetPasswordState.value = ResetPasswordState.CodeSent
                     } else {
-                        _resetPasswordState.value = ResetPasswordState.Error("Ошибка при отправке кода")
+                        _resetPasswordState.value = ResetPasswordState.Error(response.errorBody()?.string() ?: "Ошибка при отправке кода")
                     }
                 } else {
                     // Проверка введенного кода и смена пароля

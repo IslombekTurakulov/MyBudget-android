@@ -8,10 +8,10 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthEventBus @Inject constructor() {
-    private val _unauthorized = MutableSharedFlow<Unit>(replay = 1)
-    val unauthorized: SharedFlow<Unit> = _unauthorized.asSharedFlow()
+    private val _unauthorized = MutableSharedFlow<Boolean>(replay = 1)
+    val unauthorized: SharedFlow<Boolean> = _unauthorized.asSharedFlow()
 
-    fun publishUnauthorized() {
-        _unauthorized.tryEmit(Unit)
+    fun publishUnauthorized(value: Boolean) {
+        _unauthorized.tryEmit(value)
     }
 }

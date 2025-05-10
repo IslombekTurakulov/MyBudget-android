@@ -39,13 +39,17 @@ class TokenAuthenticator @Inject constructor(
                 tokenStorage.saveAccessToken(tokensResponse.accessToken)
                 tokenStorage.saveRefreshToken(tokensResponse.refreshToken)
 
+                CoroutineScope(Dispatchers.Main).launch {
+                    authEventBus.publishUnauthorized(false)
+                }
+
                 response.request.newBuilder()
                     .header("Authorization", "Bearer ${tokensResponse.accessToken}")
                     .build()
             } catch (e: Exception) {
                 tokenStorage.clearTokens()
                 CoroutineScope(Dispatchers.Main).launch {
-                    authEventBus.publishUnauthorized()
+                    authEventBus.publishUnauthorized(true)
                 }
                 null
             }

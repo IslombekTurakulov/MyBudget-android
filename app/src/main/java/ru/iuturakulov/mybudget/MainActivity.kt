@@ -2,7 +2,6 @@ package ru.iuturakulov.mybudget
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.Network
@@ -12,18 +11,13 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Job
@@ -36,12 +30,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.auth.AuthEventBus
 import ru.iuturakulov.mybudget.auth.CodeTokenStorage
-import ru.iuturakulov.mybudget.auth.TokenStorage
-import ru.iuturakulov.mybudget.core.worker.ProjectSyncWorker
 import ru.iuturakulov.mybudget.databinding.ActivityMainBinding
 import ru.iuturakulov.mybudget.di.PreferencesEntryPoint
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -103,14 +94,14 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         lifecycleScope.launchWhenStarted {
-            authEventBus.unauthorized.collect {
-                // Сначала строим NavOptions: очищаем бэк‑стек до старта графа, и ставим singleTop
+            authEventBus.unauthorized.collect { unauthorized ->
+                if (!unauthorized) return@collect
+
                 val navOptions = NavOptions.Builder()
                     .setPopUpTo(navController.graph.startDestinationId, inclusive = true)
                     .setLaunchSingleTop(true)
                     .build()
 
-                // Навигируем на экран логина с нашими опциями
                 navController.navigate(
                     R.id.loginFragment,
                     /* args = */ null,

@@ -36,7 +36,7 @@ class ResetPasswordFragment : BaseFragment<FragmentResetPasswordBinding>(R.layou
             if (email.isNotBlank()) {
                 viewModel.resetPassword(email)
             } else {
-                binding.etEmailInputLayout.error = "Введите Email"
+                binding.etEmailInputLayout.error = getString(R.string.error_invalid_email)
             }
         }
     }
@@ -50,7 +50,6 @@ class ResetPasswordFragment : BaseFragment<FragmentResetPasswordBinding>(R.layou
 
             when (state) {
                 is ResetPasswordViewModel.ResetPasswordState.PasswordReset -> {
-                    // Переход на экран смены пароля
                     resetDialog?.dismiss()
                     resetDialog = null
                     Snackbar.make(binding.root, getString(R.string.password_change_success), Snackbar.LENGTH_LONG).show()
@@ -58,7 +57,6 @@ class ResetPasswordFragment : BaseFragment<FragmentResetPasswordBinding>(R.layou
                 }
 
                 is ResetPasswordViewModel.ResetPasswordState.CodeSent -> {
-                    // Показываем диалог с PinView для ввода кода
                     showVerificationDialog()
                     Snackbar.make(binding.root, getString(R.string.verification_code_sent_success), Snackbar.LENGTH_LONG).show()
                     binding.etEmailInputLayout.isEnabled = false
