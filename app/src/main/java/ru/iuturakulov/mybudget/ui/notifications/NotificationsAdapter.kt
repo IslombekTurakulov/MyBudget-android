@@ -46,52 +46,95 @@ class NotificationsAdapter(
         private val vb: ItemNotificationBinding
     ) : RecyclerView.ViewHolder(vb.root) {
 
+        init {
+            vb.root.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val item = getItem(position)
+                    if (!item.isRead) {
+                        onClick(item)
+                    } else {
+                        // Если уведомление уже прочитано, все равно обрабатываем клик
+                        // для навигации к проекту или другого действия
+                        handleReadNotificationClick(item)
+                    }
+                }
+            }
+            
+            vb.root.setOnLongClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onLong(getItem(position))
+                    true
+                } else false
+            }
+        }
+
+        private fun handleReadNotificationClick(item: NotificationDto) {
+            // Обработка клика по прочитанному уведомлению
+            when (item.type) {
+                NotificationType.PROJECT_INVITE_SEND,
+                NotificationType.PROJECT_INVITE_ACCEPT,
+                NotificationType.PARTICIPANT_ROLE_CHANGE,
+                NotificationType.PARTICIPANT_REMOVED,
+                NotificationType.PROJECT_EDITED,
+                NotificationType.PROJECT_REMOVED,
+                NotificationType.PROJECT_ARCHIVED,
+                NotificationType.PROJECT_UNARCHIVED -> {
+                    item.projectId?.let { onClick(item) }
+                }
+                NotificationType.TRANSACTION_ADDED,
+                NotificationType.TRANSACTION_UPDATED,
+                NotificationType.TRANSACTION_REMOVED -> {
+                    item.projectId?.let { onClick(item) }
+                }
+                NotificationType.SYSTEM_ALERT -> {
+                    onClick(item)
+                }
+                else -> {
+                    // Для неизвестных типов просто вызываем onClick
+                    onClick(item)
+                }
+            }
+        }
+
         fun bind(item: NotificationDto, animateReadChange: Boolean) = with(vb) {
             val dt = Instant.ofEpochMilli(item.createdAt)
                 .atZone(ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.getDefault()))
             tvDate.text = dt
             tvTitle.text = item.message
+            tvProject.text = item.projectName?.let { "Проект: $it" }
+            tvProject.isVisible = item.projectName != null
 
-            // Иконка по типу уведомления
             ivIcon.setImageResource(
                 when (item.type) {
-                    NotificationType.PROJECT_INVITE_SEND -> R.drawable.ic_invite
-                    NotificationType.PARTICIPANT_ROLE_CHANGE -> R.drawable.ic_role_change
-                    NotificationType.TRANSACTION_ADDED -> R.drawable.ic_tx_added
-                    NotificationType.TRANSACTION_UPDATED -> R.drawable.ic_tx_updated
-                    NotificationType.TRANSACTION_REMOVED -> R.drawable.ic_tx_removed
-                    NotificationType.PROJECT_EDITED -> R.drawable.ic_project_edit
-                    NotificationType.PROJECT_REMOVED -> R.drawable.ic_project_remove
-                    NotificationType.SYSTEM_ALERT -> R.drawable.ic_system
-                    else -> R.drawable.ic_app_logo
+                    NotificationType.PROJECT_INVITE_SEND -> R.drawable.ic_notification_invite
+                    NotificationType.PARTICIPANT_ROLE_CHANGE -> R.drawable.ic_notification_role
+                    NotificationType.TRANSACTION_ADDED -> R.drawable.ic_notification_transaction_add
+                    NotificationType.TRANSACTION_UPDATED -> R.drawable.ic_notification_transaction_add
+                    NotificationType.TRANSACTION_REMOVED -> R.drawable.ic_notification_transaction_remove
+                    NotificationType.PROJECT_EDITED -> R.drawable.ic_notification_project_edit
+                    NotificationType.PROJECT_REMOVED -> R.drawable.ic_notification_project_remove
+                    NotificationType.SYSTEM_ALERT -> R.drawable.ic_notification_system
+                    else -> R.drawable.ic_notification_system
                 }
             )
 
-//            tvProject.text = item.projectName
-            val before = item.beforeSpent
-            val after = item.afterSpent
-            val limit = item.limit
-            // tvBudgetLine.text = budgetLine(before, after, limit)
-            // рассчитываем процент для индикатора (0..100)
-//            val pct = if (limit == 0.0) 0 else ((after / limit) * 100).toInt().coerceIn(0, 100)
-//            progressIndicator.setProgressCompat(pct, true)
-
             // Индикатор непрочитанного с анимацией при смене isRead
-//            unreadIndicator.isVisible = !item.isRead
-//            if (animateReadChange) {
-//                val targetAlpha = if (item.isRead) 0f else 1f
-//                unreadIndicator.animate()
-//                    .alpha(targetAlpha)
-//                    .setDuration(200)
-//                    .start()
-//            } else {
-//                // если не анимируем, сразу ставим нужную прозрачность
-//                unreadIndicator.alpha = if (item.isRead) 0f else 1f
-//            }
+            unreadIndicator.isVisible = !item.isRead
+            if (animateReadChange) {
+                val targetAlpha = if (item.isRead) 0f else 1f
+                unreadIndicator.animate()
+                    .alpha(targetAlpha)
+                    .setDuration(200)
+                    .start()
+            } else {
+                unreadIndicator.alpha = if (item.isRead) 0f else 1f
+            }
 
-//            root.setOnClickListener { onClick(item) }
-            root.setOnLongClickListener { onLong(item); true }
+            root.isClickable = true
+            root.isFocusable = true
         }
     }
 
@@ -107,13 +150,5 @@ class NotificationsAdapter(
                 return if (o.isRead != n.isRead) PAYLOAD_READ else null
             }
         }
-    }
-
-    // Ваша функция budgetLine в scope адаптера для краткости
-    private fun budgetLine(b: Double, a: Double, limit: Double): String {
-        val pb = if (limit == 0.0) 0.0 else b / limit * 100
-        val pa = if (limit == 0.0) 0.0 else a / limit * 100
-        return "%,.2f ₽ (%.1f %%) → %,.2f ₽ (%.1f %%)"
-            .format(b, pb, a, pa)
     }
 }

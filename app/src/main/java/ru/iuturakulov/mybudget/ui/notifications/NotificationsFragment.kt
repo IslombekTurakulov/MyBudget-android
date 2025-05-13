@@ -34,13 +34,43 @@ class NotificationsFragment :
 
         adapter = NotificationsAdapter(
             onClick = { item ->
-                if (!item.isRead) vm.markRead(item.id)
-                if (item.type == NotificationType.PROJECT_EDITED || item.type == NotificationType.TRANSACTION_ADDED || item.type == NotificationType.TRANSACTION_REMOVED) {
-                    val action =
-                        NotificationsFragmentDirections.actionNotificationsProjectsToDetails(
-                            projectId = item.projectId!!
-                        )
-                    findNavController().navigate(action)
+                if (!item.isRead) {
+                    vm.markRead(item.id)
+                }
+                
+                when (item.type) {
+                    NotificationType.PROJECT_INVITE_SEND,
+                    NotificationType.PROJECT_INVITE_ACCEPT,
+                    NotificationType.PARTICIPANT_ROLE_CHANGE,
+                    NotificationType.PARTICIPANT_REMOVED,
+                    NotificationType.PROJECT_EDITED,
+                    NotificationType.PROJECT_REMOVED,
+                    NotificationType.PROJECT_ARCHIVED,
+                    NotificationType.PROJECT_UNARCHIVED,
+                    NotificationType.TRANSACTION_ADDED,
+                    NotificationType.TRANSACTION_UPDATED,
+                    NotificationType.TRANSACTION_REMOVED -> {
+                        item.projectId?.let { projectId ->
+                            val action = NotificationsFragmentDirections.actionNotificationsProjectsToDetails(
+                                projectId = projectId
+                            )
+                            findNavController().navigate(action)
+                        }
+                    }
+                    NotificationType.SYSTEM_ALERT -> {
+                        Snackbar.make(
+                            binding.root,
+                            item.message,
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
+                    else -> {
+                        Snackbar.make(
+                            binding.root,
+                            item.message,
+                            Snackbar.LENGTH_LONG
+                        ).show()
+                    }
                 }
             },
             onLong = { item ->

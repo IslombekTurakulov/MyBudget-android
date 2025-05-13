@@ -7,7 +7,7 @@ data class NotificationDto(
     val id: String,
     val userId: String,
     val projectId: String? = null,
-    val projectName: String = "",
+    val projectName: String? = null,
     val message: String,
     val createdAt: Long,
     val isRead: Boolean = false,
