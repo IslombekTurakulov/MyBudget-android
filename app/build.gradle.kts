@@ -31,6 +31,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -47,6 +48,15 @@ android {
         baseline = file("lint-baseline.xml")
         abortOnError = false
         checkReleaseBuilds = false
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("keystoreFile") ?: "keystore.jks")
+            storePassword = System.getenv("keystorePassword") ?: ""
+            keyAlias = System.getenv("keyAlias") ?: ""
+            keyPassword = System.getenv("keyPassword") ?: ""
+        }
     }
 }
 

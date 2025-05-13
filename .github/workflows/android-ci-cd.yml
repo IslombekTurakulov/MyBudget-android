@@ -53,27 +53,23 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: |
+          echo "${{ secrets.SIGNING_KEY }}" | base64 -d > keystore.jks
+          ./gradlew assembleRelease \
+            -PkeystoreFile=keystore.jks \
+            -PkeystorePassword="${{ secrets.KEY_STORE_PASSWORD }}" \
+            -PkeyAlias="${{ secrets.KEY_ALIAS }}" \
+            -PkeyPassword="${{ secrets.KEY_PASSWORD }}"
 
       - name: Get version name
         id: get_version
         run: echo "VERSION=$(./gradlew properties -q | grep 'versionName:' | awk '{print $2}')" >> $GITHUB_OUTPUT
 
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: app/build/outputs/apk/release/app-release-signed.apk
+          path: app/build/outputs/apk/release/app-release.apk
 
   release:
     needs: build
