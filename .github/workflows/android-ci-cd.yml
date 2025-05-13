@@ -20,10 +20,10 @@ jobs:
           cache: gradle
 
       - name: Set up Android SDK
-        uses: actions/setup-android@v1
+        uses: android-actions/setup-android@v2
         with:
-          android-sdk-version: '34'
-          build-tools-version: '34.0.0'
+          android-sdk: '34'
+          build-tools: '34.0.0'
 
       - name: Cache Gradle packages
         uses: actions/cache@v4
