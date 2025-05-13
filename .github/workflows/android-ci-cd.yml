@@ -54,15 +54,21 @@ jobs:
 
       - name: Build Release APK
         run: |
-          echo "${{ secrets.SIGNING_KEY }}" | base64 -d > keystore.jks
-          ls -la keystore.jks
-          echo "Keystore file created at: $(pwd)/keystore.jks"
+          echo "${{ secrets.SIGNING_KEY }}" | base64 -d > mybudget.keystore
+          echo "Current directory: $(pwd)"
+          echo "Listing current directory:"
+          ls -la
+          echo "Keystore file details:"
+          ls -la mybudget.keystore
+          echo "Keystore file created at: $(pwd)/mybudget.keystore"
+          echo "Checking keystore contents:"
+          keytool -list -v -keystore mybudget.keystore -storepass "${{ secrets.KEY_STORE_PASSWORD }}" || echo "Keystore validation failed"
+          echo "Running Gradle with debug info:"
           ./gradlew assembleRelease \
-            -PkeystoreFile="$(pwd)/keystore.jks" \
             -PkeystorePassword="${{ secrets.KEY_STORE_PASSWORD }}" \
-            -PkeyAlias="${{ secrets.KEY_ALIAS }}" \
+            -PkeyAlias="key0" \
             -PkeyPassword="${{ secrets.KEY_PASSWORD }}" \
-            --stacktrace
+            --stacktrace --info
 
       - name: Get version name
         id: get_version

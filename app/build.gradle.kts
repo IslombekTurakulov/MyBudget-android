@@ -35,15 +35,14 @@ android {
 
     signingConfigs {
         create("release") {
-            val keystoreFileSrc = project.findProperty("keystoreFile") as String? ?: "keystore.jks"
-            val keystorePasswordSrc = project.findProperty("keystorePassword") as String? ?: ""
-            val keyAliasSrc = project.findProperty("keyAlias") as String? ?: ""
-            val keyPasswordSrc = project.findProperty("keyPassword") as String? ?: ""
+            storeFile = file("${project.rootDir}/mybudget.keystore")
+            storePassword = project.findProperty("keystorePassword") as String? ?: ""
+            keyAlias = "key0"
+            keyPassword = project.findProperty("keyPassword") as String? ?: ""
 
-            storeFile = file(keystoreFileSrc)
-            storePassword = keystorePasswordSrc
-            keyAlias = keyAliasSrc
-            keyPassword = keyPasswordSrc
+            println("Debug: Using keystore at: ${storeFile?.absolutePath}")
+            println("Debug: Keystore exists: ${storeFile?.exists()}")
+            println("Debug: Using key alias: $keyAlias")
         }
     }
 
