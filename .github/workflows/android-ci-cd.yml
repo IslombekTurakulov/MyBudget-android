@@ -53,20 +53,16 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Build Release APK
-        env:
-          keystorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyAlias: ${{ secrets.KEY_ALIAS }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
         run: |
           echo "${{ secrets.SIGNING_KEY }}" | base64 -d > keystore.jks
           ls -la keystore.jks
           echo "Keystore file created at: $(pwd)/keystore.jks"
-          echo "Checking environment variables..."
-          if [ -z "$keystorePassword" ] || [ -z "$keyAlias" ] || [ -z "$keyPassword" ]; then
-            echo "Error: Missing required signing environment variables"
-            exit 1
-          fi
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleRelease \
+            -PkeystoreFile="$(pwd)/keystore.jks" \
+            -PkeystorePassword="${{ secrets.KEY_STORE_PASSWORD }}" \
+            -PkeyAlias="${{ secrets.KEY_ALIAS }}" \
+            -PkeyPassword="${{ secrets.KEY_PASSWORD }}" \
+            --stacktrace
 
       - name: Get version name
         id: get_version
