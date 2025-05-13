@@ -118,7 +118,9 @@
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
-                        android:text="@string/income" />
+                        android:text="@string/income"
+                        app:strokeColor="@color/green"
+                        android:textColor="@color/btn_income_text_color" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnExpense"
@@ -126,7 +128,9 @@
                         android:layout_width="0dp"
                         android:layout_height="48dp"
                         android:layout_weight="1"
-                        android:text="@string/expense" />
+                        android:text="@string/expense"
+                        app:strokeColor="@color/red"
+                        android:textColor="@color/btn_expense_text_color" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 <com.google.android.material.button.MaterialButton
@@ -242,13 +246,6 @@
                     android:visibility="gone">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEditTransaction"
-                        style="@style/Widget.Material3.Button.ElevatedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:text="@string/save" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDeleteTransaction"
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
@@ -256,6 +253,13 @@
                         android:layout_marginStart="16dp"
                         android:text="@string/delete_transaction"
                         android:textColor="?attr/colorError" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditTransaction"
+                        style="@style/Widget.Material3.Button.ElevatedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:text="@string/save" />
                 </LinearLayout>
 
             </LinearLayout>

@@ -20,10 +20,6 @@ class ProjectAdapter(
     private val onProjectClicked: (ProjectEntity) -> Unit
 ) : ListAdapter<ProjectEntity, ProjectAdapter.ProjectViewHolder>(DiffCallback()) {
 
-    init {
-        setHasStableIds(true)
-    }
-
     inner class ProjectViewHolder(
         private val binding: ItemProjectBinding
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -133,7 +129,7 @@ class ProjectAdapter(
     }
 
     override fun getItemId(position: Int): Long =
-        getItem(position).id.hashCode().toLong()
+        getItem(position).lastModified
 
 
     class DiffCallback : DiffUtil.ItemCallback<ProjectEntity>() {

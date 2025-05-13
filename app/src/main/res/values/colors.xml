@@ -2,8 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="green">#32CD32</color>
-    <color name="red">#FF0000</color>
+    <color name="green">#4CAF50</color>
+    <color name="red">#E57373</color>
     <color name="gray">#808080</color>
 
     <color name="transparent">#00000000</color>
@@ -12,8 +12,6 @@
     <color name="networkStatusBackgroundOn">#C5FF98</color> <!-- Светло-красный фон -->
     <color name="networkStatusIconTintOff">#D32F2F</color> <!-- Красный цвет для иконки -->
     <color name="networkStatusIconTintOn">#136801</color> <!-- Красный цвет для иконки -->
-
-    <!-- Основные цвета для графиков -->
 
     <color name="chart_no_data_text">#757575</color>
 
@@ -27,8 +25,4 @@
     <color name="role_editor">#FFD54F</color>
     <color name="role_owner">#E57373</color>
 
-
-    <!-- насыщенный оранжево-красный -->
-    <!-- более светлый оранжевый -->
-    <!-- белый для текста -->
 </resources>

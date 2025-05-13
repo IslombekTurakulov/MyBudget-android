@@ -1,12 +1,13 @@
 package ru.iuturakulov.mybudget.ui.projects.details
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.transition.TransitionManager
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -26,6 +27,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.iuturakulov.mybudget.R
+import ru.iuturakulov.mybudget.core.CurrencyFormatter
 import ru.iuturakulov.mybudget.core.CurrencyFormatter.roundTo
 import ru.iuturakulov.mybudget.core.UiState
 import ru.iuturakulov.mybudget.data.local.entities.ProjectStatus
@@ -53,8 +55,12 @@ class ProjectDetailsFragment :
     private val args by navArgs<ProjectDetailsFragmentArgs>()
 
     private var isTextExpanded = false
+    private var isBudgetExpanded = true
     private lateinit var transactionAdapter: TransactionAdapter
     private var projectData: ProjectWithTransactions? = null
+    private var pickedStart: Long? = null
+    private var pickedEnd: Long? = null
+    private var isSyncSliderDisabled = false
 
     override fun getViewBinding(view: View) =
         FragmentProjectDetailsBinding.bind(view)
@@ -63,6 +69,7 @@ class ProjectDetailsFragment :
         super.onCreate(savedInstanceState)
         savedInstanceState?.let {
             isTextExpanded = it.getBoolean(KEY_TEXT_EXPANDED, false)
+            isBudgetExpanded = it.getBoolean(KEY_BUDGET_EXPANDED, true)
         }
         viewModel.loadProjectDetails(args.projectId)
     }
@@ -70,6 +77,7 @@ class ProjectDetailsFragment :
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(KEY_TEXT_EXPANDED, isTextExpanded)
+        outState.putBoolean(KEY_BUDGET_EXPANDED, isBudgetExpanded)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -87,7 +95,23 @@ class ProjectDetailsFragment :
         setupRecyclerView()
 
         btnToggleDescription.setOnClickListener { toggleDescription() }
-        updateDescription()
+        tvProjectDescription.setOnClickListener { toggleDescription() }
+
+        layoutBudgetHeader.setOnClickListener { toggleBudgetDetails() }
+
+        layoutBudgetInfo.setOnClickListener {
+            val budget = projectData?.project?.budgetLimit ?: 0.0
+            val spent = projectData?.project?.amountSpent ?: 0.0
+            val remaining = budget - spent
+            val msg = getString(
+                R.string.budget_progress_tooltip,
+                CurrencyFormatter.format(budget),
+                CurrencyFormatter.format(spent),
+                CurrencyFormatter.format(remaining)
+            )
+            TooltipCompat.setTooltipText(progressBudget, msg)
+            true
+        }
 
         btnFilterTransactions.setOnClickListener { showFilterDialog() }
         fabAddTransaction.setOnClickListener { openAddTransactionDialog() }
@@ -96,7 +120,7 @@ class ProjectDetailsFragment :
     }
 
     private fun setupRecyclerView() = binding.rvTransactions.apply {
-        transactionAdapter = TransactionAdapter(::onTransactionClicked)
+        transactionAdapter = TransactionAdapter(::onTransactionClicked, ::onTransactionDelete)
         adapter = transactionAdapter
         setHasFixedSize(true)
         itemAnimator = DefaultItemAnimator().apply {
@@ -161,22 +185,34 @@ class ProjectDetailsFragment :
         processUserRole(data.currentRole, data.project.status)
         updateMenuItems(data.currentRole, data.project.status)
 
-        tvProjectBudget.text =
-            getString(R.string.project_budget, data.project.budgetLimit)
-        tvProjectSpent.text =
-            getString(R.string.project_spent, data.project.amountSpent)
-        tvRemainingBudget.text = getString(
-            R.string.project_remaining,
-            data.project.budgetLimit - data.project.amountSpent
-        )
+        tvProjectBudget.text = CurrencyFormatter.format(data.project.budgetLimit)
+        tvProjectSpent.text = CurrencyFormatter.format(data.project.amountSpent)
+        tvRemainingBudget.text = CurrencyFormatter.format(data.project.budgetLimit - data.project.amountSpent)
+
+        val budget = data.project.budgetLimit
+        val spent = data.project.amountSpent
+        val progress = if (budget > 0) ((spent / budget) * 100).coerceIn(0.0, 100.0) else 0.0
+        progressBudget.setProgress(progress.toInt(), true)
 
         data.project.description?.takeIf(String::isNotBlank)?.let { desc ->
             projectDescriptionCard.isVisible = true
             tvProjectDescription.text = desc
             btnToggleDescription.isVisible = desc.length >= MIN_DESC_LENGTH
+            tvProjectDescription.maxLines = if (isTextExpanded) Int.MAX_VALUE else MAX_COLLAPSED_LINES
+            btnToggleDescription.text = getString(
+                if (isTextExpanded) R.string.show_less else R.string.show_more
+            )
+            btnToggleDescription.setIconResource(
+                if (isTextExpanded) R.drawable.baseline_expand_less_24 else R.drawable.baseline_expand_more_24
+            )
         } ?: run {
             projectDescriptionCard.isGone = true
         }
+
+        layoutBudgetDetails.visibility = if (isBudgetExpanded) View.VISIBLE else View.GONE
+        ivBudgetExpand.setImageResource(
+            if (isBudgetExpanded) R.drawable.baseline_expand_less_24 else R.drawable.baseline_expand_more_24
+        )
     }
 
     private fun processUserRole(role: ParticipantRole?, status: ProjectStatus) = binding.apply {
@@ -187,6 +223,7 @@ class ProjectDetailsFragment :
             role == ParticipantRole.OWNER && !isProjectDeleted
         )
         fabAddTransaction.isVisible = role != ParticipantRole.VIEWER && !isProjectDeleted
+        toolbar.menu.findItem(R.id.menuProjectNotifications).isVisible = status != ProjectStatus.DELETED
     }
 
     private fun updateMenuItems(role: ParticipantRole?, status: ProjectStatus) =
@@ -195,16 +232,19 @@ class ProjectDetailsFragment :
                 role == ParticipantRole.OWNER && status != ProjectStatus.ARCHIVED && status != ProjectStatus.DELETED
             menu.findItem(R.id.menuUnarchiveProject).isVisible =
                 role == ParticipantRole.OWNER && status == ProjectStatus.ARCHIVED && status != ProjectStatus.DELETED
-            menu.findItem(R.id.menuProjectNotifications).isVisible = true
         }
 
     private fun updateTransactions(list: List<TransactionEntity>) = binding.apply {
         if (list.isEmpty()) {
             emptyTransactionsLayout.isVisible = true
-            emptyTransactionsLayout.isVisible = true
             rvTransactions.isGone = true
+            val isFilterActive = !viewModel.currentFilter.value.isEmpty()
+            binding.emptyTransactionsText.text = if (isFilterActive) {
+                getString(R.string.no_transactions_for_filter)
+            } else {
+                getString(R.string.no_transactions)
+            }
         } else {
-            emptyTransactionsLayout.isGone = true
             emptyTransactionsLayout.isGone = true
             rvTransactions.isVisible = true
             transactionAdapter.submitList(list)
@@ -215,28 +255,30 @@ class ProjectDetailsFragment :
     private fun toggleDescription() {
         isTextExpanded = !isTextExpanded
         TransitionManager.beginDelayedTransition(binding.projectDescriptionCard)
-        updateDescription()
+        projectData?.let { renderProjectDetails(it) }
     }
 
-    private fun updateDescription() = binding.apply {
-        tvProjectDescription.maxLines =
-            if (isTextExpanded) Int.MAX_VALUE else MAX_COLLAPSED_LINES
-        btnToggleDescription.apply {
-            text = getString(
-                if (isTextExpanded) R.string.show_less
-                else R.string.show_more
-            )
-            setIconResource(
-                if (isTextExpanded) R.drawable.baseline_expand_less_24
-                else R.drawable.baseline_expand_more_24
-            )
-        }
+    private fun toggleBudgetDetails() {
+        isBudgetExpanded = !isBudgetExpanded
+        TransitionManager.beginDelayedTransition(binding.projectBudgetCard)
+        renderProjectDetails(projectData ?: return)
     }
 
     private fun showFilterDialog() {
         val dlg = DialogFilterTransactionsBinding.inflate(layoutInflater)
         val currentF = viewModel.currentFilter.value.copy()
 
+        setupCategorySpinner(dlg, currentF)
+        setupUserSpinner(dlg, currentF)
+        setupTypeToggle(dlg, currentF)
+        setupDateFields(dlg, currentF)
+        setupAmountFields(dlg, currentF)
+
+        val dialog = createFilterDialog(dlg)
+        setupDialogButtons(dialog, dlg)
+    }
+
+    private fun setupCategorySpinner(dlg: DialogFilterTransactionsBinding, currentF: TransactionFilter) {
         val rawCats = resources.getStringArray(R.array.transaction_categories)
             .filter { it != getString(R.string.all) }
         val dynCats = viewModel.transactions.value
@@ -249,9 +291,12 @@ class ProjectDetailsFragment :
         )
         val catSel = currentF.category ?: getString(R.string.all)
         dlg.spinnerCategory.setSelection(cats.indexOf(catSel).coerceAtLeast(0))
+    }
 
+    private fun setupUserSpinner(dlg: DialogFilterTransactionsBinding, currentF: TransactionFilter) {
         val users = listOf(getString(R.string.all)) + viewModel.transactions.value
-            .mapNotNull { it.userName.takeIf(String::isNotBlank) }.map { name ->
+            .mapNotNull { it.userName.takeIf(String::isNotBlank) }
+            .map { name ->
                 if (name.equals("Вы", ignoreCase = true)) {
                     getString(R.string.transaction_title_your)
                 } else {
@@ -266,7 +311,9 @@ class ProjectDetailsFragment :
         )
         val userSel = currentF.userName ?: getString(R.string.all)
         dlg.spinnerUser.setSelection(users.indexOf(userSel).coerceAtLeast(0))
+    }
 
+    private fun setupTypeToggle(dlg: DialogFilterTransactionsBinding, currentF: TransactionFilter) {
         dlg.toggleType.isSelectionRequired = true
         val typeChecked = when (currentF.type) {
             TransactionEntity.TransactionType.INCOME -> R.id.btnTypeIncome
@@ -274,10 +321,13 @@ class ProjectDetailsFragment :
             else -> R.id.btnTypeAll
         }
         dlg.toggleType.check(typeChecked)
+    }
 
+    private fun setupDateFields(dlg: DialogFilterTransactionsBinding, currentF: TransactionFilter) {
         val df = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        var pickedStart = currentF.startDate
-        var pickedEnd = currentF.endDate
+        pickedStart = currentF.startDate
+        pickedEnd = currentF.endDate
+
         pickedStart?.let { dlg.etStartDate.setText(df.format(Date(it))) }
         pickedEnd?.let { dlg.etEndDate.setText(df.format(Date(it))) }
 
@@ -291,14 +341,46 @@ class ProjectDetailsFragment :
             }
             picker.show(parentFragmentManager, "DATE_PICKER")
         }
+
         dlg.etStartDate.setOnClickListener { pickDate(dlg.etStartDate) { pickedStart = it } }
         dlg.etEndDate.setOnClickListener { pickDate(dlg.etEndDate) { pickedEnd = it } }
 
-        val signedList = viewModel.transactions.value.map { t ->
-            when (TransactionEntity.TransactionType.fromString(t.type)) {
-                TransactionEntity.TransactionType.INCOME -> t.amount.toFloat()
-                TransactionEntity.TransactionType.EXPENSE -> -t.amount.toFloat()
+        setupDateFieldClearing(dlg)
+    }
+
+    private fun setupDateFieldClearing(dlg: DialogFilterTransactionsBinding) {
+        dlg.etStartDateLayout.setEndIconOnClickListener {
+            dlg.etStartDate.text?.clear()
+            pickedStart = null
+            dlg.etStartDateLayout.error = null
+            dlg.etStartDateLayout.clearFocus()
+        }
+
+        dlg.etEndDateLayout.setEndIconOnClickListener {
+            dlg.etEndDate.text?.clear()
+            pickedEnd = null
+            dlg.etEndDateLayout.error = null
+            dlg.etEndDateLayout.clearFocus()
+        }
+
+        dlg.etStartDate.doAfterTextChanged { text ->
+            if (text.isNullOrEmpty()) {
+                pickedStart = null
+                dlg.etStartDateLayout.error = null
             }
+        }
+
+        dlg.etEndDate.doAfterTextChanged { text ->
+            if (text.isNullOrEmpty()) {
+                pickedEnd = null
+                dlg.etEndDateLayout.error = null
+            }
+        }
+    }
+
+    private fun setupAmountFields(dlg: DialogFilterTransactionsBinding, currentF: TransactionFilter) {
+        val signedList = viewModel.transactions.value.map { t ->
+            t.amount.toFloat()
         }
         val globalMin = (signedList.minOrNull() ?: 0f).roundTo(2)
         val globalMax = (signedList.maxOrNull() ?: 1f).roundTo(2)
@@ -306,8 +388,17 @@ class ProjectDetailsFragment :
         val curMin = (currentF.minAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMin).roundTo(2)
         val curMax = (currentF.maxAmount?.toFloat()?.coerceIn(globalMin, globalMax) ?: globalMax).roundTo(2)
 
-        var isSyncSliderDisabled = false
+        setupAmountSlider(dlg, globalMin, globalMax, curMin, curMax)
+        setupAmountInputs(dlg, globalMin, globalMax)
+    }
 
+    private fun setupAmountSlider(
+        dlg: DialogFilterTransactionsBinding,
+        globalMin: Float,
+        globalMax: Float,
+        curMin: Float,
+        curMax: Float
+    ) {
         dlg.sliderAmount.apply {
             valueFrom = globalMin
             valueTo = globalMax
@@ -323,11 +414,17 @@ class ProjectDetailsFragment :
             dlg.etMaxAmount.setText(dlg.sliderAmount.values[1].roundTo(2).toString())
             isSyncSliderDisabled = false
         }
+    }
+
+    private fun setupAmountInputs(
+        dlg: DialogFilterTransactionsBinding,
+        globalMin: Float,
+        globalMax: Float
+    ) {
         fun syncSlider() {
             if (isSyncSliderDisabled) return
-            val low =
-                (dlg.etMinAmount.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
-                    ?: globalMin).roundTo(2)
+            val low = (dlg.etMinAmount.text.toString().toFloatOrNull()?.coerceIn(globalMin, globalMax)
+                ?: globalMin).roundTo(2)
             val high = (dlg.etMaxAmount.text.toString().toFloatOrNull()?.coerceIn(low, globalMax)
                 ?: globalMax).roundTo(2)
             dlg.sliderAmount.values = listOf(low, high)
@@ -335,8 +432,10 @@ class ProjectDetailsFragment :
 
         dlg.etMinAmount.doAfterTextChanged { syncSlider() }
         dlg.etMaxAmount.doAfterTextChanged { syncSlider() }
+    }
 
-        val builder = MaterialAlertDialogBuilder(requireContext())
+    private fun createFilterDialog(dlg: DialogFilterTransactionsBinding): AlertDialog {
+        return MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.filters)
             .setView(dlg.root)
             .setPositiveButton(R.string.apply_filters, null)
@@ -344,28 +443,14 @@ class ProjectDetailsFragment :
                 viewModel.applyFilter(TransactionFilter())
                 dialog.dismiss()
             }
+            .create()
+    }
 
-        val dialog = builder.create()
+    private fun setupDialogButtons(dialog: AlertDialog, dlg: DialogFilterTransactionsBinding) {
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            if (pickedStart != null && pickedEnd != null && pickedStart!! > pickedEnd!!) {
-                dlg.etStartDateLayout.error = getString(R.string.error_date_order)
-                Snackbar.make(dlg.root, R.string.error_date_order, Snackbar.LENGTH_SHORT).show()
-                return@setOnClickListener
-            } else {
-                dlg.etStartDateLayout.error = null
-            }
-
-            val selMin = dlg.etMinAmount.text.toString().toDoubleOrNull()?.roundTo(2)
-            val selMax = dlg.etMaxAmount.text.toString().toDoubleOrNull()?.roundTo(2)
-            if (selMin != null && selMax != null && selMin > selMax) {
-                dlg.etMinAmountLayout.error = getString(R.string.error_min_max_amount)
-                Snackbar.make(dlg.root, R.string.error_min_max_amount, Snackbar.LENGTH_SHORT).show()
-                return@setOnClickListener
-            } else {
-                dlg.etMinAmountLayout.error = null
-            }
+            if (!validateDates(dlg) || !validateAmounts(dlg)) return@setOnClickListener
 
             val applied = TransactionFilter(
                 category = dlg.spinnerCategory.selectedItem.toString()
@@ -379,12 +464,34 @@ class ProjectDetailsFragment :
                     .takeIf { it != getString(R.string.all) },
                 startDate = pickedStart,
                 endDate = pickedEnd,
-                minAmount = selMin,
-                maxAmount = selMax
+                minAmount = dlg.etMinAmount.text.toString().toDoubleOrNull()?.roundTo(2),
+                maxAmount = dlg.etMaxAmount.text.toString().toDoubleOrNull()?.roundTo(2)
             )
             viewModel.applyFilter(applied)
             dialog.dismiss()
         }
+    }
+
+    private fun validateDates(dlg: DialogFilterTransactionsBinding): Boolean {
+        if (pickedStart != null && pickedEnd != null && pickedStart!! > pickedEnd!!) {
+            dlg.etStartDateLayout.error = getString(R.string.error_date_order)
+            Snackbar.make(dlg.root, R.string.error_date_order, Snackbar.LENGTH_SHORT).show()
+            return false
+        }
+        dlg.etStartDateLayout.error = null
+        return true
+    }
+
+    private fun validateAmounts(dlg: DialogFilterTransactionsBinding): Boolean {
+        val selMin = dlg.etMinAmount.text.toString().toDoubleOrNull()?.roundTo(2)
+        val selMax = dlg.etMaxAmount.text.toString().toDoubleOrNull()?.roundTo(2)
+        if (selMin != null && selMax != null && selMin > selMax) {
+            dlg.etMinAmountLayout.error = getString(R.string.error_min_max_amount)
+            Snackbar.make(dlg.root, R.string.error_min_max_amount, Snackbar.LENGTH_SHORT).show()
+            return false
+        }
+        dlg.etMinAmountLayout.error = null
+        return true
     }
 
     private fun openAddTransactionDialog() {
@@ -414,6 +521,17 @@ class ProjectDetailsFragment :
             viewModel.deleteTransaction(args.projectId, transaction.id)
         }
         dialog.show(childFragmentManager, "TransactionDetails")
+    }
+
+    private fun onTransactionDelete(transaction: TransactionEntity) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.delete_transaction))
+            .setMessage(getString(R.string.delete_transaction_confirmation))
+            .setPositiveButton(getString(R.string.delete)) { _, _ ->
+                viewModel.deleteTransaction(args.projectId, transaction.id)
+            }
+            .setNegativeButton(getString(R.string.cancel), null)
+            .show()
     }
 
     private fun onMenuItemClicked(item: MenuItem): Boolean =
@@ -518,6 +636,7 @@ class ProjectDetailsFragment :
 
     companion object {
         private const val KEY_TEXT_EXPANDED = "KEY_TEXT_EXPANDED"
+        private const val KEY_BUDGET_EXPANDED = "KEY_BUDGET_EXPANDED"
         private const val MAX_COLLAPSED_LINES = 3
         private const val MIN_DESC_LENGTH = 300
     }

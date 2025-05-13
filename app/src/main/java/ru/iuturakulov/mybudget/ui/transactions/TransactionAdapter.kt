@@ -23,7 +23,8 @@ import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
 import ru.iuturakulov.mybudget.databinding.ItemTransactionBinding
 
 class TransactionAdapter(
-    private val onTransactionClicked: (TransactionEntity) -> Unit
+    private val onTransactionClicked: (TransactionEntity) -> Unit,
+    private val onTransactionDelete: (TransactionEntity) -> Unit,
 ) : ListAdapter<TransactionEntity, TransactionAdapter.TransactionViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
@@ -32,7 +33,7 @@ class TransactionAdapter(
             parent,
             false
         )
-        return TransactionViewHolder(binding, onTransactionClicked)
+        return TransactionViewHolder(binding, onTransactionClicked, onTransactionDelete)
     }
 
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
@@ -41,7 +42,8 @@ class TransactionAdapter(
 
     class TransactionViewHolder(
         private val binding: ItemTransactionBinding,
-        private val onTransactionClicked: (TransactionEntity) -> Unit
+        private val onTransactionClicked: (TransactionEntity) -> Unit,
+        private val onTransactionDelete: (TransactionEntity) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(transaction: TransactionEntity) {
@@ -73,7 +75,13 @@ class TransactionAdapter(
                     )
                 )
                 ivTransactionCategoryIcon.text = transaction.categoryIcon
-                itemTransactionContainer.setOnClickListener { onTransactionClicked(transaction) }
+                itemTransactionContainer.setOnClickListener {
+                    onTransactionClicked(transaction)
+                }
+
+                itemTransactionContainer.setOnLongClickListener {
+                    onTransactionDelete(transaction); true
+                }
 
                 llReceipts.removeAllViews()
                 val receipts = transaction.images

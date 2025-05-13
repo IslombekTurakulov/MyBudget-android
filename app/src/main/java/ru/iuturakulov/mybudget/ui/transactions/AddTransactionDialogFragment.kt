@@ -7,11 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.Paint
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -30,6 +26,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -54,13 +51,18 @@ import kotlinx.coroutines.withContext
 import ru.iuturakulov.mybudget.R
 import ru.iuturakulov.mybudget.data.local.entities.TemporaryTransaction
 import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity
+import ru.iuturakulov.mybudget.data.local.entities.TransactionEntity.TransactionType
 import ru.iuturakulov.mybudget.data.remote.dto.ParticipantRole
 import ru.iuturakulov.mybudget.databinding.DialogAddTransactionBinding
 import ru.iuturakulov.mybudget.ui.projects.details.EmojiPickerAdapter
+import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.extractTotalAmount
+import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessBitmap
+import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessText
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -71,14 +73,6 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.Date
 import java.util.Locale
-import androidx.core.graphics.scale
-import androidx.core.graphics.createBitmap
-import androidx.core.view.isGone
-import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.extractTotalAmount
-import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessBitmap
-import ru.iuturakulov.mybudget.ui.transactions.BitmapPreprocessor.preprocessText
-import java.text.NumberFormat
-import java.text.ParseException
 
 @AndroidEntryPoint
 class AddTransactionDialogFragment : DialogFragment() {
@@ -276,10 +270,6 @@ class AddTransactionDialogFragment : DialogFragment() {
                 removeTransactionLayout.visibility = View.VISIBLE
                 addTransactionLayout.visibility = View.GONE
                 btnSave.text = getString(R.string.save)
-                toggleTransactionType.check(
-                    if (transaction?.type == TransactionEntity.TransactionType.INCOME) R.id.btnIncome
-                    else R.id.btnExpense
-                )
                 btnEditTransaction.setOnClickListener {
                     processSaveButton(onTransactionUpdated, arguments)
                 }
@@ -291,17 +281,13 @@ class AddTransactionDialogFragment : DialogFragment() {
                 addTransactionLayout.visibility = View.VISIBLE
                 btnSave.text = getString(R.string.add)
                 btnSave.setOnClickListener { processSaveButton(onTransactionAdded, arguments) }
-                toggleTransactionType.check(R.id.btnIncome)
-                binding.ivTransactionCategoryIcon.text = resources.getStringArray(
-                    R.array.emoji_list
-                ).toList().shuffled().first()
                 btnCancel.setOnClickListener { dismiss() }
             }
 
             setupDatePicker(transaction?.date)
             setupCategorySpinner(transaction?.category)
             setupEmojiPicker()
-            setupTransactionTypeToggle()
+            setupTransactionTypeToggle(transaction?.type)
             btnScanReceipt.setOnClickListener { checkAndRequestPermissions() }
         }
     }
@@ -330,9 +316,9 @@ class AddTransactionDialogFragment : DialogFragment() {
     ) {
         if (validateInput()) {
             val transactionType = when (binding.toggleTransactionType.checkedButtonId) {
-                R.id.btnIncome -> TransactionEntity.TransactionType.INCOME
-                R.id.btnExpense -> TransactionEntity.TransactionType.EXPENSE
-                else -> TransactionEntity.TransactionType.INCOME
+                R.id.btnIncome -> TransactionType.INCOME
+                R.id.btnExpense -> TransactionType.EXPENSE
+                else -> TransactionType.INCOME
             }
             val category =
                 if (binding.spinnerCategory.text?.trim().toString()
@@ -358,16 +344,31 @@ class AddTransactionDialogFragment : DialogFragment() {
         }
     }
 
-    private fun setupTransactionTypeToggle() {
+    private fun setupTransactionTypeToggle(transactionType: TransactionType?) {
         binding.toggleTransactionType.isSelectionRequired = true
         binding.toggleTransactionType.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
-                    R.id.btnIncome -> binding.btnIncome.isChecked = true
-                    R.id.btnExpense -> binding.btnExpense.isChecked = true
+                    R.id.btnIncome -> {
+                        binding.btnIncome.isChecked = true
+                        binding.btnIncome.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.green))
+                        binding.btnExpense.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.transparent))
+                    }
+                    R.id.btnExpense -> {
+                        binding.btnExpense.isChecked = true
+                        binding.btnExpense.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.red))
+                        binding.btnIncome.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.transparent))
+                    }
                 }
             }
         }
+        binding.toggleTransactionType.check(
+            /* id = */ if (transactionType == TransactionType.INCOME) {
+                R.id.btnIncome
+            } else  {
+                R.id.btnExpense
+            }
+        )
     }
 
     private fun showDeleteConfirmationDialog() {
@@ -845,10 +846,35 @@ class AddTransactionDialogFragment : DialogFragment() {
             binding.etTransactionName.error = getString(R.string.error_enter_name)
             return false
         }
-        if (amountStr.isNullOrBlank() || amountStr.toDoubleOrNull() == null || amountStr.toDouble() <= 0) {
+        if (amountStr.isNullOrBlank()
+            || !DECIMAL_REGEX.matches(amountStr)
+        ) {
             binding.etTransactionAmount.error = getString(R.string.error_enter_valid_amount)
             return false
         }
+
+        val amount = amountStr.toBigDecimalOrNull()
+        if (amount == null) {
+            binding.etTransactionAmount.error = getString(R.string.error_enter_valid_amount)
+            return false
+        }
+
+        // 4) > 0 и ≤ Double.MAX_VALUE
+        val max = BigDecimal(Double.MAX_VALUE.toString())
+        if (amount <= BigDecimal.ZERO || amount > max) {
+            binding.etTransactionAmount.error = getString(R.string.error_enter_valid_amount)
+            return false
+        }
+
+        if (binding.ivTransactionCategoryIcon.text.isEmpty()) {
+            Snackbar.make(
+                binding.root,
+                getString(R.string.error_empty_icon),
+                Snackbar.LENGTH_SHORT
+            ).show()
+            return false
+        }
+
         if (binding.spinnerCategory.text.toString()
                 .equals(getString(R.string.other), ignoreCase = true) && customCategory.isBlank()
         ) {
@@ -1011,6 +1037,7 @@ class AddTransactionDialogFragment : DialogFragment() {
 
     companion object {
         private const val ARG_TRANSACTION = "arg_transaction"
+        private val DECIMAL_REGEX = Regex("""^\d+(\.\d+)?$""")  // только цифры и точка
 
         @kotlinx.parcelize.Parcelize
         data class AddTransactionArgs(

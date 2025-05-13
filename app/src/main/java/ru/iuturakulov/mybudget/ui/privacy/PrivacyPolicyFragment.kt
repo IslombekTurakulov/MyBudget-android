@@ -7,7 +7,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import ru.iuturakulov.mybudget.R
@@ -29,6 +29,10 @@ class PrivacyPolicyFragment : BaseFragment<FragmentPrivacyBinding>(R.layout.frag
             displayZoomControls = false
             allowFileAccess = false
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+        }
+
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
         }
 
         binding.webviewPrivacy.webViewClient = object : WebViewClient() {

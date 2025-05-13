@@ -118,13 +118,13 @@
     <string name="project_archived">Проект архивирован</string>
     <string name="project_unarchived">Проект разархивирован</string>
     <string name="financial_info_title">Финансовая информация</string>
-    <string name="project_budget">Бюджет: %1$.2f ₽</string>
-    <string name="project_spent">Потрачено: %1$.2f ₽</string>
-    <string name="project_remaining">Осталось: %1$.2f ₽</string>
+    <string name="project_budget">Бюджет</string>
+    <string name="project_spent">Потрачено</string>
+    <string name="project_remaining">Осталось</string>
     <string name="project_description_title">Описание проекта</string>
     <string name="project_participants">Участники проекта</string>
     <string name="total_amount_format">Всего потрачено: </string>
-
+    <string name="budget_progress_tooltip">Бюджет: %1$s\nПотрачено: %2$s\nОсталось: %3$s</string>
     <string name="total_amount">Общая сумма</string>
 
     <string name="confirm_delete_participant_title">Удалить участника</string>
@@ -141,6 +141,7 @@
     <!-- Transactions list -->
     <string name="transaction_section_name">Транзакции</string>
     <string name="no_transactions">Нет транзакций</string>
+    <string name="no_transactions_for_filter">Нет транзакций, соответствующих фильтру</string>
     <string name="empty_transactions_desc">Пусто</string>
     <string name="all">Все</string>
     <string name="other">Другое</string>
@@ -289,6 +290,7 @@
     <string name="amount_range">Сумма (₽)</string>
     <string name="amount_range_template">%1$.0f₽ — %2$.0f₽</string>
     <string name="clear_filters">Очистить</string>
+    <string name="clear_date">Очистить дату и время</string>
     <string name="apply_filters">Применить</string>
     <string name="min_amount">Мин. сумма</string>
     <string name="max_amount">Макс. сумма</string>
@@ -308,10 +310,9 @@
 
     <string name="clear">Очистить</string>
     <string name="apply">Применить</string>
-    <string name="transaction_user">Пользователь</string>
+    <string name="transaction_user">Автор транзакции</string>
     <string name="transaction_author">Автор: %1$s</string>
     <string name="transaction_user_helper">Выберите пользователя</string>
-
     <string name="error_date_order">Дата начала не может быть позже даты окончания</string>
 
     <string name="sample_participant_name">Иван Иванов</string>

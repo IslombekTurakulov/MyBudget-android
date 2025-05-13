@@ -89,6 +89,11 @@ class ProjectListFragment :
                     .setLabel(getString(R.string.filters))
                     .create()
             )
+            addActionItem(
+                SpeedDialActionItem.Builder(R.id.fab_proceed_invitation, R.drawable.ic_email_24)
+                    .setLabel(getString(R.string.join_project))
+                    .create()
+            )
             setOnActionSelectedListener { action ->
                 when (action.id) {
                     R.id.fab_add -> {
@@ -98,6 +103,11 @@ class ProjectListFragment :
 
                     R.id.fab_filter -> {
                         showFilterDialog()
+                        true
+                    }
+
+                    R.id.fab_proceed_invitation -> {
+                        showJoinByCodeDialog()
                         true
                     }
 
@@ -179,11 +189,15 @@ class ProjectListFragment :
 
     private fun navigateToAddProject() {
         val bottomSheet = CreateProjectFragment()
-        bottomSheet.setOnProjectAdded { viewModel.syncProjects() }
+        bottomSheet.setOnProjectAdded {
+            binding.speedDial.close()
+            viewModel.syncProjects()
+        }
         bottomSheet.show(childFragmentManager, CreateProjectFragment.TAG)
     }
 
     private fun showFilterDialog() {
+        binding.speedDial.close()
         val bottomSheet = ProjectFilterBottomSheet()
         bottomSheet.show(childFragmentManager, ProjectFilterBottomSheet.TAG)
     }

@@ -130,11 +130,6 @@ class ProjectDetailsViewModel @Inject constructor(
         filter: TransactionFilter
     ): List<TransactionEntity> {
         return transactions.filter { t ->
-            val signedAmount = when (TransactionEntity.TransactionType.fromString(t.type)) {
-                TransactionEntity.TransactionType.INCOME  ->  t.amount
-                TransactionEntity.TransactionType.EXPENSE -> -t.amount
-            }
-
             // категория
             (filter.category == null || t.category == filter.category) &&
                     // пользователь
@@ -145,8 +140,8 @@ class ProjectDetailsViewModel @Inject constructor(
                     (filter.startDate?.let { t.date >= it } ?: true) &&
                     (filter.endDate?.let { t.date <= it } ?: true) &&
                     // диапазон суммы
-                    (filter.minAmount == null || signedAmount >= filter.minAmount) &&
-                    (filter.maxAmount == null || signedAmount <= filter.maxAmount)
+                    (filter.minAmount == null || t.amount >= filter.minAmount) &&
+                    (filter.maxAmount == null || t.amount <= filter.maxAmount)
         }
     }
 

@@ -2,4 +2,5 @@
 <resources>
     <item type="id" name="fab_add"/>
     <item type="id" name="fab_filter"/>
+    <item type="id" name="fab_proceed_invitation"/>
 </resources>

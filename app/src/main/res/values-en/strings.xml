@@ -122,9 +122,11 @@
     <string name="project_archived">Project archived</string>
     <string name="project_unarchived">Project unarchived</string>
     <string name="financial_info_title">Financial information</string>
-    <string name="project_budget">Budget: %1$.2f ₽</string>
-    <string name="project_spent">Spent: %1$.2f ₽</string>
-    <string name="project_remaining">Remaining: %1$.2f ₽</string>
+    <string name="budget_progress_tooltip">Budget: %1$s\nSpent: %2$s\nRemaining: %3$s</string>
+    <string name="no_transactions_for_filter">No transactions matching the filter</string>
+    <string name="project_budget">Budget</string>
+    <string name="project_spent">Spent</string>
+    <string name="project_remaining">Remaining</string>
     <string name="project_description_title">Project description</string>
     <string name="project_participants">Project participants</string>
     <string name="total_amount_format">Total spent: </string>
@@ -297,6 +299,7 @@
     <string name="amount_range">Amount (₽)</string>
     <string name="amount_range_template">%1$.0f₽ — %2$.0f₽</string>
     <string name="clear_filters">Clear filters</string>
+    <string name="clear_date">Clear datetime</string>
     <string name="apply_filters">Apply filters</string>
     <string name="min_amount">Min. amount</string>
     <string name="max_amount">Max. amount</string>
@@ -315,7 +318,7 @@
 
     <string name="clear">Clear</string>
     <string name="apply">Apply</string>
-    <string name="transaction_user">User</string>
+    <string name="transaction_user">Project Author</string>
     <string name="transaction_user_helper">Select user</string>
 
     <string name="error_date_order">Start date cannot be after end date</string>
