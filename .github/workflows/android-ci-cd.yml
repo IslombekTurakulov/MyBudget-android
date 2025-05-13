@@ -20,7 +20,7 @@ jobs:
           cache: gradle
 
       - name: Set up Android SDK
-        uses: google-github-actions/setup-android@v1
+        uses: android-actions/setup-android@v1
         with:
           build-tools-version: '34.0.0'
           sdk-version: '34'
@@ -31,6 +31,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
+            ~/.android/cache
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -47,6 +48,9 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
 
       - name: Build Release APK
         run: ./gradlew assembleRelease
