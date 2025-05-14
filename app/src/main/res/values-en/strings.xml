@@ -108,7 +108,7 @@
     <string name="debug_change_host">Change environment</string>
     <string name="error_empty_host">Host cannot be empty</string>
     <string name="error_invalid_host">Host is invalid</string>
-    <string name="debug_host_changed">Host changed to «%1$s»</string>
+    <string name="debug_host_changed">Host changed to «%1$s». Please, restart application</string>
     <string name="current_host_label">Current host: %1$s</string>
 
     <string name="saving">Saving...</string>

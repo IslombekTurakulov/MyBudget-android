@@ -105,7 +105,7 @@
     <string name="debug_change_host">Смена окружения</string>
     <string name="error_empty_host">Адрес хоста не может быть пустым</string>
     <string name="error_invalid_host">Ошибка в адресе хоста</string>
-    <string name="debug_host_changed">Хост поменят «%1$s»</string>
+    <string name="debug_host_changed">Хост поменят «%1$s». Перезапустите приложение</string>
     <string name="current_host_label">Текущий host: %1$s</string>
     <string name="saving">Сохраняю...</string>
 

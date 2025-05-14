@@ -1,8 +1,6 @@
 package ru.iuturakulov.mybudget.ui.settings
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Patterns
 import android.view.View
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
@@ -23,7 +21,7 @@ import ru.iuturakulov.mybudget.core.setOnDebounceClick
 import ru.iuturakulov.mybudget.databinding.FragmentSettingsBinding
 import ru.iuturakulov.mybudget.domain.models.UserSettings
 import ru.iuturakulov.mybudget.ui.BaseFragment
-import timber.log.Timber
+import ru.iuturakulov.mybudget.utils.UrlValidator
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -100,7 +98,7 @@ class SettingsFragment : BaseFragment<FragmentSettingsBinding>(R.layout.fragment
 
             etHost.addTextChangedListener {
                 val url = it?.toString().orEmpty().trim()
-                val ok = Patterns.WEB_URL.matcher(url).matches()
+                val ok = UrlValidator.isValidUrl(url)
                 inputLayout.error =
                     if (!ok && url.isNotEmpty()) getString(R.string.error_invalid_host) else null
                 btnSave.isEnabled = ok
