@@ -63,6 +63,13 @@ jobs:
           echo "Keystore file created at: $(pwd)/mybudget.keystore"
           echo "Checking keystore contents:"
           keytool -list -v -keystore mybudget.keystore -storepass "${{ secrets.KEY_STORE_PASSWORD }}" || echo "Keystore validation failed"
+          echo "Verifying keystore password:"
+          if keytool -list -v -keystore mybudget.keystore -storepass "${{ secrets.KEY_STORE_PASSWORD }}" > /dev/null 2>&1; then
+            echo "Keystore password is correct"
+          else
+            echo "Keystore password is incorrect"
+            exit 1
+          fi
           echo "Running Gradle with debug info:"
           ./gradlew assembleRelease \
             -PkeystorePassword="${{ secrets.KEY_STORE_PASSWORD }}" \
